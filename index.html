@@ -294,27 +294,56 @@
         <div id="adminData" style="display:none;">
             <p style="color:var(--success); font-weight:bold; text-align:center; margin-bottom: 15px;">🔓 Acesso Permitido</p>
 
+            <div id="painelPrimeiroAcesso" class="card-ponto" style="display:none; margin-bottom:20px; border-color:var(--primary);">
+                <p style="margin:0 0 10px 0; font-weight:bold; color:var(--primary); text-align:center;">🔔 Primeiro Acesso</p>
+                <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px; text-align:center;">Este é o e-mail padrão de fábrica. Cadastre agora o e-mail real que será usado daqui pra frente para recuperar ou alterar a senha.</p>
+                <div class="form-group">
+                    <label>Seu E-mail Real</label>
+                    <input type="email" id="emailPrimeiroAcessoInput" placeholder="seuemail@empresa.com">
+                </div>
+                <button type="button" class="btn btn-primary" onclick="salvarEmailPrimeiroAcesso()">Salvar E-mail Real ✅</button>
+                <p id="msgSucessoPrimeiroAcesso" style="display:none; color:var(--success); text-align:center; font-weight:bold; margin-top:10px;">✅ E-mail configurado com sucesso!</p>
+            </div>
+
             <div class="card-ponto" style="margin-bottom:20px;">
                 <p style="margin:0 0 10px 0; font-weight:bold; color:var(--primary); text-align:center;">⚙️ Configurações de Segurança</p>
                 <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px; text-align:center;">E-mail de recuperação atual: <span id="emailAtualExibicao" style="color:var(--text);"></span></p>
                 <button type="button" class="btn btn-secondary" style="font-size:13px; padding:10px;" onclick="toggleAlterarEmail()">Alterar E-mail de Recuperação ✉️</button>
 
                 <div id="painelAlterarEmail" style="display:none; margin-top:14px;">
-                    <div id="etapaNovoEmail">
+                    <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">Escolha como deseja autorizar a troca do e-mail cadastrado:</p>
+                    <div style="display:flex; gap:8px; margin-bottom:14px;">
+                        <button type="button" class="btn btn-secondary" style="font-size:12px; padding:10px;" onclick="mostrarMetodoTrocaEmail('codigo')">📧 Por E-mail</button>
+                        <button type="button" class="btn btn-secondary" style="font-size:12px; padding:10px;" onclick="mostrarMetodoTrocaEmail('senha')">🔒 Por Senha</button>
+                    </div>
+
+                    <div id="etapaAutorizarTrocaEmail" style="display:none;">
+                        <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">Confirme sua identidade com um código enviado para o e-mail atual.</p>
+                        <button type="button" class="btn btn-secondary" onclick="enviarCodigoAutorizacaoTrocaEmail()">Enviar Código para o E-mail Atual 📧</button>
+                        <div class="form-group" style="margin-top:12px;">
+                            <label>Código Recebido</label>
+                            <input type="text" id="tokenAutorizacaoTrocaEmailInput" maxlength="6" placeholder="000000">
+                            <div id="erroAutorizacaoTrocaEmail" class="alerta-erro">⚠️ Código incorreto.</div>
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="confirmarAutorizacaoTrocaEmail()">Confirmar Código ✅</button>
+                    </div>
+
+                    <div id="etapaAutorizarSenha" style="display:none;">
+                        <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">Confirme a senha administrativa para autorizar a troca de e-mail.</p>
+                        <div class="form-group">
+                            <label>Senha Administrativa</label>
+                            <input type="password" id="senhaAutorizacaoTrocaEmailInput" placeholder="Digite a senha">
+                            <div id="erroSenhaAutorizacaoTrocaEmail" class="alerta-erro">⚠️ Senha incorreta.</div>
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="confirmarAutorizacaoSenhaTrocaEmail()">Confirmar Senha ✅</button>
+                    </div>
+
+                    <div id="etapaNovoEmail" style="display:none;">
                         <div class="form-group">
                             <label>Novo E-mail de Recuperação</label>
                             <input type="email" id="novoEmailInput" placeholder="novoemail@empresa.com">
                         </div>
-                        <button type="button" class="btn btn-primary" onclick="enviarCodigoNovoEmail()">Enviar Código de Confirmação 📧</button>
-                    </div>
-
-                    <div id="etapaTokenNovoEmail" style="display:none;">
-                        <div class="form-group">
-                            <label>Digite o Código Recebido no Novo E-mail</label>
-                            <input type="text" id="tokenNovoEmailInput" maxlength="6" placeholder="000000">
-                            <div id="erroTokenNovoEmail" class="alerta-erro">⚠️ Código incorreto.</div>
-                        </div>
-                        <button type="button" class="btn btn-primary" onclick="confirmarNovoEmail()">Confirmar e Salvar ✅</button>
+                        <button type="button" class="btn btn-primary" onclick="salvarNovoEmail()">Salvar Novo E-mail ✅</button>
                     </div>
 
                     <p id="msgSucessoEmail" style="display:none; color:var(--success); text-align:center; font-weight:bold; margin-top:10px;">✅ E-mail de recuperação atualizado!</p>
@@ -366,16 +395,18 @@
     }
 
     // Inicialização da senha mestre e do e-mail de recuperação (uma única vez)
+    const EMAIL_PADRAO_INICIAL = "recuperacao@empresa.com";
+    const SENHA_PADRAO_INICIAL = "12345678";
+
     if (!localStorage.getItem('senha_admin')) {
-        localStorage.setItem('senha_admin', '051116mm');
+        localStorage.setItem('senha_admin', SENHA_PADRAO_INICIAL);
     }
     if (!localStorage.getItem('email_recuperacao')) {
-        localStorage.setItem('email_recuperacao', 'recuperacao@empresa.com');
+        localStorage.setItem('email_recuperacao', EMAIL_PADRAO_INICIAL);
     }
 
     let tokenTemporario = null;
     let tokenNovoEmailTemporario = null;
-    let novoEmailPendente = null;
 
     function switchTab(tab) {
         document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
@@ -578,16 +609,38 @@
     }
 
     function verificarSenha() {
-        const senhaSalva = localStorage.getItem('senha_admin') || "051116mm";
+        const senhaSalva = localStorage.getItem('senha_admin') || SENHA_PADRAO_INICIAL;
         if(document.getElementById('senhaAdmin').value === senhaSalva) {
             document.getElementById('adminAuth').style.display = "none";
             document.getElementById('adminData').style.display = "block";
-            document.getElementById('emailAtualExibicao').innerText = localStorage.getItem('email_recuperacao');
+
+            const emailAtual = localStorage.getItem('email_recuperacao');
+            document.getElementById('emailAtualExibicao').innerText = emailAtual;
+            document.getElementById('painelPrimeiroAcesso').style.display = (emailAtual === EMAIL_PADRAO_INICIAL) ? "block" : "none";
+
             renderInitializeDate();
             renderizarPontosAdmin();
         } else {
             alert("Senha incorreta!");
         }
+    }
+
+    function salvarEmailPrimeiroAcesso() {
+        const email = document.getElementById('emailPrimeiroAcessoInput').value.trim().toLowerCase();
+        if (email === "" || email === EMAIL_PADRAO_INICIAL) {
+            alert("Digite um e-mail real, diferente do e-mail padrão.");
+            return;
+        }
+
+        localStorage.setItem('email_recuperacao', email);
+        document.getElementById('emailAtualExibicao').innerText = email;
+        document.getElementById('msgSucessoPrimeiroAcesso').style.display = "block";
+        document.getElementById('emailPrimeiroAcessoInput').value = "";
+
+        setTimeout(() => {
+            document.getElementById('painelPrimeiroAcesso').style.display = "none";
+            document.getElementById('msgSucessoPrimeiroAcesso').style.display = "none";
+        }, 1500);
     }
 
     function gerarTokenNumerico() {
@@ -681,35 +734,52 @@
         const painel = document.getElementById('painelAlterarEmail');
         const oculto = painel.style.display === "none";
         painel.style.display = oculto ? "block" : "none";
-        document.getElementById('etapaNovoEmail').style.display = "block";
-        document.getElementById('etapaTokenNovoEmail').style.display = "none";
+        document.getElementById('etapaAutorizarTrocaEmail').style.display = "none";
+        document.getElementById('etapaAutorizarSenha').style.display = "none";
+        document.getElementById('etapaNovoEmail').style.display = "none";
+        document.getElementById('msgSucessoEmail').style.display = "none";
+        document.getElementById('tokenAutorizacaoTrocaEmailInput').value = "";
+        document.getElementById('senhaAutorizacaoTrocaEmailInput').value = "";
+    }
+
+    function mostrarMetodoTrocaEmail(metodo) {
+        document.getElementById('etapaAutorizarTrocaEmail').style.display = (metodo === 'codigo') ? "block" : "none";
+        document.getElementById('etapaAutorizarSenha').style.display = (metodo === 'senha') ? "block" : "none";
+        document.getElementById('etapaNovoEmail').style.display = "none";
         document.getElementById('msgSucessoEmail').style.display = "none";
     }
 
-    function enviarCodigoNovoEmail() {
-        const novoEmail = document.getElementById('novoEmailInput').value.trim().toLowerCase();
-        if (novoEmail === "") {
-            alert("Digite um e-mail válido.");
+    function confirmarAutorizacaoSenhaTrocaEmail() {
+        const senhaDigitada = document.getElementById('senhaAutorizacaoTrocaEmailInput').value;
+        const erroDiv = document.getElementById('erroSenhaAutorizacaoTrocaEmail');
+        erroDiv.style.display = "none";
+
+        if (senhaDigitada !== (localStorage.getItem('senha_admin') || SENHA_PADRAO_INICIAL)) {
+            erroDiv.style.display = "block";
             return;
         }
 
-        novoEmailPendente = novoEmail;
+        document.getElementById('etapaAutorizarSenha').style.display = "none";
+        document.getElementById('etapaNovoEmail').style.display = "block";
+        document.getElementById('senhaAutorizacaoTrocaEmailInput').value = "";
+    }
+
+    function enviarCodigoAutorizacaoTrocaEmail() {
+        const emailAtual = localStorage.getItem('email_recuperacao');
         tokenNovoEmailTemporario = gerarTokenNumerico();
 
-        enviarEmailComCodigo(novoEmail, tokenNovoEmailTemporario)
+        enviarEmailComCodigo(emailAtual, tokenNovoEmailTemporario)
             .then(() => {
-                alert("Código de confirmação enviado para o novo e-mail!");
-                document.getElementById('etapaNovoEmail').style.display = "none";
-                document.getElementById('etapaTokenNovoEmail').style.display = "block";
+                alert("Código de autorização enviado para o e-mail atualmente cadastrado!");
             })
             .catch(() => {
                 alert("Erro ao enviar o e-mail. Verifique as configurações do EmailJS.");
             });
     }
 
-    function confirmarNovoEmail() {
-        const tokenDigitado = document.getElementById('tokenNovoEmailInput').value.trim();
-        const erroDiv = document.getElementById('erroTokenNovoEmail');
+    function confirmarAutorizacaoTrocaEmail() {
+        const tokenDigitado = document.getElementById('tokenAutorizacaoTrocaEmailInput').value.trim();
+        const erroDiv = document.getElementById('erroAutorizacaoTrocaEmail');
         erroDiv.style.display = "none";
 
         if (tokenDigitado === "" || tokenDigitado !== tokenNovoEmailTemporario) {
@@ -717,17 +787,24 @@
             return;
         }
 
-        localStorage.setItem('email_recuperacao', novoEmailPendente);
-        document.getElementById('emailAtualExibicao').innerText = novoEmailPendente;
-
         tokenNovoEmailTemporario = null;
-        novoEmailPendente = null;
+        document.getElementById('etapaAutorizarTrocaEmail').style.display = "none";
+        document.getElementById('etapaNovoEmail').style.display = "block";
+    }
 
-        document.getElementById('etapaTokenNovoEmail').style.display = "none";
+    function salvarNovoEmail() {
+        const novoEmail = document.getElementById('novoEmailInput').value.trim().toLowerCase();
+        if (novoEmail === "") {
+            alert("Digite um e-mail válido.");
+            return;
+        }
+
+        localStorage.setItem('email_recuperacao', novoEmail);
+        document.getElementById('emailAtualExibicao').innerText = novoEmail;
+
+        document.getElementById('etapaNovoEmail').style.display = "none";
         document.getElementById('msgSucessoEmail').style.display = "block";
-
         document.getElementById('novoEmailInput').value = "";
-        document.getElementById('tokenNovoEmailInput').value = "";
     }
 
     function renderInitializeDate() {
@@ -826,7 +903,7 @@
     function editarPontoAdmin(index) {
         const senha = prompt("Digite a senha administrativa para alterar este registro:");
         if (senha === null) return;
-        if (senha !== (localStorage.getItem('senha_admin') || "051116mm")) {
+        if (senha !== (localStorage.getItem('senha_admin') || SENHA_PADRAO_INICIAL)) {
             alert("Senha incorreta!");
             return;
         }
@@ -851,7 +928,7 @@
 
         const senha = prompt("Digite a senha administrativa para excluir:");
         if (senha === null) return;
-        if (senha !== (localStorage.getItem('senha_admin') || "051116mm")) {
+        if (senha !== (localStorage.getItem('senha_admin') || SENHA_PADRAO_INICIAL)) {
             alert("Senha incorreta!");
             return;
         }
