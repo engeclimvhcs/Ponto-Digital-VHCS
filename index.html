@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ponto Eletrônico Digital</title>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <style>
         :root {
             --primary: #f97316; /* Laranja Medio */
@@ -249,9 +250,76 @@
                 <input type="password" id="senhaAdmin" placeholder="Digite a senha">
             </div>
             <button class="btn btn-primary" onclick="verificarSenha()">Acessar Relatórios</button>
+
+            <p style="text-align:center; margin-top:14px; margin-bottom:0;">
+                <a href="#" id="linkEsqueciSenha" style="color:var(--primary); font-size:13px; font-weight:600; text-decoration:none;" onclick="toggleRecuperacaoSenha(event)">Esqueci a Senha 🔑</a>
+            </p>
+
+            <div id="painelRecuperacao" style="display:none; margin-top:16px; border-top:1px solid #374151; padding-top:16px;">
+
+                <div id="etapaEmailRecuperacao">
+                    <div class="form-group">
+                        <label>Confirme o E-mail de Recuperação Cadastrado</label>
+                        <input type="email" id="emailRecuperacaoInput" placeholder="seuemail@empresa.com">
+                        <div id="erroEmailRecuperacao" class="alerta-erro">⚠️ E-mail não corresponde ao cadastrado.</div>
+                    </div>
+                    <button type="button" class="btn btn-secondary" onclick="enviarCodigoRecuperacao()">Enviar Código 📧</button>
+                </div>
+
+                <div id="etapaTokenRecuperacao" style="display:none;">
+                    <div class="form-group">
+                        <label>Digite o Código Recebido por E-mail</label>
+                        <input type="text" id="tokenRecuperacaoInput" maxlength="6" placeholder="000000">
+                        <div id="erroTokenRecuperacao" class="alerta-erro">⚠️ Código incorreto.</div>
+                    </div>
+                    <button type="button" class="btn btn-secondary" onclick="confirmarTokenRecuperacao()">Confirmar Código ✅</button>
+                </div>
+
+                <div id="etapaNovaSenha" style="display:none;">
+                    <div class="form-group">
+                        <label>Nova Senha</label>
+                        <input type="password" id="novaSenhaInput" placeholder="Digite a nova senha">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirme a Nova Senha</label>
+                        <input type="password" id="confirmaSenhaInput" placeholder="Repita a nova senha">
+                        <div id="erroNovaSenha" class="alerta-erro">⚠️ As senhas não coincidem ou estão vazias.</div>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="salvarNovaSenha()">Salvar Nova Senha 🔒</button>
+                </div>
+
+                <p id="msgSucessoRecuperacao" style="display:none; color:var(--success); text-align:center; font-weight:bold; margin-top:10px;">✅ Senha alterada com sucesso!</p>
+            </div>
         </div>
         <div id="adminData" style="display:none;">
             <p style="color:var(--success); font-weight:bold; text-align:center; margin-bottom: 15px;">🔓 Acesso Permitido</p>
+
+            <div class="card-ponto" style="margin-bottom:20px;">
+                <p style="margin:0 0 10px 0; font-weight:bold; color:var(--primary); text-align:center;">⚙️ Configurações de Segurança</p>
+                <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px; text-align:center;">E-mail de recuperação atual: <span id="emailAtualExibicao" style="color:var(--text);"></span></p>
+                <button type="button" class="btn btn-secondary" style="font-size:13px; padding:10px;" onclick="toggleAlterarEmail()">Alterar E-mail de Recuperação ✉️</button>
+
+                <div id="painelAlterarEmail" style="display:none; margin-top:14px;">
+                    <div id="etapaNovoEmail">
+                        <div class="form-group">
+                            <label>Novo E-mail de Recuperação</label>
+                            <input type="email" id="novoEmailInput" placeholder="novoemail@empresa.com">
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="enviarCodigoNovoEmail()">Enviar Código de Confirmação 📧</button>
+                    </div>
+
+                    <div id="etapaTokenNovoEmail" style="display:none;">
+                        <div class="form-group">
+                            <label>Digite o Código Recebido no Novo E-mail</label>
+                            <input type="text" id="tokenNovoEmailInput" maxlength="6" placeholder="000000">
+                            <div id="erroTokenNovoEmail" class="alerta-erro">⚠️ Código incorreto.</div>
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="confirmarNovoEmail()">Confirmar e Salvar ✅</button>
+                    </div>
+
+                    <p id="msgSucessoEmail" style="display:none; color:var(--success); text-align:center; font-weight:bold; margin-top:10px;">✅ E-mail de recuperação atualizado!</p>
+                </div>
+            </div>
             
             <div class="form-group">
                 <label>Filtrar por Data</label>
@@ -284,6 +352,30 @@
     let dadosPonto = { nome: "", cpf: "", foto: "", lat: "", lng: "", endereco: "", dataHora: "", dataSimples: "" };
     let streamDeVideo = null;
     let modoCameraAoVivo = false;
+
+    // ===================== CONFIGURAÇÃO DO EMAILJS =====================
+    // Crie uma conta gratuita em https://www.emailjs.com/ e preencha abaixo.
+    // O template do EmailJS deve conter as variáveis {{email}} e {{codigo}}.
+    const EMAILJS_PUBLIC_KEY  = "SUA_PUBLIC_KEY_AQUI";
+    const EMAILJS_SERVICE_ID  = "SEU_SERVICE_ID_AQUI";
+    const EMAILJS_TEMPLATE_ID = "SEU_TEMPLATE_ID_AQUI";
+    // ======================================================================
+
+    if (typeof emailjs !== "undefined" && EMAILJS_PUBLIC_KEY && !EMAILJS_PUBLIC_KEY.startsWith("SUA_")) {
+        emailjs.init(EMAILJS_PUBLIC_KEY);
+    }
+
+    // Inicialização da senha mestre e do e-mail de recuperação (uma única vez)
+    if (!localStorage.getItem('senha_admin')) {
+        localStorage.setItem('senha_admin', '051116mm');
+    }
+    if (!localStorage.getItem('email_recuperacao')) {
+        localStorage.setItem('email_recuperacao', 'recuperacao@empresa.com');
+    }
+
+    let tokenTemporario = null;
+    let tokenNovoEmailTemporario = null;
+    let novoEmailPendente = null;
 
     function switchTab(tab) {
         document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
@@ -486,14 +578,156 @@
     }
 
     function verificarSenha() {
-        if(document.getElementById('senhaAdmin').value === "051116mm") {
+        const senhaSalva = localStorage.getItem('senha_admin') || "051116mm";
+        if(document.getElementById('senhaAdmin').value === senhaSalva) {
             document.getElementById('adminAuth').style.display = "none";
             document.getElementById('adminData').style.display = "block";
+            document.getElementById('emailAtualExibicao').innerText = localStorage.getItem('email_recuperacao');
             renderInitializeDate();
             renderizarPontosAdmin();
         } else {
             alert("Senha incorreta!");
         }
+    }
+
+    function gerarTokenNumerico() {
+        return String(Math.floor(100000 + Math.random() * 900000));
+    }
+
+    function enviarEmailComCodigo(destinatario, codigo) {
+        if (typeof emailjs === "undefined") {
+            alert("Biblioteca EmailJS não carregada. Verifique sua conexão com a internet.");
+            return Promise.reject();
+        }
+        return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+            email: destinatario,
+            codigo: codigo
+        });
+    }
+
+    function toggleRecuperacaoSenha(e) {
+        e.preventDefault();
+        const painel = document.getElementById('painelRecuperacao');
+        const oculto = painel.style.display === "none";
+        painel.style.display = oculto ? "block" : "none";
+        document.getElementById('etapaEmailRecuperacao').style.display = "block";
+        document.getElementById('etapaTokenRecuperacao').style.display = "none";
+        document.getElementById('etapaNovaSenha').style.display = "none";
+        document.getElementById('msgSucessoRecuperacao').style.display = "none";
+    }
+
+    function enviarCodigoRecuperacao() {
+        const emailDigitado = document.getElementById('emailRecuperacaoInput').value.trim().toLowerCase();
+        const emailSalvo = (localStorage.getItem('email_recuperacao') || "").trim().toLowerCase();
+        const erroDiv = document.getElementById('erroEmailRecuperacao');
+        erroDiv.style.display = "none";
+
+        if (emailDigitado === "" || emailDigitado !== emailSalvo) {
+            erroDiv.style.display = "block";
+            return;
+        }
+
+        tokenTemporario = gerarTokenNumerico();
+
+        enviarEmailComCodigo(emailSalvo, tokenTemporario)
+            .then(() => {
+                alert("Código enviado para o e-mail cadastrado!");
+                document.getElementById('etapaEmailRecuperacao').style.display = "none";
+                document.getElementById('etapaTokenRecuperacao').style.display = "block";
+            })
+            .catch(() => {
+                alert("Erro ao enviar o e-mail. Verifique as configurações do EmailJS.");
+            });
+    }
+
+    function confirmarTokenRecuperacao() {
+        const tokenDigitado = document.getElementById('tokenRecuperacaoInput').value.trim();
+        const erroDiv = document.getElementById('erroTokenRecuperacao');
+        erroDiv.style.display = "none";
+
+        if (tokenDigitado === "" || tokenDigitado !== tokenTemporario) {
+            erroDiv.style.display = "block";
+            return;
+        }
+
+        document.getElementById('etapaTokenRecuperacao').style.display = "none";
+        document.getElementById('etapaNovaSenha').style.display = "block";
+    }
+
+    function salvarNovaSenha() {
+        const s1 = document.getElementById('novaSenhaInput').value;
+        const s2 = document.getElementById('confirmaSenhaInput').value;
+        const erroDiv = document.getElementById('erroNovaSenha');
+        erroDiv.style.display = "none";
+
+        if (s1 === "" || s2 === "" || s1 !== s2) {
+            erroDiv.style.display = "block";
+            return;
+        }
+
+        localStorage.setItem('senha_admin', s1);
+        tokenTemporario = null;
+
+        document.getElementById('etapaNovaSenha').style.display = "none";
+        document.getElementById('msgSucessoRecuperacao').style.display = "block";
+
+        document.getElementById('novaSenhaInput').value = "";
+        document.getElementById('confirmaSenhaInput').value = "";
+        document.getElementById('emailRecuperacaoInput').value = "";
+        document.getElementById('tokenRecuperacaoInput').value = "";
+    }
+
+    function toggleAlterarEmail() {
+        const painel = document.getElementById('painelAlterarEmail');
+        const oculto = painel.style.display === "none";
+        painel.style.display = oculto ? "block" : "none";
+        document.getElementById('etapaNovoEmail').style.display = "block";
+        document.getElementById('etapaTokenNovoEmail').style.display = "none";
+        document.getElementById('msgSucessoEmail').style.display = "none";
+    }
+
+    function enviarCodigoNovoEmail() {
+        const novoEmail = document.getElementById('novoEmailInput').value.trim().toLowerCase();
+        if (novoEmail === "") {
+            alert("Digite um e-mail válido.");
+            return;
+        }
+
+        novoEmailPendente = novoEmail;
+        tokenNovoEmailTemporario = gerarTokenNumerico();
+
+        enviarEmailComCodigo(novoEmail, tokenNovoEmailTemporario)
+            .then(() => {
+                alert("Código de confirmação enviado para o novo e-mail!");
+                document.getElementById('etapaNovoEmail').style.display = "none";
+                document.getElementById('etapaTokenNovoEmail').style.display = "block";
+            })
+            .catch(() => {
+                alert("Erro ao enviar o e-mail. Verifique as configurações do EmailJS.");
+            });
+    }
+
+    function confirmarNovoEmail() {
+        const tokenDigitado = document.getElementById('tokenNovoEmailInput').value.trim();
+        const erroDiv = document.getElementById('erroTokenNovoEmail');
+        erroDiv.style.display = "none";
+
+        if (tokenDigitado === "" || tokenDigitado !== tokenNovoEmailTemporario) {
+            erroDiv.style.display = "block";
+            return;
+        }
+
+        localStorage.setItem('email_recuperacao', novoEmailPendente);
+        document.getElementById('emailAtualExibicao').innerText = novoEmailPendente;
+
+        tokenNovoEmailTemporario = null;
+        novoEmailPendente = null;
+
+        document.getElementById('etapaTokenNovoEmail').style.display = "none";
+        document.getElementById('msgSucessoEmail').style.display = "block";
+
+        document.getElementById('novoEmailInput').value = "";
+        document.getElementById('tokenNovoEmailInput').value = "";
     }
 
     function renderInitializeDate() {
@@ -592,7 +826,7 @@
     function editarPontoAdmin(index) {
         const senha = prompt("Digite a senha administrativa para alterar este registro:");
         if (senha === null) return;
-        if (senha !== "051116mm") {
+        if (senha !== (localStorage.getItem('senha_admin') || "051116mm")) {
             alert("Senha incorreta!");
             return;
         }
@@ -617,7 +851,7 @@
 
         const senha = prompt("Digite a senha administrativa para excluir:");
         if (senha === null) return;
-        if (senha !== "051116mm") {
+        if (senha !== (localStorage.getItem('senha_admin') || "051116mm")) {
             alert("Senha incorreta!");
             return;
         }
