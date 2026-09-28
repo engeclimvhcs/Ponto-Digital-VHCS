@@ -232,6 +232,7 @@
 
             <div class="status-panel">
                 <div class="status-item"><span id="badgeGps" class="badge badge-danger">OFF</span><span id="txtGps">GPS: Localizando dispositivo...</span></div>
+                <button type="button" id="btnRetryGps" class="btn btn-secondary" style="display:none; margin-bottom:12px; padding:10px; font-size:13px;" onclick="obterLocalizacao()">📍 Tentar Ativar Localização</button>
                 <div class="status-item"><span id="badgeCam" class="badge badge-danger">OFF</span><span id="txtCam">Câmera: Selfie pendente</span></div>
                 <div class="status-item"><span class="badge badge-success">LIVE</span><span id="txtTempo">Carregando relógio...</span></div>
             </div>
@@ -323,6 +324,7 @@
                         document.getElementById('badgeGps').className = "badge badge-success";
                         document.getElementById('badgeGps').innerText = "OK";
                         document.getElementById('txtGps').innerHTML = "📍 <b>Endereço:</b> " + dadosPonto.endereco;
+                        document.getElementById('btnRetryGps').style.display = "none";
                         validarFormulario();
                     })
                     .catch(() => {
@@ -330,12 +332,14 @@
                         document.getElementById('badgeGps').className = "badge badge-success";
                         document.getElementById('badgeGps').innerText = "OK";
                         document.getElementById('txtGps').innerHTML = "📍 <b>GPS Ativo:</b> Endereço Detectado";
+                        document.getElementById('btnRetryGps').style.display = "none";
                         validarFormulario();
                     });
                 },
                 () => {
                     document.getElementById('txtGps').innerHTML = "<b style='color:var(--danger)'>Erro: Ative o GPS nas configurações.</b>";
-                    alert("📍 Ative a localização (GPS) nas configurações do seu celular para poder bater o ponto.");
+                    document.getElementById('btnRetryGps').style.display = "block";
+                    alert("📍 Ative a localização (GPS) nas configurações do seu celular e depois toque em \"Tentar Ativar Localização\".");
                 },
                 { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
             );
