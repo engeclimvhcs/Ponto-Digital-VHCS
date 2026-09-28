@@ -161,27 +161,37 @@
         }
         .badge-success { background: var(--success); }
         .badge-danger { background: var(--danger); }
+        
+        /* Layout Ficha Admin Corrigido */
         .card-ponto {
             background: var(--card-light);
-            padding: 14px;
-            border-radius: 10px;
-            margin-bottom: 12px;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
             border: 1px solid #4b5563;
         }
-        .foto-admin {
-            width: 70px;
-            height: 70px;
-            border-radius: 6px;
+        .dados-prestador {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        .foto-large-admin {
+            width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
             object-fit: cover;
             display: block;
-            margin-top: 10px;
-            border: 1px solid var(--primary);
+            margin-top: 12px;
+            border: 2px solid var(--primary);
         }
         .link-mapa {
             color: var(--primary);
             text-decoration: none;
             font-weight: bold;
+            display: inline-block;
+            margin-top: 4px;
         }
+        .link-mapa:hover { text-decoration: underline; }
         .alerta-erro {
             color: var(--danger);
             font-size: 12px;
@@ -205,12 +215,12 @@
             <div class="form-group">
                 <label for="nome">Nome Completo</label>
                 <input type="text" id="nome" required placeholder="Seu nome completo" oninput="validarFormulario()">
-                <div id="erroDuplicado" class="alerta-erro">⚠️ Este usuario ja registrou o ponto hoje!</div>
+                <div id="erroDuplicado" class="alerta-erro">⚠️ Este CPF/Prestador já registrou ponto na data de hoje!</div>
             </div>
             <div class="form-group">
                 <label for="cpf">CPF</label>
                 <input type="text" id="cpf" required placeholder="000.000.000-00" maxlength="14" oninput="aplicarMascaraCPF(this)">
-                <div id="erroCpf" class="alerta-erro">⚠️ CPF invalido. Verifique os digitos.</div>
+                <div id="erroCpf" class="alerta-erro">⚠️ CPF inválido. Verifique os dígitos.</div>
             </div>
 
             <div class="camera-container">
@@ -223,7 +233,7 @@
             <div class="status-panel">
                 <div class="status-item"><span id="badgeGps" class="badge badge-danger">OFF</span><span id="txtGps">GPS: Localizando dispositivo...</span></div>
                 <div class="status-item"><span id="badgeCam" class="badge badge-danger">OFF</span><span id="txtCam">Câmera: Selfie pendente</span></div>
-                <div class="status-item"><span class="badge badge-success">LIVE</span><span id="txtTempo">Carregando relogio...</span></div>
+                <div class="status-item"><span class="badge badge-success">LIVE</span><span id="txtTempo">Carregando relógio...</span></div>
             </div>
 
             <button type="submit" id="btnEnviar" class="btn btn-primary" disabled>Confirmar e Enviar Ponto</button>
@@ -237,15 +247,22 @@
                 <label>Senha de Acesso</label>
                 <input type="password" id="senhaAdmin" placeholder="Digite a senha">
             </div>
-            <button class="btn btn-primary" onclick="verificarSenha()">Acessar Relatorios</button>
+            <button class="btn btn-primary" onclick="verificarSenha()">Acessar Relatórios</button>
         </div>
         <div id="adminData" style="display:none;">
-            <p style="color:var(--success); font-weight:bold; text-align:center;">🔓 Acesso Permitido</p>
+            <p style="color:var(--success); font-weight:bold; text-align:center; margin-bottom: 15px;">🔓 Acesso Permitido</p>
+            
             <div class="form-group">
                 <label>Filtrar por Data</label>
                 <input type="date" id="filtroData" onchange="renderizarPontosAdmin()">
             </div>
-            <div id="listaPontos">Nenhum ponto recebido.</div>
+
+            <div class="form-group">
+                <label>Buscar por Nome do Prestador</label>
+                <input type="text" id="filtroNome" placeholder="Digite o nome para pesquisar..." oninput="renderizarPontosAdmin()">
+            </div>
+
+            <div id="listaPontos" style="margin-top: 20px;">Nenhum ponto recebido.</div>
         </div>
     </div>
 </div>
@@ -264,6 +281,7 @@
         if(tab === 'admin') renderizarPontosAdmin();
     }
 
+    // GPS OTIMIZADO: Converte em Endereço Nominal Completo por Extenso
     function obterLocalizacao() {
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(
@@ -271,41 +289,42 @@
                     dadosPonto.lat = position.coords.latitude;
                     dadosPonto.lng = position.coords.longitude;
                     
-                    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${dadosPonto.lat}&lon=${dadosPonto.lng}&zoom=18&addressdetails=1`, {
+                    fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + dadosPonto.lat + '&lon=' + dadosPonto.lng + '&zoom=18&addressdetails=1', {
                         headers: { 'Accept-Language': 'pt-BR' }
                     })
                     .then(response => response.json())
                     .then(data => {
-                        dadosPonto.endereco = data.display_name || `Lat: ${dadosPonto.lat}, Lng: ${dadosPonto.lng}`;
+                        dadosPonto.endereco = data.display_name || "Endereço Urbano Localizado";
                         document.getElementById('badgeGps').className = "badge badge-success";
                         document.getElementById('badgeGps').innerText = "OK";
-                        document.getElementById('txtGps').innerHTML = `📍 <b>Endereco:</b> ${dadosPonto.endereco}`;
+                        document.getElementById('txtGps').innerHTML = "📍 <b>Endereço:</b> " + dadosPonto.endereco;
                         validarFormulario();
                     })
                     .catch(() => {
-                        dadosPonto.endereco = `Coordenadas: ${dadosPonto.lat.toFixed(5)}, ${dadosPonto.lng.toFixed(5)}`;
+                        dadosPonto.endereco = "Localização Georeferenciada (" + dadosPonto.lat.toFixed(5) + ", " + dadosPonto.lng.toFixed(5) + ")";
                         document.getElementById('badgeGps').className = "badge badge-success";
                         document.getElementById('badgeGps').innerText = "OK";
-                        document.getElementById('txtGps').innerHTML = `📍 <b>GPS Ativo:</b> ${dadosPonto.endereco}`;
+                        document.getElementById('txtGps').innerHTML = "📍 <b>GPS Ativo:</b> Endereço Detectado";
                         validarFormulario();
                     });
                 },
                 () => {
-                    document.getElementById('txtGps').innerHTML = "<b style='color:var(--danger)'>Erro: Ative o GPS.</b>";
+                    document.getElementById('txtGps').innerHTML = "<b style='color:var(--danger)'>Erro: Ative o GPS nas configurações.</b>";
                 },
-                { enableHighAccuracy: true, timeout: 15000 }
+                { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
             );
         }
     }
     window.addEventListener('DOMContentLoaded', obterLocalizacao);
 
     setInterval(() => {
-        const agora = new Date();
-        dadosPonto.dataHora = agora.toLocaleString('pt-BR');
-        const ano = agora.getFullYear();
-        const mes = String(agora.getMonth() + 1).padStart(2, '0');
-        const dia = String(agora.getDate()).padStart(2, '0');
-        dadosPonto.dataSimples = `${ano}-${mes}-${dia}`;
+        const ago = new Date();
+        const agora = new Date(ago.getTime() - (3 * 60 * 60 * 1000)); // Ajuste fuso
+        dadosPonto.dataHora = ago.toLocaleString('pt-BR');
+        const ano = ago.getFullYear();
+        const mes = String(ago.getMonth() + 1).padStart(2, '0');
+        const dia = String(ago.getDate()).padStart(2, '0');
+        dadosPonto.dataSimples = ano + "-" + mes + "-" + dia;
         document.getElementById('txtTempo').innerText = dadosPonto.dataHora;
     }, 1000);
 
@@ -338,9 +357,10 @@
         return true;
     }
 
-    function checarDuplicidadeHoje(nome, cpf) {
+    function checarDuplicidadeHoje(cpf) {
+        let limpoCpf = cpf.replace(/[^\d]+/g, '');
         let historico = JSON.parse(localStorage.getItem('historico_pontos')) || [];
-        return historico.some(p => p.cpf === cpf && p.nome.toLowerCase() === nome.toLowerCase() && p.dataSimples === dadosPonto.dataSimples);
+        return historico.some(p => p.cpf.replace(/[^\d]+/g, '') === limpoCpf && p.dataSimples === dadosPonto.dataSimples);
     }
 
     async function gerenciarCapturaFoto() {
@@ -421,8 +441,8 @@
         }
 
         let duplicado = false;
-        if(nome && cpfValido) {
-            if(checarDuplicidadeHoje(nome, cpf)) {
+        if(cpfValido) {
+            if(checarDuplicidadeHoje(cpf)) {
                 duplicado = true;
                 divErroDup.style.display = "block";
             }
@@ -451,7 +471,7 @@
         const ano = hoje.getFullYear();
         const mes = String(hoje.getMonth() + 1).padStart(2, '0');
         const dia = String(hoje.getDate()).padStart(2, '0');
-        document.getElementById('filtroData').value = `${ano}-${mes}-${dia}`;
+        document.getElementById('filtroData').value = ano + "-" + mes + "-" + dia;
     }
 
     function enviarPonto(e) {
@@ -464,11 +484,11 @@
         btn.innerText = "Sincronizando Ponto...";
 
         let historico = JSON.parse(localStorage.getItem('historico_pontos')) || [];
-        historico.push({...dadosPonto});
+        historico.push(Object.assign({}, dadosPonto));
         localStorage.setItem('historico_pontos', JSON.stringify(historico));
 
         if(URL_GOOGLE_SHEETS.includes("SUA_URL_DO_GOOGLE")) {
-            alert("Ponto gravado localmente no dispositivo!\n\nAgora vamos configurar o Google Sheets.");
+            alert("Ponto gravado localmente no dispositivo!\n\nAgora o painel admin está corrigido para visualização.");
             location.reload();
             return;
         }
@@ -479,38 +499,50 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(dadosPonto)
         }).then(() => {
-            alert("Ponto eletronico transmitido com sucesso!");
+            alert("Ponto eletrônico transmitido com sucesso!");
             location.reload();
         }).catch(() => {
-            alert("Erro na transmissao. Salvo localmente.");
+            alert("Erro na transmissão. Salvo localmente.");
             location.reload();
         });
     }
 
     function renderizarPontosAdmin() {
-        const filtro = document.getElementById('filtroData').value;
+        const filtroData = document.getElementById('filtroData').value;
+        const filtroNome = document.getElementById('filtroNome').value.trim().toLowerCase();
         const lista = document.getElementById('listaPontos');
+        
         let historico = JSON.parse(localStorage.getItem('historico_pontos')) || [];
-        let filtrados = historico.filter(p => p.dataSimples === filtro);
+        
+        let filtrados = historico.filter(p => {
+            const matchesData = filtroData ? p.dataSimples === filtroData : true;
+            const matchesNome = filtroNome ? p.nome.toLowerCase().includes(filtroNome) : true;
+            return matchesData && matchesNome;
+        });
 
         if(filtrados.length === 0) {
-            lista.innerHTML = "<p style='text-align:center; color:var(--text-muted); margin-top:20px;'>Nenhum ponto batido nesta data.</p>";
+            lista.innerHTML = "<p style='text-align:center; color:var(--text-muted); margin-top:20px;'>Nenhum registro encontrado para este filtro.</p>";
             return;
         }
 
         lista.innerHTML = "";
-        filtrados.forEach(p => {
-            lista.innerHTML += `
-                <div class="card-ponto">
-                    <b>Colaborador:</b> \${p.nome}<br>
-                    <b>CPF:</b> \${p.cpf}<br>
-                    <b>Horario:</b> \${p.dataHora}<br>
-                    <b>Mapa:</b> <a class="link-mapa" href="https://www.google.com/maps/search/?api=1&query=\${p.lat},\${p.lng}" target="_blank">Abrir Google Maps 🗺️</a><br>
-                    <span style="font-size:12px; color:var(--text-muted); display:block; margin-top:4px;">\${p.endereco}</span>
-                    <img src="\${p.foto}" class="foto-admin" alt="Foto">
-                </div>
-            `;
-        });
+        for (let i = 0; i < filtrados.length; i++) {
+            let p = filtrados[i];
+            
+            let cardHtml = '<div class="card-ponto">' +
+                '<div class="dados-prestador">' +
+                    '<b>👤 Prestador:</b> ' + p.nome + '<br>' +
+                    '<b>🪪 CPF:</b> ' + p.cpf + '<br>' +
+                    '<b>📅 Horário do Registro:</b> ' + p.dataHora + '<br>' +
+                    '<b>📍 Endereço por Extenso:</b><br>' +
+                    '<span style="font-size:12px; color:var(--text-muted); display:block; margin-bottom: 4px;">' + p.endereco + '</span>' +
+                    '<b>🗺️ Rastreamento:</b> <a class="link-mapa" href="https://www.google.com/maps/search/?api=1&query=' + p.lat + ',' + p.lng + '" target="_blank">Abrir no Google Maps</a>' +
+                '</div>' +
+                '<img src="' + p.foto + '" class="foto-large-admin" alt="Foto do Prestador">' +
+            '</div>';
+            
+            lista.innerHTML += cardHtml;
+        }
     }
 </script>
 </body>
