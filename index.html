@@ -266,6 +266,8 @@
                     <button type="button" class="btn btn-secondary" onclick="enviarCodigoRecuperacao()">Enviar Código 📧</button>
                 </div>
 
+                <p id="msgCodigoEnviadoRecuperacao" style="display:none; color:var(--success); text-align:center; font-weight:bold; margin-bottom:12px;">✅ Código enviado com sucesso! Verifique seu e-mail (e a caixa de spam).</p>
+
                 <div id="etapaTokenRecuperacao" style="display:none;">
                     <div class="form-group">
                         <label>Digite o Código Recebido por E-mail</label>
@@ -305,7 +307,13 @@
                 <p id="msgSucessoPrimeiroAcesso" style="display:none; color:var(--success); text-align:center; font-weight:bold; margin-top:10px;">✅ E-mail configurado com sucesso!</p>
             </div>
 
-            <div class="card-ponto" style="margin-bottom:20px;">
+            <div class="card-ponto" style="margin-bottom:20px; padding:10px 16px;">
+                <div style="display:flex; justify-content:flex-end; align-items:center; cursor:pointer;" onclick="toggleConfigSeguranca()">
+                    <span style="font-size:12px; color:var(--text-muted); margin-right:8px;">Configurações</span>
+                    <span id="iconConfigSeguranca" style="font-size:20px;">⚙️</span>
+                </div>
+
+                <div id="conteudoConfigSeguranca" style="display:none; margin-top:14px;">
                 <p style="margin:0 0 10px 0; font-weight:bold; color:var(--primary); text-align:center;">⚙️ Configurações de Segurança</p>
                 <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px; text-align:center;">E-mail de recuperação atual: <span id="emailAtualExibicao" style="color:var(--text);"></span></p>
                 <button type="button" class="btn btn-secondary" style="font-size:13px; padding:10px;" onclick="toggleAlterarEmail()">Alterar E-mail de Recuperação ✉️</button>
@@ -347,6 +355,7 @@
                     </div>
 
                     <p id="msgSucessoEmail" style="display:none; color:var(--success); text-align:center; font-weight:bold; margin-top:10px;">✅ E-mail de recuperação atualizado!</p>
+                </div>
                 </div>
             </div>
             
@@ -643,6 +652,14 @@
         }, 1500);
     }
 
+    function toggleConfigSeguranca() {
+        const conteudo = document.getElementById('conteudoConfigSeguranca');
+        const icone = document.getElementById('iconConfigSeguranca');
+        const oculto = conteudo.style.display === "none";
+        conteudo.style.display = oculto ? "block" : "none";
+        icone.style.transform = oculto ? "rotate(90deg)" : "rotate(0deg)";
+    }
+
     function gerarTokenNumerico() {
         return String(Math.floor(100000 + Math.random() * 900000));
     }
@@ -652,10 +669,20 @@
             alert("Biblioteca EmailJS não carregada. Verifique sua conexão com a internet.");
             return Promise.reject();
         }
-        return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-            email: destinatario,
-            codigo: codigo
-        });
+        if (!EMAILJS_PUBLIC_KEY || EMAILJS_PUBLIC_KEY.startsWith("SUA_") ||
+            !EMAILJS_SERVICE_ID || EMAILJS_SERVICE_ID.startsWith("SEU_") ||
+            !EMAILJS_TEMPLATE_ID || EMAILJS_TEMPLATE_ID.startsWith("SEU_")) {
+            alert("⚠️ O EmailJS ainda não foi configurado. Preencha EMAILJS_PUBLIC_KEY, EMAILJS_SERVICE_ID e EMAILJS_TEMPLATE_ID no topo do script.");
+            return Promise.reject();
+        }
+        try {
+            return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+                email: destinatario,
+                codigo: codigo
+            });
+        } catch (erro) {
+            return Promise.reject(erro);
+        }
     }
 
     function toggleRecuperacaoSenha(e) {
@@ -666,6 +693,7 @@
         document.getElementById('etapaEmailRecuperacao').style.display = "block";
         document.getElementById('etapaTokenRecuperacao').style.display = "none";
         document.getElementById('etapaNovaSenha').style.display = "none";
+        document.getElementById('msgCodigoEnviadoRecuperacao').style.display = "none";
         document.getElementById('msgSucessoRecuperacao').style.display = "none";
     }
 
@@ -684,9 +712,9 @@
 
         enviarEmailComCodigo(emailSalvo, tokenTemporario)
             .then(() => {
-                alert("Código enviado para o e-mail cadastrado!");
                 document.getElementById('etapaEmailRecuperacao').style.display = "none";
                 document.getElementById('etapaTokenRecuperacao').style.display = "block";
+                document.getElementById('msgCodigoEnviadoRecuperacao').style.display = "block";
             })
             .catch(() => {
                 alert("Erro ao enviar o e-mail. Verifique as configurações do EmailJS.");
