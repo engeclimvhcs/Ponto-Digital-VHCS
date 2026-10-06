@@ -9,6 +9,7 @@
         :root {
             --primary: #f97316; /* Laranja Medio */
             --primary-hover: #ea580c;
+            --primary-dark: #ae500f;
             --bg: #111827; /* Cinza Escuro */
             --card: #1f2937; /* Cinza Medio */
             --card-light: #374151;
@@ -128,7 +129,7 @@
             cursor: pointer;
             transition: background 0.2s;
         }
-        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary { background: var(--primary); color: var(--on-primary, white); }
         .btn-primary:hover { background: var(--primary-hover); }
         .btn-secondary { background: #4b5563; color: white; }
         .btn:disabled {
@@ -200,9 +201,121 @@
             display: none;
             font-weight: 500;
         }
+
+        /* ===== Seletor de Cores (Color Picker) ===== */
+        .cp-area { position: relative; width: 100%; border-radius: 10px; overflow: hidden; border: 1px solid #4b5563; margin-bottom: 12px; }
+        #cpCanvas { display: block; width: 100%; height: auto; cursor: crosshair; touch-action: none; }
+        #cpMarcador { position: absolute; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%;
+            border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.6), inset 0 0 0 1px rgba(0,0,0,.4); pointer-events: none; }
+        .cp-hue { -webkit-appearance: none; appearance: none; width: 100%; height: 16px; padding: 0; border: none; border-radius: 8px;
+            margin-bottom: 14px; cursor: pointer;
+            background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%); }
+        .cp-hue::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 2px solid #111827; }
+        .cp-hue::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 2px solid #111827; }
+        .cp-grupo { border: 1px solid #4b5563; border-radius: 10px; padding: 12px; margin-bottom: 12px; background: #111827; }
+        .cp-grupo-titulo { margin: 0 0 10px 0; font-size: 12px; font-weight: bold; color: var(--primary); text-transform: uppercase; letter-spacing: .5px; }
+        .cp-linha { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+        .cp-linha:last-child { margin-bottom: 0; }
+        .cp-linha span { width: 38px; font-size: 12px; color: var(--text-muted); flex: none; }
+        .cp-input { padding: 10px !important; font-size: 15px !important; }
+        .cp-input.cp-invalido { border-color: var(--danger); }
+        .cp-cmyk { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .cp-cmyk div { text-align: center; }
+        .cp-cmyk small { display: block; margin-top: 3px; font-size: 11px; color: var(--text-muted); }
+        #cpPreview { height: 34px; border-radius: 8px; border: 1px solid #4b5563; margin-bottom: 12px; background: var(--primary); }
+        #cpHistorico { display: flex; flex-wrap: wrap; gap: 10px; }
+        .cp-swatch { position: relative; width: 40px; height: 40px; border-radius: 10px; border: 2px solid #4b5563; cursor: pointer; box-sizing: border-box; outline: none; }
+        .cp-swatch:focus-visible { border-color: var(--text); }
+        .cp-swatch.ativo { border-color: #fff; }
+        /* O X ocupa o bloco inteiro (alvo de toque grande), mas só o selinho central é visível. Só aparece no estado .ativo */
+        .cp-x { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; align-items: center; justify-content: center; }
+        .cp-swatch.ativo .cp-x { display: flex; }
+        .cp-x i { font-style: normal; width: 18px; height: 18px; border-radius: 50%; background: rgba(0,0,0,.65); color: #fff;
+            font-size: 11px; display: flex; align-items: center; justify-content: center; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.65); display: none;
+            align-items: center; justify-content: center; padding: 15px; z-index: 100; box-sizing: border-box; }
+        .modal-overlay.open { display: flex; }
+        .modal-box { background: var(--card); border: 1px solid #4b5563; border-radius: 16px; padding: 20px; width: 100%; max-width: 400px; box-sizing: border-box; }
+
+        /* ===== Câmera: preview sem recorte + toast ===== */
+        #video, #fotoPreview { object-fit: contain; max-height: 340px; background: #000; }
+        .foto-large-admin { object-fit: contain !important; max-height: 420px !important; background: #000; }
+        #toastApp { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); max-width: 90%;
+            background: var(--card); color: var(--text); border: 1px solid var(--primary); border-radius: 12px;
+            padding: 12px 18px; font-size: 14px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,.5);
+            opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 200; text-align: center; }
+        #toastApp.show { opacity: 1; transform: translate(-50%, 0); }
+
+        /* ===== Cabeçalho fixo em degradê (logo + nome da empresa) ===== */
+        .cab-fixo { position: fixed; top: 0; left: 50%; transform: translateX(-50%); z-index: 90; display: none; align-items: center; justify-content: center;
+            /* mesma largura do app (max 450px, margem lateral de 15px) e mesma borda lateral: parece o topo do próprio app */
+            width: min(450px, calc(100% - 30px));
+            gap: 10px; box-sizing: border-box; height: calc(52px + env(safe-area-inset-top, 0px)); padding: env(safe-area-inset-top, 0px) 16px 0;
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark, #ae500f)); color: var(--on-primary, white);
+            border: 1px solid #374151; border-top: none; box-shadow: 0 8px 14px -8px rgba(0,0,0,.55); }
+        .cab-fixo.visivel { display: flex; }
+        #cabLogo { height: 40px; width: 40px; flex: none; box-sizing: border-box; border-radius: 50%; border: 2px solid #fff;
+            background: rgba(255,255,255,.2) center / cover no-repeat; box-shadow: 0 0 0 2px rgba(0,0,0,.18), 0 2px 6px rgba(0,0,0,.35); }
+        #cabNome { min-width: 0; font-size: 17px; font-weight: 700; letter-spacing: .3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* Com cabeçalho: o app começa colado embaixo dele (sem espaço) e perde a borda/cantos de cima, formando uma peça só */
+        body.com-cabecalho { padding-top: calc(52px + env(safe-area-inset-top, 0px)); align-items: flex-start; }
+        body.com-cabecalho .app-container { border-top: none; border-top-left-radius: 0; border-top-right-radius: 0; }
+        .logo-preview { width: 56px; height: 56px; flex: none; border: 2px solid #fff; border-radius: 50%; background: #111827 center / cover no-repeat;
+            display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--text-muted); }
+
+        /* ===== Editor de logo (cortar / girar / espelhar) ===== */
+        .ed-wrap { padding: 11px; overflow: hidden; display: flex; justify-content: center; margin-bottom: 8px; }
+        .ed-area { position: relative; line-height: 0; border: 1px solid #4b5563; touch-action: none;
+            background-color: #555;
+            background-image: linear-gradient(45deg, #666 25%, transparent 25%, transparent 75%, #666 75%), linear-gradient(45deg, #666 25%, transparent 25%, transparent 75%, #666 75%);
+            background-size: 16px 16px; background-position: 0 0, 8px 8px; }
+        #edCanvas { display: block; }
+        .ed-crop { position: absolute; border: 2px solid #fff; box-sizing: border-box; cursor: move; touch-action: none;
+            box-shadow: 0 0 0 9999px rgba(0,0,0,.55); }
+        .ed-h { position: absolute; width: 22px; height: 22px; margin: -11px 0 0 -11px; background: #fff; border: 3px solid #111827; border-radius: 50%; box-sizing: border-box; }
+        .ed-h[data-h="nw"] { left: 0; top: 0; cursor: nwse-resize; }
+        .ed-h[data-h="n"]  { left: 50%; top: 0; cursor: ns-resize; }
+        .ed-h[data-h="ne"] { left: 100%; top: 0; cursor: nesw-resize; }
+        .ed-h[data-h="e"]  { left: 100%; top: 50%; cursor: ew-resize; }
+        .ed-h[data-h="se"] { left: 100%; top: 100%; cursor: nwse-resize; }
+        .ed-h[data-h="s"]  { left: 50%; top: 100%; cursor: ns-resize; }
+        .ed-h[data-h="sw"] { left: 0; top: 100%; cursor: nesw-resize; }
+        .ed-h[data-h="w"]  { left: 0; top: 50%; cursor: ew-resize; }
+        .ed-crop.ed-redondo { border-radius: 50%; }   /* o escurecido ao redor segue o círculo */
+        .ed-lock .ed-h.ed-borda { display: none; }   /* com proporção travada só os cantos redimensionam */
+        .ed-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+        .ed-tools .btn { font-size: 12px; padding: 10px 6px; }
+        .ed-select { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #4b5563; background: var(--card-light); color: var(--text); font-size: 15px; margin-bottom: 12px; }
+
+        /* ===== Configurações: abas retráteis e visual compacto ===== */
+        .acc { border: 1px solid #374151; border-radius: 10px; margin-bottom: 8px; background: rgba(0,0,0,.2); overflow: hidden; }
+        .acc > summary { list-style: none; cursor: pointer; padding: 10px 12px; font-size: 13px; font-weight: 700; color: var(--primary);
+            display: flex; align-items: center; justify-content: space-between; user-select: none; -webkit-tap-highlight-color: transparent; }
+        .acc > summary::-webkit-details-marker { display: none; }
+        .acc > summary::after { content: '▾'; font-size: 14px; color: var(--text-muted); transition: transform .2s; transform: rotate(-90deg); }
+        .acc[open] > summary::after { transform: rotate(0deg); }
+        .acc[open] > summary { border-bottom: 1px solid #374151; }
+        .acc-corpo { padding: 10px 12px 12px; }
+        .acc-sub { background: transparent; margin-bottom: 8px; }
+        .acc-sub > summary { font-size: 11px; padding: 8px 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .4px; }
+        .acc-sub .acc-corpo { padding: 8px 10px 10px; }
+        .cfg-botoes { display: flex; gap: 8px; margin-bottom: 8px; }
+        .cfg-botoes .btn { margin: 0; flex: 1; min-width: 0; }
+        #conteudoConfigSeguranca .form-group { margin-bottom: 10px; }
+        #conteudoConfigSeguranca .form-group label { font-size: 12px; margin-bottom: 4px; }
+        #conteudoConfigSeguranca .form-group input { padding: 10px; font-size: 14px; }
+        #conteudoConfigSeguranca .btn { margin-bottom: 0; }
+
+        /* ===== Limpeza automática da lixeira ===== */
+        .cfg-range { padding: 0 !important; border: none !important; background: transparent !important; height: 30px; accent-color: var(--primary); margin: 4px 0 6px; }
+        .cont-lixeira { font-size: 12px; text-align: center; padding: 8px 10px; border-radius: 8px; margin-bottom: 12px; background: rgba(0,0,0,.25); border: 1px solid #374151; color: var(--text-muted); }
+        .cont-lixeira b { color: var(--text); }
+        .cont-lixeira.venceu { border-color: var(--danger); color: var(--text); }
     </style>
 </head>
 <body>
+
+<header id="cabFixo" class="cab-fixo"><div id="cabLogo"></div><span id="cabNome"></span></header>
 
 <div class="app-container">
     <div class="tabs">
@@ -228,8 +341,11 @@
                 <video id="video" autoplay playsinline muted></video>
                 <img id="fotoPreview" alt="Sua foto">
                 <button type="button" id="btnFotoUnico" class="btn btn-secondary" onclick="gerenciarCapturaFoto()">Capturar Foto (Selfie)</button>
+                <button type="button" id="btnBaixarFoto" class="btn btn-secondary" style="display:none; margin-top:10px;" onclick="baixarFotoFinal()">⬇️ Salvar Imagem</button>
                 <input type="file" id="cameraNativa" accept="image/*" capture="user" style="display:none;" onchange="carregarFotoNativa(this)">
             </div>
+
+            <div id="avisoFotoDesatualizada" class="alerta-erro" style="margin:-8px 0 14px 0;">⚠️ Nome ou CPF foram alterados depois da foto. Refaça a foto para estampar os dados corretos.</div>
 
             <div class="status-panel">
                 <div class="status-item"><span id="badgeGps" class="badge badge-danger">OFF</span><span id="txtGps">GPS: Localizando dispositivo...</span></div>
@@ -294,7 +410,10 @@
             </div>
         </div>
         <div id="adminData" style="display:none;">
-            <p style="color:var(--success); font-weight:bold; text-align:center; margin-bottom: 15px;">🔓 Acesso Permitido</p>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
+                <p style="color:var(--success); font-weight:bold; margin:0;">🔓 Acesso Permitido</p>
+                <button type="button" class="btn" style="background:var(--danger); color:white; font-size:12px; padding:8px 12px; width:auto;" onclick="encerrarSessaoAdmin()">Encerrar Sessão 🚪</button>
+            </div>
 
             <div id="painelPrimeiroAcesso" class="card-ponto" style="display:none; margin-bottom:20px; border-color:var(--primary);">
                 <p style="margin:0 0 10px 0; font-weight:bold; color:var(--primary); text-align:center;">🔔 Primeiro Acesso</p>
@@ -313,12 +432,18 @@
                     <span id="iconConfigSeguranca" style="font-size:20px;">⚙️</span>
                 </div>
 
-                <div id="conteudoConfigSeguranca" style="display:none; margin-top:14px;">
-                <p style="margin:0 0 10px 0; font-weight:bold; color:var(--primary); text-align:center;">⚙️ Configurações de Segurança</p>
-                <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px; text-align:center;">E-mail de recuperação atual: <span id="emailAtualExibicao" style="color:var(--text);"></span></p>
-                <button type="button" class="btn btn-secondary" style="font-size:13px; padding:10px;" onclick="toggleAlterarEmail()">Alterar E-mail de Recuperação ✉️</button>
+                <div id="conteudoConfigSeguranca" style="display:none; margin-top:10px;">
 
-                <div id="painelAlterarEmail" style="display:none; margin-top:14px;">
+                    <details class="acc">
+                        <summary>🔒 Segurança</summary>
+                        <div class="acc-corpo">
+                            <p style="font-size:12px; color:var(--text-muted); margin:0 0 8px 0;">E-mail de recuperação atual: <span id="emailAtualExibicao" style="color:var(--text);"></span></p>
+                            <div class="cfg-botoes">
+                                <button type="button" class="btn btn-secondary" style="font-size:12px; padding:10px 6px;" onclick="toggleAlterarEmail()">Alterar E-mail ✉️</button>
+                                <button type="button" class="btn btn-secondary" style="font-size:12px; padding:10px 6px;" onclick="toggleTrocarSenha()">Trocar Senha 🔑</button>
+                            </div>
+
+                            <div id="painelAlterarEmail" style="display:none; margin-top:14px;">
                     <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">Escolha como deseja autorizar a troca do e-mail cadastrado:</p>
                     <div style="display:flex; gap:8px; margin-bottom:14px;">
                         <button type="button" class="btn btn-secondary" style="font-size:12px; padding:10px;" onclick="mostrarMetodoTrocaEmail('codigo')">📧 Por E-mail</button>
@@ -356,6 +481,103 @@
 
                     <p id="msgSucessoEmail" style="display:none; color:var(--success); text-align:center; font-weight:bold; margin-top:10px;">✅ E-mail de recuperação atualizado!</p>
                 </div>
+
+                            <div id="painelTrocarSenha" style="display:none; margin-top:14px;">
+                    <div class="form-group">
+                        <label>Senha Atual</label>
+                        <input type="password" id="senhaAtualInput" placeholder="Digite a senha atual">
+                        <div id="erroSenhaAtual" class="alerta-erro">⚠️ Senha atual incorreta.</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Nova Senha</label>
+                        <input type="password" id="novaSenhaTrocaInput" placeholder="Digite a nova senha">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirmar Nova Senha</label>
+                        <input type="password" id="confirmaSenhaTrocaInput" placeholder="Repita a nova senha">
+                        <div id="erroNovaSenhaTroca" class="alerta-erro">⚠️ As senhas não coincidem ou estão vazias.</div>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="salvarTrocaSenha()">Salvar Nova Senha ✅</button>
+                    <p id="msgSucessoTrocaSenha" style="display:none; color:var(--success); text-align:center; font-weight:bold; margin-top:10px;">✅ Senha alterada com sucesso!</p>
+                </div>
+                        </div>
+                    </details>
+
+                    <details class="acc">
+                        <summary>🎨 Tema (cores)</summary>
+                        <div class="acc-corpo">
+                            <div id="seletorCores">
+                        <!-- Seleção visual: quadrado saturação/brilho + barra de matiz -->
+                        <div class="cp-area">
+                            <canvas id="cpCanvas" width="300" height="140"></canvas>
+                            <div id="cpMarcador"></div>
+                        </div>
+                        <input type="range" id="cpHue" class="cp-hue" min="0" max="360" step="1" aria-label="Matiz">
+                        <div id="cpPreview"></div>
+
+                        <!-- Opção 1: Digital / Web -->
+                        <details class="acc acc-sub" open>
+                            <summary>Opção 1 · Digital / Web (HEX · RGB)</summary>
+                            <div class="acc-corpo">
+                            <div class="cp-linha"><span>HEX</span><input type="text" id="cpHex" class="cp-input" placeholder="#FF5733" maxlength="7" autocomplete="off"></div>
+                            <div class="cp-linha"><span>RGB</span><input type="text" id="cpRgb" class="cp-input" placeholder="255, 87, 51" autocomplete="off"></div>
+                            </div>
+                        </details>
+
+                        <!-- Opção 2: Impressão -->
+                        <details class="acc acc-sub">
+                            <summary>Opção 2 · Impressão (CMYK %)</summary>
+                            <div class="acc-corpo">
+                            <div class="cp-cmyk">
+                                <div><input type="number" id="cpC" class="cp-input" min="0" max="100"><small>C</small></div>
+                                <div><input type="number" id="cpM" class="cp-input" min="0" max="100"><small>M</small></div>
+                                <div><input type="number" id="cpY" class="cp-input" min="0" max="100"><small>Y</small></div>
+                                <div><input type="number" id="cpK" class="cp-input" min="0" max="100"><small>K</small></div>
+                            </div>
+                            </div>
+                        </details>
+
+                        <!-- Histórico dinâmico (começa vazio) -->
+                        <label>Histórico (últimas 12 cores)</label>
+                        <div id="cpHistorico"></div>
+                        <p id="cpHistoricoVazio" style="font-size:12px; color:var(--text-muted); margin:0;">Nenhuma cor no histórico ainda.</p>
+                        <p style="font-size:11px; color:var(--text-muted); margin:6px 0 10px 0;">Toque numa cor para usá-la; toque no ✕ que aparece sobre ela para apagar. Toque fora para cancelar.</p>
+
+                        <button type="button" id="cpRestaurar" class="btn btn-secondary" style="font-size:12px; padding:8px;">Restaurar Tema Padrão</button>
+                    </div>
+                        </div>
+                    </details>
+
+                    <details class="acc">
+                        <summary>🏢 Cabeçalho (logo e nome)</summary>
+                        <div class="acc-corpo">
+                        <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
+                            <div id="logoPreview" class="logo-preview">sem logo</div>
+                            <div class="form-group" style="flex:1; min-width:0; margin-bottom:0;">
+                                <label for="empresaNome">Nome da empresa (opcional)</label>
+                                <input type="text" id="empresaNome" maxlength="40" placeholder="Em branco = não exibe" autocomplete="off">
+                            </div>
+                        </div>
+                        <div class="cfg-botoes">
+                            <label for="logoArquivo" class="btn btn-secondary" style="display:block; box-sizing:border-box; text-align:center; cursor:pointer; font-size:12px; padding:10px 6px; margin:0;">Escolher PNG</label>
+                            <input type="file" id="logoArquivo" accept="image/png" style="display:none;">
+                            <button type="button" id="logoEditar" class="btn btn-secondary" style="display:none; font-size:12px; padding:10px 6px;">✂️ Cortar/Girar</button>
+                            <button type="button" id="logoRemover" class="btn" style="display:none; background:var(--danger); color:white; font-size:12px; padding:10px 6px;">Remover</button>
+                        </div>
+                        </div>
+                    </details>
+
+                    <details class="acc">
+                        <summary>🗑️ Lixeira (limpeza automática)</summary>
+                        <div class="acc-corpo">
+                            <label for="lixFreqDias" style="font-size:12px; margin-bottom:0;">Esvaziar a lixeira a cada: <b id="lixFreqRotulo" style="color:var(--text);">Nunca</b></label>
+                            <input type="range" id="lixFreqDias" class="cfg-range" min="0" max="30" step="1" value="0">
+                            <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); margin-bottom:8px;"><span>0 = nunca</span><span>30 dias</span></div>
+                            <div id="lixFreqStatus" class="cont-lixeira" style="margin-bottom:8px;"></div>
+                            <p style="font-size:11px; color:var(--text-muted); margin:0;">No dia da limpeza, ao abrir o Painel Admin, será pedida confirmação (e a senha) antes de excluir definitivamente.</p>
+                        </div>
+                    </details>
+
                 </div>
             </div>
             
@@ -373,15 +595,73 @@
 
             <div id="lixeiraPanel" style="display:none; margin-bottom:20px; border:1px solid #4b5563; border-radius:10px; padding:14px; background:#111827;">
                 <h3 style="margin-top:0; font-size:16px; text-align:center; color:var(--primary);">Lixeira - Registros Excluídos</h3>
+                <div id="contagemLixeira" class="cont-lixeira"></div>
                 <div class="form-group">
                     <label>Buscar na Lixeira</label>
                     <input type="text" id="filtroLixeira" placeholder="Digite o nome para pesquisar..." oninput="renderizarLixeira()">
                 </div>
+                <button type="button" class="btn" style="background:var(--danger); color:white; font-size:13px; padding:10px; margin-bottom:12px;" onclick="esvaziarLixeira()">Esvaziar Lixeira (pede senha) 🗑️</button>
                 <div id="listaLixeira"></div>
             </div>
 
             <div id="listaPontos" style="margin-top: 20px;">Nenhum ponto recebido.</div>
         </div>
+    </div>
+</div>
+
+<div id="toastApp" role="status" aria-live="polite"></div>
+
+<div id="modalEditorLogo" class="modal-overlay">
+    <div class="modal-box" style="max-width:420px; max-height:94vh; overflow-y:auto;">
+        <h2>✂️ Editar Logo</h2>
+        <div class="ed-wrap">
+            <div class="ed-area" id="edArea">
+                <canvas id="edCanvas"></canvas>
+                <div class="ed-crop" id="edCrop">
+                    <span class="ed-h" data-h="nw"></span><span class="ed-h ed-borda" data-h="n"></span><span class="ed-h" data-h="ne"></span>
+                    <span class="ed-h ed-borda" data-h="e"></span><span class="ed-h" data-h="se"></span><span class="ed-h ed-borda" data-h="s"></span>
+                    <span class="ed-h" data-h="sw"></span><span class="ed-h ed-borda" data-h="w"></span>
+                </div>
+            </div>
+        </div>
+        <div class="ed-tools">
+            <button type="button" class="btn btn-secondary" id="edGirarEsq">↺ Girar à esquerda</button>
+            <button type="button" class="btn btn-secondary" id="edGirarDir">↻ Girar à direita</button>
+            <button type="button" class="btn btn-secondary" id="edEspH">↔ Espelhar horizontal</button>
+            <button type="button" class="btn btn-secondary" id="edEspV">↕ Espelhar vertical</button>
+        </div>
+        <label for="edProporcao">Proporção do corte</label>
+        <select id="edProporcao" class="ed-select">
+            <option value="0">Livre</option>
+            <option value="1">1:1 (quadrado)</option>
+            <option value="1.3333333">4:3</option>
+            <option value="0.75">3:4</option>
+            <option value="1.7777778">16:9</option>
+            <option value="0.5625">9:16</option>
+        </select>
+        <button type="button" class="btn btn-primary" id="edAplicar">Aplicar ✅</button>
+        <button type="button" class="btn btn-secondary" style="margin-top:8px;" id="edRedefinir">Redefinir</button>
+        <button type="button" class="btn btn-secondary" style="margin-top:8px;" id="edCancelar">Cancelar</button>
+    </div>
+</div>
+
+<div id="modalLimpezaAuto" class="modal-overlay">
+    <div class="modal-box">
+        <h2>🗑️ Limpeza da Lixeira</h2>
+        <p id="msgLimpezaAuto" style="text-align:center; color:var(--text-muted); font-size:14px; margin-top:0;"></p>
+        <button type="button" class="btn" style="background:var(--danger); color:white;" id="btnLimpezaConfirmar">Excluir definitivamente (pede senha)</button>
+        <button type="button" class="btn btn-secondary" style="margin-top:8px;" id="btnLimpezaAdiar">Adiar 1 dia</button>
+    </div>
+</div>
+
+<div id="modalSenhaExclusao" class="modal-overlay" onclick="if(event.target===this)fecharModalSenha()">
+    <div class="modal-box">
+        <h2>🔒 Confirmar Senha</h2>
+        <p id="msgModalSenha" style="text-align:center; color:var(--text-muted); font-size:14px; margin-top:0;"></p>
+        <input type="password" id="senhaModalInput" placeholder="Senha administrativa" onkeydown="if(event.key==='Enter')confirmarModalSenha()">
+        <div id="erroModalSenha" class="alerta-erro">⚠️ Senha incorreta.</div>
+        <button type="button" class="btn" style="background:var(--danger); color:white; margin-top:14px;" onclick="confirmarModalSenha()">Confirmar exclusão</button>
+        <button type="button" class="btn btn-secondary" style="margin-top:8px;" onclick="fecharModalSenha()">Cancelar</button>
     </div>
 </div>
 
@@ -478,6 +758,7 @@
         }
     }
     window.addEventListener('DOMContentLoaded', obterLocalizacao);
+    window.addEventListener('DOMContentLoaded', carregarTemaSalvo);
 
     setInterval(() => {
         const ago = new Date();
@@ -505,7 +786,7 @@
 
     function validarCPF(cpf) {
         cpf = cpf.replace(/[^\d]+/g, '');
-        if (cpf == '' || cpf.length != 11 || /^(\d){10}$/.test(cpf)) return false;
+        if (cpf == '' || cpf.length != 11 || /^(\d)\1{10}$/.test(cpf)) return false;
         let add = 0;
         for (let i = 0; i < 9; i++) add += parseInt(cpf.charAt(i)) * (10 - i);
         let rev = 11 - (add % 11);
@@ -529,9 +810,12 @@
         const video = document.getElementById('video');
         const btn = document.getElementById('btnFotoUnico');
 
+        // Nome e CPF são estampados na foto: precisam estar preenchidos (e o CPF válido) antes de capturar
+        if (!dadosOkParaMarcaDagua()) return;
+
         if (!modoCameraAoVivo && !dadosPonto.foto) {
             try {
-                streamDeVideo = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+                streamDeVideo = await abrirCameraResolucaoMaxima();
                 video.srcObject = streamDeVideo;
                 video.style.display = "block";
                 document.getElementById('fotoPreview').style.display = "none";
@@ -542,11 +826,8 @@
                 document.getElementById('cameraNativa').click();
             }
         } else if (modoCameraAoVivo) {
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth || 640;
-            canvas.height = video.videoHeight || 480;
-            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-            salvarFoto(canvas.toDataURL('image/jpeg', 0.5));
+            const canvas = await capturarQuadroNativo(video, streamDeVideo);   // resolução máxima do aparelho
+            await processarFoto(canvas);                                       // marca d'água + preview + miniatura do registro
             if (streamDeVideo) streamDeVideo.getTracks().forEach(t => t.stop());
             video.style.display = "none";
             btn.innerText = "Refazer Foto 🔄";
@@ -554,6 +835,7 @@
             modoCameraAoVivo = false;
         } else {
             dadosPonto.foto = "";
+            limparFotoFinal();
             document.getElementById('badgeCam').className = "badge badge-danger";
             document.getElementById('badgeCam').innerText = "OFF";
             document.getElementById('txtCam').innerText = "Selfie pendente";
@@ -562,13 +844,11 @@
     }
 
     function carregarFotoNativa(input) {
-        if (input.files && input.files) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                salvarFoto(e.target.result);
-                document.getElementById('btnFotoUnico').innerText = "Refazer Foto 🔄";
-            };
-            reader.readAsDataURL(input.files);
+        if (input.files && input.files[0]) {
+            processarFotoDeArquivo(input.files[0]).then((ok) => {
+                if (ok) document.getElementById('btnFotoUnico').innerText = "Refazer Foto 🔄";
+                input.value = "";   // permite escolher o mesmo arquivo de novo
+            });
         }
     }
 
@@ -636,8 +916,8 @@
 
     function salvarEmailPrimeiroAcesso() {
         const email = document.getElementById('emailPrimeiroAcessoInput').value.trim().toLowerCase();
-        if (email === "" || email === EMAIL_PADRAO_INICIAL) {
-            alert("Digite um e-mail real, diferente do e-mail padrão.");
+        if (email === "" || email === EMAIL_PADRAO_INICIAL || !emailValido(email)) {
+            alert("Digite um e-mail real e válido, diferente do e-mail padrão.");
             return;
         }
 
@@ -660,29 +940,131 @@
         icone.style.transform = oculto ? "rotate(90deg)" : "rotate(0deg)";
     }
 
+    // ===================== ENCERRAR SESSÃO =====================
+    function encerrarSessaoAdmin() {
+        document.getElementById('adminData').style.display = "none";
+        document.getElementById('adminAuth').style.display = "block";
+        document.getElementById('senhaAdmin').value = "";
+
+        // Recolhe os painéis internos para a próxima vez que o admin logar
+        document.getElementById('conteudoConfigSeguranca').style.display = "none";
+        const iconCfg = document.getElementById('iconConfigSeguranca');
+        if (iconCfg) iconCfg.style.transform = "rotate(0deg)";
+        document.getElementById('painelTrocarSenha').style.display = "none";
+        document.getElementById('painelAlterarEmail').style.display = "none";
+        document.getElementById('lixeiraPanel').style.display = "none";
+    }
+
+    // ===================== TROCAR SENHA (dentro do painel) =====================
+    function toggleTrocarSenha() {
+        const painel = document.getElementById('painelTrocarSenha');
+        const oculto = painel.style.display === "none";
+        painel.style.display = oculto ? "block" : "none";
+        document.getElementById('erroSenhaAtual').style.display = "none";
+        document.getElementById('erroNovaSenhaTroca').style.display = "none";
+        document.getElementById('msgSucessoTrocaSenha').style.display = "none";
+        document.getElementById('senhaAtualInput').value = "";
+        document.getElementById('novaSenhaTrocaInput').value = "";
+        document.getElementById('confirmaSenhaTrocaInput').value = "";
+    }
+
+    function salvarTrocaSenha() {
+        const senhaAtual = document.getElementById('senhaAtualInput').value;
+        const novaSenha = document.getElementById('novaSenhaTrocaInput').value;
+        const confirmaSenha = document.getElementById('confirmaSenhaTrocaInput').value;
+
+        document.getElementById('erroSenhaAtual').style.display = "none";
+        document.getElementById('erroNovaSenhaTroca').style.display = "none";
+
+        if (senhaAtual !== (localStorage.getItem('senha_admin') || SENHA_PADRAO_INICIAL)) {
+            document.getElementById('erroSenhaAtual').style.display = "block";
+            return;
+        }
+
+        if (novaSenha === "" || confirmaSenha === "" || novaSenha !== confirmaSenha) {
+            document.getElementById('erroNovaSenhaTroca').style.display = "block";
+            return;
+        }
+
+        localStorage.setItem('senha_admin', novaSenha);
+
+        document.getElementById('msgSucessoTrocaSenha').style.display = "block";
+        document.getElementById('senhaAtualInput').value = "";
+        document.getElementById('novaSenhaTrocaInput').value = "";
+        document.getElementById('confirmaSenhaTrocaInput').value = "";
+    }
+
+    // ===================== TEMA =====================
+    // O seletor visual fica no módulo SeletorCores (script separado, mais abaixo).
+    function aplicarCorTema(cor) {
+        const root = document.documentElement.style;
+        root.setProperty('--primary', cor);
+        root.setProperty('--primary-hover', cor);
+        // tom mais escuro da cor do tema (fim do degradê do cabeçalho)
+        const num = parseInt(cor.replace('#', ''), 16);
+        const esc = (v) => Math.round(v * 0.7).toString(16).padStart(2, '0');
+        root.setProperty('--primary-dark', '#' + esc(num >> 16) + esc((num >> 8) & 255) + esc(num & 255));
+        // texto escuro em botões quando a cor escolhida é muito clara
+        const n = parseInt(cor.replace('#', ''), 16);
+        const lum = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
+        root.setProperty('--on-primary', lum > 0.65 ? '#111827' : 'white');
+        localStorage.setItem('tema_cor', cor);
+    }
+
+    function restaurarTemaPadrao() {
+        aplicarCorTema('#f97316');
+    }
+
+    function carregarTemaSalvo() {
+        const corSalva = localStorage.getItem('tema_cor');
+        if (corSalva) aplicarCorTema(corSalva);
+    }
+
     function gerarTokenNumerico() {
         return String(Math.floor(100000 + Math.random() * 900000));
     }
 
+    function emailValido(e) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+    }
+
+    // Devolve uma Promise. Nunca exibe alerta aqui: quem chama mostra UMA mensagem via mensagemErroEmail().
     function enviarEmailComCodigo(destinatario, codigo) {
         if (typeof emailjs === "undefined") {
-            alert("Biblioteca EmailJS não carregada. Verifique sua conexão com a internet.");
-            return Promise.reject();
+            return Promise.reject(new Error("Biblioteca EmailJS não carregada. Verifique sua conexão com a internet."));
         }
         if (!EMAILJS_PUBLIC_KEY || EMAILJS_PUBLIC_KEY.startsWith("SUA_") ||
             !EMAILJS_SERVICE_ID || EMAILJS_SERVICE_ID.startsWith("SEU_") ||
             !EMAILJS_TEMPLATE_ID || EMAILJS_TEMPLATE_ID.startsWith("SEU_")) {
-            alert("⚠️ O EmailJS ainda não foi configurado. Preencha EMAILJS_PUBLIC_KEY, EMAILJS_SERVICE_ID e EMAILJS_TEMPLATE_ID no topo do script.");
-            return Promise.reject();
+            return Promise.reject(new Error("⚠️ O EmailJS ainda não foi configurado. Preencha EMAILJS_PUBLIC_KEY, EMAILJS_SERVICE_ID e EMAILJS_TEMPLATE_ID no topo do script."));
+        }
+        if (!destinatario || destinatario === EMAIL_PADRAO_INICIAL || !emailValido(destinatario)) {
+            return Promise.reject(new Error("Nenhum e-mail real cadastrado. Entre no painel com a senha atual e cadastre seu e-mail em \"Primeiro Acesso\" (ou em Configurações)."));
         }
         try {
+            // Vários nomes de variável para funcionar com qualquer template; a chave pública vai também aqui (4º argumento)
             return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
                 email: destinatario,
-                codigo: codigo
-            });
+                to_email: destinatario,
+                user_email: destinatario,
+                codigo: codigo,
+                code: codigo
+            }, EMAILJS_PUBLIC_KEY);
         } catch (erro) {
             return Promise.reject(erro);
         }
+    }
+
+    function mensagemErroEmail(erro) {
+        if (erro instanceof Error) return erro.message;
+        if (erro && erro.text) {
+            let msg = "Erro ao enviar o e-mail (" + (erro.status || "?") + "): " + erro.text;
+            if (/recipients? address is empty/i.test(erro.text)) {
+                msg += "\n\nNo template do EmailJS, preencha o campo \"To Email\" com {{email}}.";
+            }
+            return msg;
+        }
+        return "Erro ao enviar o e-mail. Verifique as configurações do EmailJS.";
     }
 
     function toggleRecuperacaoSenha(e) {
@@ -716,8 +1098,8 @@
                 document.getElementById('etapaTokenRecuperacao').style.display = "block";
                 document.getElementById('msgCodigoEnviadoRecuperacao').style.display = "block";
             })
-            .catch(() => {
-                alert("Erro ao enviar o e-mail. Verifique as configurações do EmailJS.");
+            .catch((erro) => {
+                alert(mensagemErroEmail(erro));
             });
     }
 
@@ -800,8 +1182,8 @@
             .then(() => {
                 alert("Código de autorização enviado para o e-mail atualmente cadastrado!");
             })
-            .catch(() => {
-                alert("Erro ao enviar o e-mail. Verifique as configurações do EmailJS.");
+            .catch((erro) => {
+                alert(mensagemErroEmail(erro));
             });
     }
 
@@ -822,7 +1204,7 @@
 
     function salvarNovoEmail() {
         const novoEmail = document.getElementById('novoEmailInput').value.trim().toLowerCase();
-        if (novoEmail === "") {
+        if (novoEmail === "" || !emailValido(novoEmail)) {
             alert("Digite um e-mail válido.");
             return;
         }
@@ -905,11 +1287,14 @@
                     '<b>👤 Prestador:</b> ' + p.nome + '<br>' +
                     '<b>🪪 CPF:</b> ' + p.cpf + '<br>' +
                     '<b>📅 Horário do Registro:</b> ' + p.dataHora + '<br>' +
-                    '<b>📍 Endereço por Extenso:</b><br>' +
+                    '<b>📍 Endereço:</b><br>' +
                     '<span style="font-size:12px; color:var(--text-muted); display:block; margin-bottom: 4px;">' + p.endereco + '</span>' +
                     '<b>🗺️ Rastreamento:</b> <a class="link-mapa" href="https://www.google.com/maps/search/?api=1&query=' + p.lat + ',' + p.lng + '" target="_blank">Abrir no Google Maps</a>' +
                 '</div>' +
-                '<button type="button" class="btn btn-secondary" onclick="toggleFotoAdmin(\'' + fotoId + '\', this)">Exibir Foto 👁️</button>' +
+                '<div style="display:flex; gap:8px;">' +
+                    '<button type="button" class="btn btn-secondary" style="font-size:14px; padding:12px;" onclick="toggleFotoAdmin(\'' + fotoId + '\', this)">Exibir Foto 👁️</button>' +
+                    '<button type="button" class="btn btn-secondary" style="font-size:14px; padding:12px;" onclick="baixarFotoAdmin(' + idxOriginal + ')">⬇️ Salvar Imagem</button>' +
+                '</div>' +
                 '<img id="' + fotoId + '" src="' + p.foto + '" class="foto-large-admin" alt="Foto do Prestador" style="display:none;">' +
                 '<div style="display:flex; gap:8px; margin-top:10px;">' +
                     '<button type="button" class="btn btn-secondary" style="font-size:13px; padding:10px;" onclick="editarPontoAdmin(' + idxOriginal + ')">Alterar Dados ✏️</button>' +
@@ -1003,7 +1388,10 @@
                     '<b>🪪 CPF:</b> ' + p.cpf + '<br>' +
                     '<b>📅 Horário do Registro:</b> ' + p.dataHora +
                 '</div>' +
-                '<button type="button" class="btn btn-primary" style="font-size:13px; padding:10px;" onclick="restaurarPontoAdmin(' + idxLixeira + ')">Restaurar ♻️</button>' +
+                '<div style="display:flex; gap:8px;">' +
+                    '<button type="button" class="btn btn-primary" style="font-size:13px; padding:10px;" onclick="restaurarPontoAdmin(' + idxLixeira + ')">Restaurar ♻️</button>' +
+                    '<button type="button" class="btn" style="font-size:13px; padding:10px; background:var(--danger); color:white;" onclick="excluirDefinitivoLixeira(' + idxLixeira + ')">Excluir Definitivamente ❌</button>' +
+                '</div>' +
             '</div>';
 
             lista.innerHTML += cardHtml;
@@ -1024,6 +1412,1031 @@
         renderizarLixeira();
         renderizarPontosAdmin();
     }
+</script>
+<script>
+/* =====================================================================
+   MÓDULO: SeletorCores (Color Picker)
+   - Seleção visual: canvas saturação/brilho + barra de matiz
+   - Opção 1 (Web): HEX e RGB   |   Opção 2 (Impressão): CMYK
+   - Histórico dinâmico (máx. 12, começa vazio) com exclusão via "X"
+   Tudo se comunica por UM estado (HSV + RGB) e UMA função (atualizar).
+   ===================================================================== */
+(function SeletorCores() {
+    'use strict';
+
+    const MAX_HISTORICO = 12;
+    const COR_PADRAO = '#f97316';
+    const CHAVE_HISTORICO = 'tema_historico_cores';
+    const $ = (id) => document.getElementById(id);
+    const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
+
+    /* ---------- Conversões de cor ---------- */
+    function hexParaRgb(txt) {
+        let h = String(txt).trim().replace(/^#/, '');
+        if (/^[0-9a-f]{3}$/i.test(h)) h = h.split('').map(c => c + c).join('');
+        if (!/^[0-9a-f]{6}$/i.test(h)) return null;
+        return { r: parseInt(h.slice(0, 2), 16), g: parseInt(h.slice(2, 4), 16), b: parseInt(h.slice(4, 6), 16) };
+    }
+    function rgbParaHex({ r, g, b }) {
+        return '#' + [r, g, b].map(v => Math.round(v).toString(16).padStart(2, '0')).join('').toUpperCase();
+    }
+    function rgbParaHsv({ r, g, b }) {
+        r /= 255; g /= 255; b /= 255;
+        const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+        let h = 0;
+        if (d !== 0) {
+            if (max === r) h = ((g - b) / d) % 6;
+            else if (max === g) h = (b - r) / d + 2;
+            else h = (r - g) / d + 4;
+            h *= 60; if (h < 0) h += 360;
+        }
+        return { h, s: max === 0 ? 0 : d / max, v: max };
+    }
+    function hsvParaRgb(h, s, v) {
+        const f = (n) => { const k = (n + h / 60) % 6; return v - v * s * Math.max(0, Math.min(k, 4 - k, 1)); };
+        return { r: Math.round(f(5) * 255), g: Math.round(f(3) * 255), b: Math.round(f(1) * 255) };
+    }
+    // CMYK aqui é a conversão matemática padrão (sem perfil ICC): serve de referência para impressão.
+    function rgbParaCmyk({ r, g, b }) {
+        r /= 255; g /= 255; b /= 255;
+        const k = 1 - Math.max(r, g, b);
+        if (k >= 1) return { c: 0, m: 0, y: 0, k: 100 };
+        return { c: Math.round((1 - r - k) / (1 - k) * 100), m: Math.round((1 - g - k) / (1 - k) * 100),
+                 y: Math.round((1 - b - k) / (1 - k) * 100), k: Math.round(k * 100) };
+    }
+    function cmykParaRgb(c, m, y, k) {
+        c /= 100; m /= 100; y /= 100; k /= 100;
+        return { r: Math.round(255 * (1 - c) * (1 - k)), g: Math.round(255 * (1 - m) * (1 - k)), b: Math.round(255 * (1 - y) * (1 - k)) };
+    }
+
+    /* ---------- Parsers dos campos digitados (devolvem null se inválido) ---------- */
+    function lerRgb(txt) {
+        const n = String(txt).match(/\d+(\.\d+)?/g);
+        if (!n || n.length !== 3) return null;
+        const v = n.map(Number);
+        if (v.some(x => x < 0 || x > 255)) return null;
+        return { r: Math.round(v[0]), g: Math.round(v[1]), b: Math.round(v[2]) };
+    }
+    function lerCmyk() {
+        const ids = ['cpC', 'cpM', 'cpY', 'cpK'];
+        const vals = ids.map(id => $(id).value.trim());
+        if (vals.some(v => v === '')) return null;
+        const n = vals.map(Number);
+        if (n.some(x => isNaN(x) || x < 0 || x > 100)) return null;
+        return cmykParaRgb(n[0], n[1], n[2], n[3]);
+    }
+
+    /* ---------- Estado ---------- */
+    const estado = {
+        h: 0, s: 0, v: 0,             // HSV (mantém o matiz mesmo em tons de cinza)
+        rgb: { r: 0, g: 0, b: 0 },
+        historico: [],
+        ativa: null                   // cor do histórico em "estado ativo" (com X visível) ou null
+    };
+
+    const cv = $('cpCanvas');
+    const ctx = cv.getContext('2d');
+
+    /* ---------- Desenho do quadrado saturação/brilho ---------- */
+    function desenharCanvas() {
+        const w = cv.width, h = cv.height;
+        ctx.fillStyle = 'hsl(' + estado.h + ',100%,50%)';
+        ctx.fillRect(0, 0, w, h);
+        let g = ctx.createLinearGradient(0, 0, w, 0);          // branco -> transparente (saturação)
+        g.addColorStop(0, '#fff'); g.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+        g = ctx.createLinearGradient(0, 0, 0, h);              // transparente -> preto (brilho)
+        g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, '#000');
+        ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    }
+
+    /* ---------- Fonte única de atualização da interface ----------
+       origem: campo que está sendo digitado/arrastado (não é sobrescrito, evita "pular" o cursor)
+       aplicarTema: também aplica a cor ao tema do app */
+    function atualizar(origem, aplicarTema) {
+        const hex = rgbParaHex(estado.rgb);
+        desenharCanvas();
+        $('cpMarcador').style.left = (estado.s * 100) + '%';
+        $('cpMarcador').style.top = ((1 - estado.v) * 100) + '%';
+        $('cpPreview').style.background = hex;
+        if (origem !== 'hue') $('cpHue').value = Math.round(estado.h);
+        if (origem !== 'hex') $('cpHex').value = hex;
+        if (origem !== 'rgb') $('cpRgb').value = estado.rgb.r + ', ' + estado.rgb.g + ', ' + estado.rgb.b;
+        if (origem !== 'cmyk') {
+            const k = rgbParaCmyk(estado.rgb);
+            $('cpC').value = k.c; $('cpM').value = k.m; $('cpY').value = k.y; $('cpK').value = k.k;
+        }
+        ['cpHex', 'cpRgb', 'cpC', 'cpM', 'cpY', 'cpK'].forEach(id => {
+            if (id.slice(2).toLowerCase() !== origem && !(origem === 'cmyk' && 'CMYK'.includes(id.slice(2)))) $(id).classList.remove('cp-invalido');
+        });
+        if (aplicarTema) aplicarCorTema(hex);
+    }
+
+    /* Define a cor a partir de RGB (campos digitados / histórico) */
+    function definirRgb(rgb, origem, aplicarTema) {
+        const hsv = rgbParaHsv(rgb);
+        estado.rgb = { r: rgb.r, g: rgb.g, b: rgb.b };
+        if (hsv.s > 0 && hsv.v > 0) estado.h = hsv.h;  // em cinza/preto o matiz é indefinido: mantém o anterior
+        estado.s = hsv.s; estado.v = hsv.v;
+        atualizar(origem, aplicarTema);
+    }
+    /* Define a cor a partir de HSV (canvas / barra de matiz) */
+    function definirHsv(h, s, v, origem) {
+        estado.h = h; estado.s = s; estado.v = v;
+        estado.rgb = hsvParaRgb(h, s, v);
+        atualizar(origem, true);
+    }
+
+    /* ---------- Histórico: persistência e renderização ---------- */
+    function carregarHistorico() {
+        try {
+            const l = JSON.parse(localStorage.getItem(CHAVE_HISTORICO));
+            return Array.isArray(l) ? l.filter(c => /^#[0-9A-F]{6}$/.test(c)).slice(0, MAX_HISTORICO) : [];
+        } catch (e) { return []; }
+    }
+    function salvarHistorico() {
+        localStorage.setItem(CHAVE_HISTORICO, JSON.stringify(estado.historico));
+    }
+
+    // Registra uma cor "usada com sucesso": vai para o INÍCIO, sem duplicar, máx. 12
+    function registrarNoHistorico(hex) {
+        estado.historico = [hex].concat(estado.historico.filter(c => c !== hex)).slice(0, MAX_HISTORICO);
+        estado.ativa = null;
+        salvarHistorico();
+        renderizarHistorico();
+    }
+
+    function renderizarHistorico() {
+        const box = $('cpHistorico');
+        box.innerHTML = '';
+        $('cpHistoricoVazio').style.display = estado.historico.length ? 'none' : 'block';
+        estado.historico.forEach(cor => {
+            const sw = document.createElement('div');
+            sw.className = 'cp-swatch' + (cor === estado.ativa ? ' ativo' : '');
+            sw.dataset.cor = cor;
+            sw.style.background = cor;
+            sw.title = cor;
+            sw.tabIndex = 0;
+            sw.setAttribute('role', 'button');
+            // O X existe em todo bloco, mas o CSS só o mostra quando o bloco tem a classe .ativo
+            const x = document.createElement('span');
+            x.className = 'cp-x';
+            x.setAttribute('aria-label', 'Remover ' + cor);
+            x.innerHTML = '<i>✕</i>';
+            sw.appendChild(x);
+            box.appendChild(sw);
+        });
+    }
+
+    /* ---------- LÓGICA DO "X" (dois estados por bloco) ----------
+       Estado 1 (repouso):  bloco sem X. Um clique no bloco -> SELECIONA a cor e o torna "ativo" (X aparece).
+       Estado 2 (ativo):    o X está visível. Clique NO X -> REMOVE a cor do histórico (a lista é recriada, sem lacunas).
+       Voltar ao repouso:   clique fora do histórico, tecla Esc, ou clique em outro bloco (que vira o novo ativo).
+       Só UMA cor fica ativa por vez (estado.ativa). Trocar o ativo apenas alterna a classe .ativo, sem recriar
+       os elementos, para o clique no X continuar apontando para o mesmo elemento. */
+    function marcarAtivo() {
+        $('cpHistorico').querySelectorAll('.cp-swatch').forEach(sw => {
+            sw.classList.toggle('ativo', sw.dataset.cor === estado.ativa);
+        });
+    }
+    function removerDoHistorico(cor) {
+        estado.historico = estado.historico.filter(c => c !== cor);
+        estado.ativa = null;
+        salvarHistorico();
+        renderizarHistorico();            // grid reorganizado; a cor atual do tema não muda
+    }
+    function tratarCliqueHistorico(e) {
+        e.stopPropagation();              // impede o "clique fora" global de desativar logo em seguida
+        const sw = e.target.closest('.cp-swatch');
+        if (!sw) return;
+        const cor = sw.dataset.cor;
+        if (e.target.closest('.cp-x') && estado.ativa === cor) {
+            removerDoHistorico(cor);      // estado 2 -> excluir
+            return;
+        }
+        estado.ativa = cor;               // estado 1 -> selecionar + mostrar X
+        marcarAtivo();
+        // Reaplicar uma cor que já está no histórico não a reordena (evita o bloco "fugir" do dedo)
+        definirRgb(hexParaRgb(cor), null, true);
+    }
+
+    /* ---------- Eventos ---------- */
+    function iniciarEventos() {
+        // Canvas: arrastar com mouse/toque; registra no histórico ao SOLTAR
+        let arrastando = false;
+        const lerPonteiro = (e) => {
+            const r = cv.getBoundingClientRect();
+            const x = clamp((e.clientX - r.left) / r.width, 0, 1);
+            const y = clamp((e.clientY - r.top) / r.height, 0, 1);
+            definirHsv(estado.h, x, 1 - y, 'canvas');
+        };
+        cv.addEventListener('pointerdown', (e) => { arrastando = true; cv.setPointerCapture(e.pointerId); lerPonteiro(e); });
+        cv.addEventListener('pointermove', (e) => { if (arrastando) lerPonteiro(e); });
+        const soltar = () => { if (arrastando) { arrastando = false; registrarNoHistorico(rgbParaHex(estado.rgb)); } };
+        cv.addEventListener('pointerup', soltar);
+        cv.addEventListener('pointercancel', soltar);
+
+        // Barra de matiz: ao vivo no "input", registra no "change" (ao soltar)
+        $('cpHue').addEventListener('input', (e) => definirHsv(Number(e.target.value), estado.s, estado.v, 'hue'));
+        $('cpHue').addEventListener('change', () => registrarNoHistorico(rgbParaHex(estado.rgb)));
+
+        // Campos digitáveis: "input" = sincroniza ao vivo se válido; "change" (Enter/sair do campo) = registra se válido
+        function ligarCampo(ids, origem, ler) {
+            ids.forEach(id => {
+                const el = $(id);
+                el.addEventListener('input', () => {
+                    const rgb = ler();
+                    el.classList.toggle('cp-invalido', !rgb && el.value.trim() !== '');
+                    if (rgb) definirRgb(rgb, origem, true);
+                });
+                el.addEventListener('change', () => {
+                    const rgb = ler();
+                    if (rgb) { definirRgb(rgb, null, true); registrarNoHistorico(rgbParaHex(rgb)); }  // null = normaliza todos os campos
+                    else { atualizar(null, false); }                                                   // inválido: restaura o texto
+                });
+            });
+        }
+        ligarCampo(['cpHex'], 'hex', () => hexParaRgb($('cpHex').value));
+        ligarCampo(['cpRgb'], 'rgb', () => lerRgb($('cpRgb').value));
+        ligarCampo(['cpC', 'cpM', 'cpY', 'cpK'], 'cmyk', lerCmyk);
+
+        // Histórico + "clique fora" + Esc
+        $('cpHistorico').addEventListener('click', tratarCliqueHistorico);
+        document.addEventListener('click', (e) => {
+            if (estado.ativa && !e.target.closest('#cpHistorico')) { estado.ativa = null; marcarAtivo(); }
+        });
+        document.addEventListener('keydown', (e) => {
+            if (!estado.ativa) return;
+            if (e.key === 'Escape') { estado.ativa = null; marcarAtivo(); }
+            else if ((e.key === 'Delete' || e.key === 'Backspace') && e.target.closest && e.target.closest('#cpHistorico')) { removerDoHistorico(estado.ativa); }
+        });
+        $('cpHistorico').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); const sw = e.target.closest('.cp-swatch'); if (sw) { estado.ativa = sw.dataset.cor; marcarAtivo(); definirRgb(hexParaRgb(sw.dataset.cor), null, true); } }
+        });
+
+        // Restaurar padrão (não entra no histórico: não é uma cor "escolhida")
+        $('cpRestaurar').addEventListener('click', () => {
+            restaurarTemaPadrao();
+            definirRgb(hexParaRgb(COR_PADRAO), null, false);
+        });
+    }
+
+    /* ---------- Inicialização ---------- */
+    estado.historico = carregarHistorico();
+    renderizarHistorico();
+    definirRgb(hexParaRgb(localStorage.getItem('tema_cor') || COR_PADRAO) || hexParaRgb(COR_PADRAO), null, false);
+    iniciarEventos();
+})();
+</script>
+
+<script>
+/* =====================================================================
+   LIXEIRA: exclusão definitiva com confirmação da MESMA senha do admin
+   (a senha é sempre lida de localStorage 'senha_admin'; se você trocar a
+   senha do admin, a exclusão definitiva passa a exigir a nova automaticamente)
+   ===================================================================== */
+let acaoPendenteModalSenha = null;
+
+function senhaAdminAtual() {
+    return localStorage.getItem('senha_admin') || SENHA_PADRAO_INICIAL;
+}
+function pedirSenhaAdmin(mensagem, callback) {
+    acaoPendenteModalSenha = callback;
+    document.getElementById('msgModalSenha').innerText = mensagem;
+    document.getElementById('senhaModalInput').value = "";
+    document.getElementById('erroModalSenha').style.display = "none";
+    document.getElementById('modalSenhaExclusao').classList.add('open');
+    setTimeout(() => document.getElementById('senhaModalInput').focus(), 50);
+}
+function fecharModalSenha() {
+    acaoPendenteModalSenha = null;
+    document.getElementById('senhaModalInput').value = "";
+    document.getElementById('modalSenhaExclusao').classList.remove('open');
+}
+function confirmarModalSenha() {
+    const campo = document.getElementById('senhaModalInput');
+    if (campo.value === senhaAdminAtual()) {
+        const acao = acaoPendenteModalSenha;
+        fecharModalSenha();
+        if (acao) acao();
+    } else {
+        document.getElementById('erroModalSenha').style.display = "block";
+        campo.value = "";
+        campo.focus();
+    }
+}
+
+function excluirDefinitivoLixeira(idx) {
+    const lixeira = JSON.parse(localStorage.getItem('lixeira_pontos')) || [];
+    const item = lixeira[idx];
+    if (!item) return;
+    pedirSenhaAdmin("Excluir DEFINITIVAMENTE o registro de " + item.nome + "? Esta ação não pode ser desfeita.", function () {
+        const atual = JSON.parse(localStorage.getItem('lixeira_pontos')) || [];
+        atual.splice(idx, 1);
+        localStorage.setItem('lixeira_pontos', JSON.stringify(atual));
+        renderizarLixeira();
+    });
+}
+function esvaziarLixeira() {
+    const n = (JSON.parse(localStorage.getItem('lixeira_pontos')) || []).length;
+    if (n === 0) { alert("A lixeira já está vazia."); return; }
+    pedirSenhaAdmin("Excluir DEFINITIVAMENTE os " + n + " registro(s) da lixeira? Esta ação não pode ser desfeita.", function () {
+        localStorage.setItem('lixeira_pontos', JSON.stringify([]));
+        renderizarLixeira();
+    });
+}
+</script>
+<script>
+/* =====================================================================
+   MÓDULO DE CÂMERA: resolução máxima + marca d'água + salvar no aparelho
+   Fluxo: capturarQuadroNativo -> processarFoto -> (aplicarMarcaDagua, Blob JPEG, miniatura)
+   - fotoFinal (Blob em resolução máxima, COM marca d'água) é usada no preview e no download
+   - dadosPonto.foto (gravada no registro/planilha) recebe só uma miniatura leve com a marca d'água,
+     porque o localStorage tem limite de ~5 MB e uma foto nativa estouraria a cota.
+   ===================================================================== */
+const QUALIDADE_JPEG_FINAL = 0.95;      // alta qualidade, sem compressão agressiva
+const LADO_MAX_MINIATURA   = 640;       // miniatura do registro (px do lado maior)
+const QUALIDADE_MINIATURA  = 0.6;
+const EH_IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const AREA_MAX_CANVAS = EH_IOS ? 16777216 : 100000000;   // limite de área de canvas do Safari/iOS (~16,7 MP)
+
+let fotoFinal = null;   // { blob, url, nomeArquivo, nome, cpf }
+
+/* ---------- Toast ---------- */
+let toastTimer = null;
+function mostrarToast(msg) {
+    const t = document.getElementById('toastApp');
+    t.innerText = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+/* ---------- Pré-requisito: dados que serão estampados ---------- */
+function dadosOkParaMarcaDagua() {
+    const nome = document.getElementById('nome').value.trim();
+    const cpf = document.getElementById('cpf').value.trim();
+    if (!nome) {
+        alert("Preencha o Nome Completo e CPF antes de capturar a foto");
+        document.getElementById('nome').focus();
+        return false;
+    }
+    if (!validarCPF(cpf)) {
+        alert("Preencha o Nome Completo e CPF antes de capturar a foto");
+        document.getElementById('cpf').focus();
+        return false;
+    }
+    return true;
+}
+
+/* ---------- Abertura da câmera na resolução máxima ---------- */
+async function abrirCameraResolucaoMaxima() {
+    let stream;
+    try {
+        // Pede 4K como "ideal": o navegador entrega o maior modo que o hardware suportar (sem forçar, não falha)
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "user", width: { ideal: 4096 }, height: { ideal: 2160 } },
+            audio: false
+        });
+    } catch (e) {
+        // Comportamento original, caso o aparelho rejeite as restrições
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+    }
+    try {
+        // Onde o navegador expõe as capacidades, sobe para o máximo real da câmera
+        const track = stream.getVideoTracks()[0];
+        const caps = track.getCapabilities ? track.getCapabilities() : null;
+        if (caps && caps.width && caps.height) {
+            await track.applyConstraints({ width: { ideal: caps.width.max }, height: { ideal: caps.height.max } });
+        }
+    } catch (e) { /* mantém a resolução já obtida */ }
+    return stream;
+}
+
+/* ---------- Canvas a partir de uma imagem/bitmap, sem recorte (só limita a área se o navegador exigir) ---------- */
+function canvasDe(fonte, w, h) {
+    let escala = 1;
+    if (w * h > AREA_MAX_CANVAS) escala = Math.sqrt(AREA_MAX_CANVAS / (w * h));
+    const c = document.createElement('canvas');
+    c.width = Math.floor(w * escala);
+    c.height = Math.floor(h * escala);
+    c.getContext('2d').drawImage(fonte, 0, 0, c.width, c.height);
+    return c;
+}
+
+/* ---------- Captura: foto "de verdade" (ImageCapture) com fallback para o quadro do vídeo ---------- */
+async function capturarQuadroNativo(video, stream) {
+    const vw = video.videoWidth || 640, vh = video.videoHeight || 480;
+    if (stream && 'ImageCapture' in window) {
+        try {
+            const ic = new ImageCapture(stream.getVideoTracks()[0]);
+            let cfg = {};
+            try {
+                const caps = await ic.getPhotoCapabilities();
+                if (caps.imageWidth && caps.imageHeight) cfg = { imageWidth: caps.imageWidth.max, imageHeight: caps.imageHeight.max };
+            } catch (e) {}
+            const bmp = await createImageBitmap(await ic.takePhoto(cfg));
+            // Só aceita se tiver a mesma orientação do preview e não for menor que o quadro do vídeo
+            if ((bmp.width >= bmp.height) === (vw >= vh) && bmp.width * bmp.height >= vw * vh) {
+                const c = canvasDe(bmp, bmp.width, bmp.height);
+                if (bmp.close) bmp.close();
+                return c;
+            }
+            if (bmp.close) bmp.close();
+        } catch (e) { /* segue para o quadro do vídeo */ }
+    }
+    return canvasDe(video, vw, vh);
+}
+
+/* ---------- Marca d'água (canto inferior esquerdo, cores do tema atual) ---------- */
+function lerCor(valor, padrao) {
+    const v = String(valor || '').trim();
+    let m = v.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+    if (m) {
+        let h = m[1];
+        if (h.length === 3) h = h.split('').map(c => c + c).join('');
+        return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+    }
+    m = v.match(/rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/i);
+    return m ? [+m[1], +m[2], +m[3]] : padrao;
+}
+const luminanciaRgb = (c) => (0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]) / 255;
+
+function coletarInfoMarcaDagua() {
+    const d = new Date();
+    const p = (n) => String(n).padStart(2, '0');
+    let local = dadosPonto.endereco;
+    if (!local && dadosPonto.lat !== "" && dadosPonto.lng !== "") {
+        local = Number(dadosPonto.lat).toFixed(6) + ", " + Number(dadosPonto.lng).toFixed(6);
+    }
+    return {
+        data: p(d.getDate()) + "/" + p(d.getMonth() + 1) + "/" + d.getFullYear(),
+        hora: p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds()),
+        nome: document.getElementById('nome').value.trim(),
+        cpf: document.getElementById('cpf').value.trim(),
+        local: local || "Localização indisponível",
+        stamp: d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + "_" + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds())
+    };
+}
+
+function aplicarMarcaDagua(canvas, info) {
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+
+    // Sem tarja: letras PRETAS com contorno branco, independente do tema
+    const corTexto = [0, 0, 0];
+    const contorno = [255, 255, 255];
+    const rgb = (c, a) => 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (a === undefined ? 1 : a) + ')';
+
+    // Tamanhos proporcionais à imagem (funciona em 640 px ou em 12 MP)
+    const fs = Math.max(12, Math.round(Math.min(w, h) * 0.025));
+    const pad = Math.round(fs * 0.2), margem = Math.round(fs * 0.8);
+    const lh = Math.round(fs * 1.38), faixa = 0;
+    const fam = '-apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+    const fonte = (bold) => (bold ? 'bold ' : '') + fs + 'px ' + fam;
+    const medir = (t, bold) => { ctx.font = fonte(bold); return ctx.measureText(t).width; };
+
+    // Monta as linhas (cada linha = lista de trechos; 'indent' = recuo das linhas de continuação)
+    const maxInterno = Math.max(fs * 8, w - 2 * margem - 2 * pad - faixa - pad);
+    const linhas = [];
+    // Largura única para os rótulos: todos os valores começam na mesma coluna
+    const rw = Math.max.apply(null, ['Data', 'Nome', 'CPF', 'Local'].map(r => medir(r + ': ', true)));
+    const campo = (rotulo, valor) => {
+        const rot = rotulo + ': ';
+        let atual = '', primeira = true;
+        const fechar = () => {
+            linhas.push({ indent: primeira ? 0 : rw, segs: (primeira ? [{ t: rot, b: true, d: true, w: rw }] : []).concat([{ t: atual }]) });
+            primeira = false;
+        };
+        String(valor).split(/\s+/).forEach((palavra) => {
+            const tent = atual ? atual + ' ' + palavra : palavra;
+            if (atual && rw + medir(tent, false) > maxInterno) { fechar(); atual = palavra; } else { atual = tent; }
+        });
+        fechar();
+    };
+    linhas.push({ indent: 0, segs: [
+        { t: 'Data: ', b: true, d: true, w: rw }, { t: info.data + '    ' },
+        { t: 'Hora: ', b: true, d: true }, { t: info.hora }
+    ] });
+    campo('Nome', info.nome);
+    campo('CPF', info.cpf);
+    campo('Local', info.local);
+
+    const largs = linhas.map(l => l.indent + l.segs.reduce((a, sg) => a + (sg.w || medir(sg.t, sg.b)), 0));
+    const bw = Math.min(w - 2 * margem, Math.ceil(Math.max.apply(null, largs)) + 2 * pad + faixa);
+    const bh = linhas.length * lh + 2 * pad - (lh - fs);
+    const bx = margem, by = h - margem - bh;      // CANTO INFERIOR ESQUERDO
+
+    // Texto: contorno branco por baixo, preto por cima
+    ctx.textBaseline = 'top';
+    ctx.lineJoin = 'round';
+    ctx.miterLimit = 2;
+    ctx.lineWidth = Math.max(2, Math.round(fs * 0.2));
+    ctx.strokeStyle = rgb(contorno);
+    ctx.fillStyle = rgb(corTexto);
+    linhas.forEach((l, i) => {
+        let x = bx + faixa + pad + l.indent;
+        const y = by + pad + i * lh;
+        l.segs.forEach((sg) => {
+            ctx.font = fonte(sg.b);
+            ctx.strokeText(sg.t, x, y);
+            ctx.fillText(sg.t, x, y);
+            x += sg.w || ctx.measureText(sg.t).width;
+        });
+    });
+}
+
+/* ---------- Processamento final ---------- */
+function gerarMiniatura(canvas) {
+    const esc = Math.min(1, LADO_MAX_MINIATURA / Math.max(canvas.width, canvas.height));
+    const c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(canvas.width * esc));
+    c.height = Math.max(1, Math.round(canvas.height * esc));
+    c.getContext('2d').drawImage(canvas, 0, 0, c.width, c.height);
+    return c.toDataURL('image/jpeg', QUALIDADE_MINIATURA);
+}
+
+function limparFotoFinal() {
+    if (fotoFinal) URL.revokeObjectURL(fotoFinal.url);
+    fotoFinal = null;
+    document.getElementById('btnBaixarFoto').style.display = 'none';
+    document.getElementById('avisoFotoDesatualizada').style.display = 'none';
+}
+
+async function processarFoto(canvas) {
+    try {
+        const info = coletarInfoMarcaDagua();
+        aplicarMarcaDagua(canvas, info);
+        const blob = await new Promise((ok) => canvas.toBlob(ok, 'image/jpeg', QUALIDADE_JPEG_FINAL));
+        if (!blob) throw new Error('toBlob falhou');
+
+        limparFotoFinal();
+        fotoFinal = { blob: blob, url: URL.createObjectURL(blob), nomeArquivo: 'ponto_' + info.stamp + '.jpg', nome: info.nome, cpf: info.cpf };
+
+        salvarFoto(gerarMiniatura(canvas));                                // original: grava no registro, atualiza badges e valida
+        document.getElementById('fotoPreview').src = fotoFinal.url;        // preview em resolução máxima
+        document.getElementById('btnBaixarFoto').style.display = 'block';
+        return true;
+    } catch (e) {
+        alert("Não foi possível processar a foto. Tente novamente.");
+        return false;
+    }
+}
+
+async function processarFotoDeArquivo(file) {
+    const url = URL.createObjectURL(file);
+    try {
+        const img = new Image();
+        await new Promise((ok, erro) => { img.onload = ok; img.onerror = erro; img.src = url; });
+        return await processarFoto(canvasDe(img, img.naturalWidth, img.naturalHeight));
+    } catch (e) {
+        alert("Não foi possível ler a imagem escolhida.");
+        return false;
+    } finally {
+        URL.revokeObjectURL(url);
+    }
+}
+
+// Se Nome/CPF mudarem depois da foto, a marca d'água fica desatualizada: bloqueia o envio até refazer
+(function () {
+    const original = validarFormulario;
+    validarFormulario = function () {
+        original();
+        const aviso = document.getElementById('avisoFotoDesatualizada');
+        const velha = fotoFinal && (document.getElementById('nome').value.trim() !== fotoFinal.nome ||
+                                     document.getElementById('cpf').value.trim() !== fotoFinal.cpf);
+        aviso.style.display = velha ? 'block' : 'none';
+        if (velha) document.getElementById('btnEnviar').disabled = true;
+    };
+})();
+
+/* ---------- Download / salvar no aparelho (usado pelo preview e pelo painel admin) ---------- */
+async function salvarArquivoNoAparelho(blob, nomeArquivo) {
+    const arquivo = new File([blob], nomeArquivo, { type: 'image/jpeg' });
+
+    // iPhone/iPad: o download comum vai para "Arquivos"; a folha de compartilhamento oferece "Salvar Imagem" (Fotos)
+    if (EH_IOS && navigator.canShare && navigator.canShare({ files: [arquivo] })) {
+        try {
+            await navigator.share({ files: [arquivo] });
+            mostrarToast("✅ Imagem salva/compartilhada com sucesso");
+            return;
+        } catch (e) {
+            if (e && e.name === 'AbortError') return;   // usuário cancelou
+        }
+    }
+
+    // Android/computador: download direto (vai para a pasta Downloads, sem pedir permissão extra)
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nomeArquivo;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+    mostrarToast("✅ Imagem salva no aparelho (Downloads)");
+}
+
+// Botão do preview (foto recém-capturada, resolução máxima)
+async function baixarFotoFinal() {
+    if (!fotoFinal) return;
+    await salvarArquivoNoAparelho(fotoFinal.blob, fotoFinal.nomeArquivo);
+}
+
+// Botão do painel admin (imagem guardada no registro: a miniatura já com a marca d'água)
+async function baixarFotoAdmin(index) {
+    const historico = JSON.parse(localStorage.getItem('historico_pontos')) || [];
+    const p = historico[index];
+    if (!p || !p.foto) { alert("Este registro não possui imagem."); return; }
+    try {
+        const blob = await (await fetch(p.foto)).blob();
+        const limpo = (t) => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+        await salvarArquivoNoAparelho(blob, 'ponto_' + (p.dataSimples || 'registro') + '_' + (limpo(p.nome) || 'prestador') + '.jpg');
+    } catch (e) {
+        alert("Não foi possível salvar a imagem.");
+    }
+}
+</script>
+<script>
+/* =====================================================================
+   MÓDULO: LogoFundo — logo PNG + nome da empresa no cabeçalho fixo (usuário e admin)
+   + EDITOR (cortar, girar, espelhar), como nos editores de foto.
+   Estado: localStorage 'logo_fundo_png' (logo, data URL) e 'empresa_nome' (texto opcional).
+   Exibição: cabeçalho fixo #cabFixo (degradê do tema). Ele só aparece se houver logo e/ou nome.
+   Editor: todas as operações trabalham sobre o canvas "work" (pixels reais, sem perda); o corte é guardado em
+   FRAÇÕES (0..1) da imagem, então continua correto quando a imagem gira/espelha ou a tela muda de tamanho.
+   ===================================================================== */
+(function LogoFundo() {
+    'use strict';
+    const CHAVE = 'logo_fundo_png';
+    const LADO_MAX = 512;     // tamanho final salvo (mantém o alfa; cabe no localStorage)
+    const BASE_MAX = 1200;    // tamanho de trabalho do editor
+    const MIN_PX = 24;        // menor lado do corte na tela
+    const $ = (id) => document.getElementById(id);
+    const clamp = (n, a, b) => Math.min(b, Math.max(a, n));
+
+    /* ---------- Cabeçalho fixo (logo + nome) ---------- */
+    const CHAVE_NOME = 'empresa_nome';
+    function atualizarCabecalho() {
+        const logo = localStorage.getItem(CHAVE);
+        const nome = (localStorage.getItem(CHAVE_NOME) || '').trim();
+        const elLogo = $('cabLogo'), elNome = $('cabNome');
+        if (logo) {
+            elLogo.style.backgroundImage = 'url("' + logo + '")';
+            elLogo.style.display = 'block';               // círculo fixo 40x40 (CSS): a imagem é centralizada e preenche o círculo
+        } else {
+            elLogo.style.display = 'none';
+        }
+        elNome.textContent = nome;
+        elNome.style.display = nome ? 'block' : 'none';
+        const mostrar = !!logo || !!nome;                 // sem logo e sem nome: cabeçalho some
+        $('cabFixo').classList.toggle('visivel', mostrar);
+        document.body.classList.toggle('com-cabecalho', mostrar);
+    }
+
+    /* ---------- Painel de configuração (admin): pré-visualização e botões ---------- */
+    function aplicar(dataUrl) {
+        const prev = $('logoPreview');
+        prev.style.backgroundImage = dataUrl ? 'url("' + dataUrl + '")' : 'none';
+        prev.textContent = dataUrl ? '' : 'sem logo';
+        $('logoRemover').style.display = dataUrl ? 'block' : 'none';
+        $('logoEditar').style.display = dataUrl ? 'block' : 'none';
+        atualizarCabecalho();
+    }
+    const toast = (m) => { if (typeof mostrarToast === 'function') mostrarToast(m); };
+
+    /* ---------- Editor: estado ---------- */
+    const ED = { base: null, work: null, crop: { x: 0, y: 0, w: 1, h: 1 }, dw: 0, dh: 0, ratio: 0 };
+
+    function novoCanvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+    function copiar(c) { const n = novoCanvas(c.width, c.height); n.getContext('2d').drawImage(c, 0, 0); return n; }
+
+    function abrirEditor(fonte, w, h) {
+        const esc = Math.min(1, BASE_MAX / Math.max(w, h));
+        ED.base = novoCanvas(Math.max(1, Math.round(w * esc)), Math.max(1, Math.round(h * esc)));
+        ED.base.getContext('2d').drawImage(fonte, 0, 0, ED.base.width, ED.base.height);
+        redefinirEditor();
+        $('modalEditorLogo').classList.add('open');
+        desenharEditor();
+    }
+    function fecharEditor() {
+        $('modalEditorLogo').classList.remove('open');
+        ED.base = ED.work = null;
+    }
+    function redefinirEditor() {
+        ED.work = copiar(ED.base);
+        ED.crop = { x: 0, y: 0, w: 1, h: 1 };
+        $('edProporcao').value = '1';          // logo redonda: começa com corte quadrado (1:1) centralizado
+        aplicarProporcao(1);
+        if ($('modalEditorLogo').classList.contains('open')) desenharEditor();
+    }
+
+    /* ---------- Desenho: imagem ajustada à tela + retângulo de corte ---------- */
+    function desenharEditor() {
+        const maxW = Math.max(120, Math.min(360, window.innerWidth - 100));
+        const maxH = Math.max(120, Math.round(window.innerHeight * 0.4));
+        const k = Math.min(maxW / ED.work.width, maxH / ED.work.height);
+        ED.dw = Math.max(1, Math.round(ED.work.width * k));
+        ED.dh = Math.max(1, Math.round(ED.work.height * k));
+        const cv = $('edCanvas');
+        cv.width = ED.dw; cv.height = ED.dh;
+        cv.getContext('2d').drawImage(ED.work, 0, 0, ED.dw, ED.dh);
+        posicionarCorte();
+    }
+    function posicionarCorte() {
+        const el = $('edCrop'), c = ED.crop;
+        el.style.left = (c.x * ED.dw) + 'px';
+        el.style.top = (c.y * ED.dh) + 'px';
+        el.style.width = (c.w * ED.dw) + 'px';
+        el.style.height = (c.h * ED.dh) + 'px';
+    }
+
+    /* ---------- Girar / espelhar: aplicados nos pixels e no retângulo de corte (que acompanha a imagem) ---------- */
+    function transformar(tipo) {
+        const W = ED.work.width, H = ED.work.height, c = ED.crop;
+        let n, nc;
+        if (tipo === 'dir' || tipo === 'esq') {
+            n = novoCanvas(H, W);
+            const g = n.getContext('2d');
+            g.translate(H / 2, W / 2);
+            g.rotate((tipo === 'dir' ? 1 : -1) * Math.PI / 2);
+            g.drawImage(ED.work, -W / 2, -H / 2);
+            nc = tipo === 'dir' ? { x: 1 - (c.y + c.h), y: c.x, w: c.h, h: c.w }
+                                : { x: c.y, y: 1 - (c.x + c.w), w: c.h, h: c.w };
+            if (ED.ratio > 0) {                       // 4:3 vira 3:4 etc.
+                ED.ratio = 1 / ED.ratio;
+                const sel = $('edProporcao');
+                Array.from(sel.options).forEach(o => { if (Math.abs(parseFloat(o.value) - ED.ratio) < 0.001) sel.value = o.value; });
+            }
+        } else {
+            const h = tipo === 'h';
+            n = novoCanvas(W, H);
+            const g = n.getContext('2d');
+            g.translate(h ? W : 0, h ? 0 : H);
+            g.scale(h ? -1 : 1, h ? 1 : -1);
+            g.drawImage(ED.work, 0, 0);
+            nc = h ? { x: 1 - (c.x + c.w), y: c.y, w: c.w, h: c.h } : { x: c.x, y: 1 - (c.y + c.h), w: c.w, h: c.h };
+        }
+        ED.work = n; ED.crop = nc;
+        desenharEditor();
+    }
+
+    /* ---------- Proporção do corte ---------- */
+    function aplicarProporcao(r) {
+        ED.ratio = r;
+        $('edArea').classList.toggle('ed-lock', r > 0);
+        $('edCrop').classList.toggle('ed-redondo', Math.abs(r - 1) < 0.001);   // 1:1 = prévia circular do resultado
+        if (!r) return;
+        const W = ED.work.width, H = ED.work.height, c = ED.crop;
+        let cw = c.w * W, ch = c.h * H;
+        const cx = (c.x + c.w / 2) * W, cy = (c.y + c.h / 2) * H;      // mantém o centro do corte atual
+        if (cw / ch > r) cw = ch * r; else ch = cw / r;
+        const x = clamp(cx - cw / 2, 0, W - cw), y = clamp(cy - ch / 2, 0, H - ch);
+        ED.crop = { x: x / W, y: y / H, w: cw / W, h: ch / H };
+        posicionarCorte();
+    }
+
+    /* ---------- Arrastar o corte (mover) e as alças (redimensionar) ---------- */
+    function redimensionar(alca, r, dx, dy) {
+        const dw = ED.dw, dh = ED.dh, ra = ED.ratio;
+        const W_ = alca.includes('w'), E_ = alca.includes('e'), N_ = alca.includes('n'), S_ = alca.includes('s');
+        const ax = W_ ? r.x + r.w : r.x;          // âncora = lado/canto oposto, que fica parado
+        const ay = N_ ? r.y + r.h : r.y;
+        if (ra > 0) {                              // proporção travada (só cantos): largura e altura andam juntas
+            const px = (W_ ? r.x : r.x + r.w) + dx, py = (N_ ? r.y : r.y + r.h) + dy;
+            let w = Math.abs(px - ax), h = Math.abs(py - ay);
+            if (w / Math.max(h, 1) > ra) h = w / ra; else w = h * ra;
+            const maxW = W_ ? ax : dw - ax, maxH = N_ ? ay : dh - ay;
+            if (w > maxW) { w = maxW; h = w / ra; }
+            if (h > maxH) { h = maxH; w = h * ra; }
+            if (w < MIN_PX) { w = MIN_PX; h = w / ra; }
+            if (h < MIN_PX) { h = MIN_PX; w = h * ra; }
+            return { x: W_ ? ax - w : ax, y: N_ ? ay - h : ay, w: w, h: h };
+        }
+        let x = r.x, y = r.y, w = r.w, h = r.h;     // corte livre: cada lado independente
+        if (W_) { const nx = clamp(r.x + dx, 0, r.x + r.w - MIN_PX); w = r.x + r.w - nx; x = nx; }
+        if (E_) { w = clamp(r.w + dx, MIN_PX, dw - r.x); }
+        if (N_) { const ny = clamp(r.y + dy, 0, r.y + r.h - MIN_PX); h = r.y + r.h - ny; y = ny; }
+        if (S_) { h = clamp(r.h + dy, MIN_PX, dh - r.y); }
+        return { x: x, y: y, w: w, h: h };
+    }
+
+    let arrasto = null;
+    const elCorte = $('edCrop');
+    elCorte.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        elCorte.setPointerCapture(e.pointerId);
+        const c = ED.crop;
+        arrasto = { alca: e.target.dataset.h || 'mover', sx: e.clientX, sy: e.clientY,
+                    r: { x: c.x * ED.dw, y: c.y * ED.dh, w: c.w * ED.dw, h: c.h * ED.dh } };
+    });
+    elCorte.addEventListener('pointermove', (e) => {
+        if (!arrasto) return;
+        const dx = e.clientX - arrasto.sx, dy = e.clientY - arrasto.sy, r = arrasto.r;
+        const n = arrasto.alca === 'mover'
+            ? { x: clamp(r.x + dx, 0, ED.dw - r.w), y: clamp(r.y + dy, 0, ED.dh - r.h), w: r.w, h: r.h }
+            : redimensionar(arrasto.alca, r, dx, dy);
+        ED.crop = { x: n.x / ED.dw, y: n.y / ED.dh, w: n.w / ED.dw, h: n.h / ED.dh };
+        posicionarCorte();
+    });
+    const soltar = () => { arrasto = null; };
+    elCorte.addEventListener('pointerup', soltar);
+    elCorte.addEventListener('pointercancel', soltar);
+
+    /* ---------- Aplicar: recorta o canvas de trabalho, reduz e salva em PNG (com transparência) ---------- */
+    function aplicarEdicao() {
+        const W = ED.work.width, H = ED.work.height, c = ED.crop;
+        const sx = clamp(Math.round(c.x * W), 0, W - 1), sy = clamp(Math.round(c.y * H), 0, H - 1);
+        const sw = clamp(Math.round(c.w * W), 1, W - sx), sh = clamp(Math.round(c.h * H), 1, H - sy);
+        const esc = Math.min(1, LADO_MAX / Math.max(sw, sh));
+        const out = novoCanvas(Math.max(1, Math.round(sw * esc)), Math.max(1, Math.round(sh * esc)));
+        out.getContext('2d').drawImage(ED.work, sx, sy, sw, sh, 0, 0, out.width, out.height);
+        try {
+            const dataUrl = out.toDataURL('image/png');
+            localStorage.setItem(CHAVE, dataUrl);
+            aplicar(dataUrl);
+            fecharEditor();
+            toast("✅ Logo atualizada");
+        } catch (e) {
+            alert("Não foi possível salvar a logo (armazenamento cheio?).");
+        }
+    }
+
+    /* ---------- Entradas: escolher PNG novo / editar a logo atual ---------- */
+    async function carregarArquivo(file) {
+        if (!file) return;
+        if (file.type !== 'image/png') { alert("Selecione um arquivo no formato PNG."); return; }
+        const url = URL.createObjectURL(file);
+        try {
+            const img = new Image();
+            await new Promise((ok, erro) => { img.onload = ok; img.onerror = erro; img.src = url; });
+            abrirEditor(img, img.naturalWidth, img.naturalHeight);
+        } catch (e) {
+            alert("Não foi possível abrir essa imagem.");
+        } finally {
+            URL.revokeObjectURL(url);
+        }
+    }
+    async function editarAtual() {
+        const atual = localStorage.getItem(CHAVE);
+        if (!atual) return;
+        try {
+            const img = new Image();
+            await new Promise((ok, erro) => { img.onload = ok; img.onerror = erro; img.src = atual; });
+            abrirEditor(img, img.naturalWidth, img.naturalHeight);
+        } catch (e) { alert("Não foi possível abrir a logo atual."); }
+    }
+
+    $('logoArquivo').addEventListener('change', (e) => { carregarArquivo(e.target.files[0]); e.target.value = ''; });
+    $('logoEditar').addEventListener('click', editarAtual);
+    $('logoRemover').addEventListener('click', () => {
+        localStorage.removeItem(CHAVE);
+        aplicar(null);
+        toast("Logo removida");
+    });
+    $('edGirarEsq').addEventListener('click', () => transformar('esq'));
+    $('edGirarDir').addEventListener('click', () => transformar('dir'));
+    $('edEspH').addEventListener('click', () => transformar('h'));
+    $('edEspV').addEventListener('click', () => transformar('v'));
+    $('edProporcao').addEventListener('change', (e) => aplicarProporcao(parseFloat(e.target.value)));
+    $('edRedefinir').addEventListener('click', redefinirEditor);
+    $('edAplicar').addEventListener('click', aplicarEdicao);
+    $('edCancelar').addEventListener('click', fecharEditor);
+    window.addEventListener('resize', () => { if (ED.work && $('modalEditorLogo').classList.contains('open')) desenharEditor(); });
+
+    // Nome da empresa: salva a cada digitação; em branco = não exibe
+    $('empresaNome').value = localStorage.getItem(CHAVE_NOME) || '';
+    $('empresaNome').addEventListener('input', (e) => {
+        const v = e.target.value.trim();
+        if (v) localStorage.setItem(CHAVE_NOME, v); else localStorage.removeItem(CHAVE_NOME);
+        atualizarCabecalho();
+    });
+
+    aplicar(localStorage.getItem(CHAVE));   // restaura ao abrir o app
+})();
+</script>
+<script>
+/* =====================================================================
+   MÓDULO: LimpezaLixeira — esvaziamento automático da lixeira a cada N dias (0 a 30; 0 = nunca)
+   Estado (localStorage): 'lixeira_freq_dias' (0..30) e 'lixeira_ciclo_inicio' ('AAAA-MM-DD', dia em que o ciclo começou).
+   Próxima limpeza = início do ciclo + N dias. Como o app roda só no navegador (não há servidor), a checagem acontece
+   quando o admin abre o painel: se o dia chegou, pede confirmação + senha ANTES de excluir; "Adiar 1 dia" empurra para amanhã.
+   ===================================================================== */
+(function LimpezaLixeira() {
+    'use strict';
+    const K_FREQ = 'lixeira_freq_dias', K_CICLO = 'lixeira_ciclo_inicio';
+    const DIA_MS = 86400000;
+    const $ = (id) => document.getElementById(id);
+    const p2 = (n) => String(n).padStart(2, '0');
+
+    /* ---------- Datas (só dia, sem hora: evita problemas de fuso/horário de verão) ---------- */
+    const fmtISO = (d) => d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
+    const fmtBR = (d) => p2(d.getDate()) + '/' + p2(d.getMonth() + 1) + '/' + d.getFullYear();
+    const lerISO = (t) => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(t || ''); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; };
+    const hoje = () => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); };
+    const somarDias = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+    const diasEntre = (a, b) => Math.round((a - b) / DIA_MS);
+
+    /* ---------- Configuração ---------- */
+    function lerFreq() {
+        const n = parseInt(localStorage.getItem(K_FREQ), 10);
+        return isNaN(n) ? 0 : Math.min(30, Math.max(0, n));
+    }
+    function iniciarCiclo(data) { localStorage.setItem(K_CICLO, fmtISO(data || hoje())); }
+
+    // Situação atual: { ativo, freq, prox (Date), restam (dias, pode ser <= 0) }
+    function situacao() {
+        const freq = lerFreq();
+        if (!freq) return { ativo: false, freq: 0 };
+        let ini = lerISO(localStorage.getItem(K_CICLO));
+        if (!ini) { ini = hoje(); iniciarCiclo(ini); }
+        const prox = somarDias(ini, freq);
+        return { ativo: true, freq: freq, prox: prox, restam: diasEntre(prox, hoje()) };
+    }
+    const qtdLixeira = () => (JSON.parse(localStorage.getItem('lixeira_pontos')) || []).length;
+    const plural = (n, a, b) => n + ' ' + (n === 1 ? a : b);
+
+    /* ---------- Textos de contagem (aba Lixeira e aba de configurações) ---------- */
+    function textoContagem(sit) {
+        if (!sit.ativo) return { html: '⏳ Esvaziamento automático: <b>desativado</b> (nunca)', venceu: false };
+        const data = fmtBR(sit.prox);
+        if (sit.restam > 1) return { html: '⏳ Esvaziamento automático em <b>' + plural(sit.restam, 'dia', 'dias') + '</b> (' + data + ')', venceu: false };
+        if (sit.restam === 1) return { html: '⏳ Esvaziamento automático <b>amanhã</b> (' + data + ')', venceu: false };
+        if (sit.restam === 0) return { html: '⚠️ Esvaziamento automático <b>hoje</b> — será pedida confirmação ao abrir o painel', venceu: true };
+        return { html: '⚠️ Esvaziamento automático <b>atrasado há ' + plural(-sit.restam, 'dia', 'dias') + '</b> — aguardando sua confirmação', venceu: true };
+    }
+    function atualizarTextos() {
+        const sit = situacao(), t = textoContagem(sit);
+        const c = $('contagemLixeira');
+        c.innerHTML = t.html; c.classList.toggle('venceu', t.venceu);
+        const st = $('lixFreqStatus');
+        let quando = '';
+        if (sit.ativo) quando = sit.restam > 1 ? 'em ' + plural(sit.restam, 'dia', 'dias') : sit.restam === 1 ? 'amanhã' : sit.restam === 0 ? 'hoje' : 'atrasada ' + plural(-sit.restam, 'dia', 'dias');
+        st.innerHTML = sit.ativo ? '📅 Próxima limpeza: <b>' + fmtBR(sit.prox) + '</b> (' + quando + ')' : 'Limpeza automática <b>desativada</b>.';
+        st.classList.toggle('venceu', t.venceu);
+        $('lixFreqRotulo').textContent = lerFreq() ? plural(lerFreq(), 'dia', 'dias') : 'Nunca';
+    }
+
+    // A contagem aparece sempre que a lista da lixeira é desenhada (ao abrir a aba, filtrar, restaurar, excluir...)
+    const renderOriginal = renderizarLixeira;
+    renderizarLixeira = function () { renderOriginal(); atualizarTextos(); };
+
+    /* ---------- Controle (barra 0–30) ---------- */
+    const barra = $('lixFreqDias');
+    barra.value = lerFreq();
+    barra.addEventListener('input', () => {                    // rótulo ao vivo enquanto arrasta
+        const n = parseInt(barra.value, 10);
+        $('lixFreqRotulo').textContent = n ? plural(n, 'dia', 'dias') : 'Nunca';
+    });
+    barra.addEventListener('change', () => {                   // ao soltar: salva e reinicia o ciclo a partir de hoje
+        const n = Math.min(30, Math.max(0, parseInt(barra.value, 10) || 0));
+        localStorage.setItem(K_FREQ, String(n));
+        if (n) iniciarCiclo(); else localStorage.removeItem(K_CICLO);
+        atualizarTextos();
+        if (typeof mostrarToast === 'function') mostrarToast(n ? '✅ Lixeira será esvaziada a cada ' + plural(n, 'dia', 'dias') : '✅ Limpeza automática desativada');
+    });
+
+    /* ---------- Dia da limpeza: confirmação ---------- */
+    function limparAgora(freq) {
+        localStorage.setItem('lixeira_pontos', JSON.stringify([]));
+        iniciarCiclo();                                         // novo ciclo começa hoje
+        if (typeof renderizarLixeira === 'function') renderizarLixeira();
+        atualizarTextos();
+        if (typeof mostrarToast === 'function') mostrarToast('🗑️ Lixeira esvaziada. Próxima limpeza em ' + plural(freq, 'dia', 'dias'));
+    }
+    function checarLimpezaAutomatica() {
+        const sit = situacao();
+        if (!sit.ativo || sit.restam > 0) return;               // ainda não chegou o dia
+        const qtd = qtdLixeira();
+        if (qtd === 0) { iniciarCiclo(); atualizarTextos(); return; }   // nada para apagar: só renova o ciclo
+        $('msgLimpezaAuto').textContent = 'Chegou o dia da limpeza automática (a cada ' + plural(sit.freq, 'dia', 'dias') + '). ' +
+            plural(qtd, 'registro será excluído', 'registros serão excluídos') + ' definitivamente da lixeira. Deseja continuar?';
+        $('modalLimpezaAuto').classList.add('open');
+    }
+    $('btnLimpezaConfirmar').addEventListener('click', () => {
+        const freq = lerFreq();
+        $('modalLimpezaAuto').classList.remove('open');
+        // mesma senha do admin (a exclusão definitiva sempre exige senha)
+        pedirSenhaAdmin('Confirme a senha para excluir DEFINITIVAMENTE os registros da lixeira.', () => limparAgora(freq));
+    });
+    $('btnLimpezaAdiar').addEventListener('click', () => {
+        const freq = lerFreq();
+        iniciarCiclo(somarDias(hoje(), 1 - freq));               // próxima limpeza = amanhã
+        $('modalLimpezaAuto').classList.remove('open');
+        atualizarTextos();
+        if (typeof mostrarToast === 'function') mostrarToast('Limpeza adiada para amanhã');
+    });
+
+    // Checa uma vez por sessão, quando o painel admin é aberto (login feito)
+    let checado = false;
+    const painelOriginal = renderizarPontosAdmin;
+    renderizarPontosAdmin = function () {
+        painelOriginal();
+        if (!checado && $('adminData').style.display === 'block') { checado = true; atualizarTextos(); checarLimpezaAutomatica(); }
+    };
+
+    atualizarTextos();
+})();
 </script>
 </body>
 </html>
