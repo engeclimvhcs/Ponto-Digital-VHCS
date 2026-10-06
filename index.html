@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ponto Eletrônico Digital</title>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <!-- SheetJS (xlsx): leitura e geração real de arquivos Excel .xlsx -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
             --primary: #f97316; /* Laranja Medio */
@@ -311,6 +313,13 @@
         .cont-lixeira { font-size: 12px; text-align: center; padding: 8px 10px; border-radius: 8px; margin-bottom: 12px; background: rgba(0,0,0,.25); border: 1px solid #374151; color: var(--text-muted); }
         .cont-lixeira b { color: var(--text); }
         .cont-lixeira.venceu { border-color: var(--danger); color: var(--text); }
+
+        /* ===== Lixeira: aviso, ferramentas e modal de exclusão total ===== */
+        .aviso-lixeira { display: none; border: 1px solid #f59e0b; background: rgba(245,158,11,.14); color: var(--text); border-radius: 10px;
+            padding: 10px 12px; font-size: 13px; line-height: 1.45; margin-bottom: 12px; }
+        .aviso-lixeira b { color: #fbbf24; }
+        .lix-ferramentas { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+        .lix-ferramentas .btn { margin: 0; font-size: 12px; padding: 10px 6px; line-height: 1.3; }
     </style>
 </head>
 <body>
@@ -595,12 +604,18 @@
 
             <div id="lixeiraPanel" style="display:none; margin-bottom:20px; border:1px solid #4b5563; border-radius:10px; padding:14px; background:#111827;">
                 <h3 style="margin-top:0; font-size:16px; text-align:center; color:var(--primary);">Lixeira - Registros Excluídos</h3>
+                <div id="avisoExpiracaoLixeira" class="aviso-lixeira" role="alert">⚠️ <b>Atenção:</b> A lixeira será esvaziada automaticamente em breve. Lembre-se de baixar os dados dos pontos batidos antes que eles sejam apagados permanentemente.</div>
                 <div id="contagemLixeira" class="cont-lixeira"></div>
+                <div class="lix-ferramentas">
+                    <button type="button" class="btn btn-secondary" id="btnLixBaixarExcel">📥 Baixar Dados da Lixeira (Excel)</button>
+                    <button type="button" class="btn btn-secondary" id="btnLixUploadExcel">📤 Upload de Planilha / Restaurar Pontos</button>
+                    <input type="file" id="inputPlanilhaLixeira" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display:none;">
+                </div>
                 <div class="form-group">
                     <label>Buscar na Lixeira</label>
                     <input type="text" id="filtroLixeira" placeholder="Digite o nome para pesquisar..." oninput="renderizarLixeira()">
                 </div>
-                <button type="button" class="btn" style="background:var(--danger); color:white; font-size:13px; padding:10px; margin-bottom:12px;" onclick="esvaziarLixeira()">Esvaziar Lixeira (pede senha) 🗑️</button>
+                <button type="button" class="btn" id="btnExcluirTodosLixeira" style="background:var(--danger); color:white; font-size:14px; font-weight:bold; padding:12px; margin-bottom:12px;">Excluir Todos os Pontos da Lixeira</button>
                 <div id="listaLixeira"></div>
             </div>
 
@@ -642,6 +657,27 @@
         <button type="button" class="btn btn-primary" id="edAplicar">Aplicar ✅</button>
         <button type="button" class="btn btn-secondary" style="margin-top:8px;" id="edRedefinir">Redefinir</button>
         <button type="button" class="btn btn-secondary" style="margin-top:8px;" id="edCancelar">Cancelar</button>
+    </div>
+</div>
+
+<div id="modalExclusaoTotal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-box">
+        <!-- Tela 1: pergunta de confirmação -->
+        <div id="exclEtapa1" style="display:none;">
+            <h2 style="color:var(--danger);">⚠️ Confirmação</h2>
+            <p style="font-size:15px; line-height:1.5; text-align:center; margin-top:0;">Você tem certeza absoluta de que deseja apagar de forma permanente todos os pontos da lixeira? Esta ação <b>NÃO</b> poderá ser desfeita e os dados sumirão do sistema.</p>
+            <button type="button" class="btn" style="background:var(--danger); color:white;" id="exclSim">Sim, tenho certeza</button>
+            <button type="button" class="btn btn-secondary" style="margin-top:8px;" id="exclCancelar1">Cancelar</button>
+        </div>
+        <!-- Tela 2: validação por senha (campo mascarado) -->
+        <div id="exclEtapa2" style="display:none;">
+            <h2 style="color:var(--danger);">🔒 Validação de Senha</h2>
+            <p style="font-size:14px; text-align:center; color:var(--text-muted); margin-top:0;">Digite a senha do administrador para concluir a exclusão total.</p>
+            <input type="password" id="exclSenha" placeholder="Senha do administrador" autocomplete="current-password">
+            <div id="exclErro" class="alerta-erro"></div>
+            <button type="button" class="btn" style="background:var(--danger); color:white; margin-top:14px;" id="exclConfirmar">Excluir tudo definitivamente</button>
+            <button type="button" class="btn btn-secondary" style="margin-top:8px;" id="exclCancelar2">Cancelar</button>
+        </div>
     </div>
 </div>
 
@@ -2374,6 +2410,9 @@ async function baixarFotoAdmin(index) {
         if (sit.ativo) quando = sit.restam > 1 ? 'em ' + plural(sit.restam, 'dia', 'dias') : sit.restam === 1 ? 'amanhã' : sit.restam === 0 ? 'hoje' : 'atrasada ' + plural(-sit.restam, 'dia', 'dias');
         st.innerHTML = sit.ativo ? '📅 Próxima limpeza: <b>' + fmtBR(sit.prox) + '</b> (' + quando + ')' : 'Limpeza automática <b>desativada</b>.';
         st.classList.toggle('venceu', t.venceu);
+        // Aviso de backup: 7 dias ou menos para a limpeza automática (inclui hoje e atrasada)
+        const aviso = $('avisoExpiracaoLixeira');
+        if (aviso) aviso.style.display = (sit.ativo && sit.restam <= 7) ? 'block' : 'none';
         $('lixFreqRotulo').textContent = lerFreq() ? plural(lerFreq(), 'dia', 'dias') : 'Nunca';
     }
 
@@ -2436,6 +2475,269 @@ async function baixarFotoAdmin(index) {
     };
 
     atualizarTextos();
+})();
+</script>
+<script>
+/* =====================================================================
+   PlanilhaPontos — conversão PURA entre registros do app e linhas de planilha (sem DOM, fácil de testar)
+   Planilha "Pontos": ID | Nome | CPF | Data | Hora | Endereço | Latitude | Longitude | Foto (Sim/Não)
+   Planilha "Fotos" (oculta): ID | Parte | Dados — a foto (base64) é maior que o limite de 32.767 caracteres de uma
+   célula do Excel, então é dividida em partes de 30.000 e remontada na importação.
+   ===================================================================== */
+const PlanilhaPontos = (function () {
+    'use strict';
+    const COLUNAS = ['ID', 'Nome', 'CPF', 'Data', 'Hora', 'Endereço', 'Latitude', 'Longitude', 'Foto'];
+    const COLUNAS_FOTO = ['ID', 'Parte', 'Dados'];
+    const TAM_PARTE = 30000;
+
+    const pad = (n) => String(n).padStart(2, '0');
+    const soDigitos = (t) => String(t == null ? '' : t).replace(/\D/g, '');
+    const norm = (t) => String(t == null ? '' : t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+    const numero = (v) => { const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : ''; };
+    const mascararCpf = (d) => d.slice(0, 3) + '.' + d.slice(3, 6) + '.' + d.slice(6, 9) + '-' + d.slice(9);
+
+    // "05/10/2026, 15:30:00" ou "05/10/2026 15:30:00" -> { data, hora }
+    function partirDataHora(dh) {
+        const t = String(dh || '').trim();
+        const m = /^(\d{2}\/\d{2}\/\d{4})[,\s]+(.+)$/.exec(t);
+        return m ? { data: m[1], hora: m[2].trim() } : { data: t, hora: '' };
+    }
+    // Chave para detectar o mesmo ponto (CPF + data/hora), ignorando máscara e vírgulas
+    const chave = (p) => soDigitos(p.cpf) + '|' + soDigitos(p.dataHora);
+
+    function lerData(v) {
+        const t = String(v == null ? '' : v).trim();
+        let m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(t);
+        if (m) return { br: pad(m[1]) + '/' + pad(m[2]) + '/' + m[3], iso: m[3] + '-' + pad(m[2]) + '-' + pad(m[1]) };
+        m = /^(\d{4})-(\d{2})-(\d{2})/.exec(t);
+        return m ? { br: m[3] + '/' + m[2] + '/' + m[1], iso: m[1] + '-' + m[2] + '-' + m[3] } : null;
+    }
+    function lerHora(v) {
+        const m = /^(\d{1,2}):(\d{2})(?::(\d{2}))?/.exec(String(v == null ? '' : v).trim());
+        return m ? pad(m[1]) + ':' + m[2] + ':' + (m[3] || '00') : '00:00:00';
+    }
+    const linhaNormalizada = (l) => { const r = {}; Object.keys(l).forEach(k => { r[norm(k)] = l[k]; }); return r; };
+    const linhaVazia = (l) => Object.keys(l).every(k => String(l[k]).trim() === '');
+
+    // registros -> { pontos: [...], fotos: [...] }
+    function paraPlanilha(registros) {
+        const pontos = [], fotos = [];
+        registros.forEach((p, i) => {
+            const id = i + 1, dh = partirDataHora(p.dataHora);
+            pontos.push({ 'ID': id, 'Nome': p.nome || '', 'CPF': p.cpf || '', 'Data': dh.data, 'Hora': dh.hora,
+                          'Endereço': p.endereco || '', 'Latitude': numero(p.lat), 'Longitude': numero(p.lng), 'Foto': p.foto ? 'Sim' : 'Não' });
+            if (p.foto) {
+                for (let k = 0, parte = 1; k < p.foto.length; k += TAM_PARTE, parte++) {
+                    fotos.push({ 'ID': id, 'Parte': parte, 'Dados': p.foto.slice(k, k + TAM_PARTE) });
+                }
+            }
+        });
+        return { pontos: pontos, fotos: fotos };
+    }
+
+    // linhas lidas da planilha -> { validos: [registros], invalidos: [nº da linha no Excel] }
+    function dePlanilha(linhasPontos, linhasFotos) {
+        const partesPorId = {};
+        (linhasFotos || []).forEach((l) => {
+            const r = linhaNormalizada(l), id = String(r.id == null ? '' : r.id).trim();
+            if (!id) return;
+            (partesPorId[id] = partesPorId[id] || []).push({ parte: parseInt(r.parte, 10) || 0, dados: String(r.dados || '') });
+        });
+        const validos = [], invalidos = [];
+        linhasPontos.forEach((l, i) => {
+            if (linhaVazia(l)) return;
+            const r = linhaNormalizada(l);
+            const nome = String(r.nome || '').trim();
+            let cpf = soDigitos(r.cpf);
+            if (cpf.length >= 9 && cpf.length < 11) cpf = cpf.padStart(11, '0');   // Excel pode ter cortado zeros à esquerda
+            const data = lerData(r.data);
+            if (!nome || cpf.length !== 11 || !data) { invalidos.push(i + 2); return; }   // +2: cabeçalho + base 1
+            let foto = '';
+            const partes = partesPorId[String(r.id == null ? '' : r.id).trim()];
+            if (partes) {
+                foto = partes.sort((a, b) => a.parte - b.parte).map(x => x.dados).join('');
+                if (!/^data:image\//.test(foto)) foto = '';
+            }
+            validos.push({ nome: nome, cpf: mascararCpf(cpf), foto: foto, lat: numero(r.latitude), lng: numero(r.longitude),
+                           endereco: String(r.endereco || '').trim(), dataHora: data.br + ' ' + lerHora(r.hora), dataSimples: data.iso });
+        });
+        return { validos: validos, invalidos: invalidos };
+    }
+
+    return { COLUNAS: COLUNAS, COLUNAS_FOTO: COLUNAS_FOTO, paraPlanilha: paraPlanilha, dePlanilha: dePlanilha, chave: chave };
+})();
+
+/* =====================================================================
+   LixeiraExcel — botões "Baixar (Excel)" e "Upload / Restaurar" (usa a biblioteca SheetJS: global XLSX)
+   ===================================================================== */
+(function LixeiraExcel() {
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    const toast = (m) => { if (typeof mostrarToast === 'function') mostrarToast(m); };
+    const ler = (k) => JSON.parse(localStorage.getItem(k)) || [];
+    const MIME_XLSX = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
+    function temBiblioteca() {
+        if (typeof XLSX !== 'undefined') return true;
+        alert('A biblioteca de Excel não foi carregada. Verifique a conexão com a internet e recarregue a página.');
+        return false;
+    }
+
+    /* ---------- Download ---------- */
+    function montarWorkbook(registros) {
+        const dados = PlanilhaPontos.paraPlanilha(registros);
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(dados.pontos, { header: PlanilhaPontos.COLUNAS });
+        ws['!cols'] = [{ wch: 6 }, { wch: 30 }, { wch: 16 }, { wch: 12 }, { wch: 10 }, { wch: 55 }, { wch: 12 }, { wch: 12 }, { wch: 8 }];
+        ws['!autofilter'] = { ref: ws['!ref'] };                              // filtros no cabeçalho
+        XLSX.utils.book_append_sheet(wb, ws, 'Pontos');
+        if (dados.fotos.length) {                                              // fotos em planilha auxiliar oculta
+            const wf = XLSX.utils.json_to_sheet(dados.fotos, { header: PlanilhaPontos.COLUNAS_FOTO });
+            XLSX.utils.book_append_sheet(wb, wf, 'Fotos');
+            wb.Workbook = { Sheets: [{ Hidden: 0 }, { Hidden: 1 }] };
+        }
+        return wb;
+    }
+    function baixarArquivo(blob, nome) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = nome;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 30000);
+    }
+    function exportar() {
+        if (!temBiblioteca()) return;
+        const registros = ler('lixeira_pontos');
+        if (!registros.length) { alert('A lixeira está vazia: não há dados para baixar.'); return; }
+        try {
+            const bytes = XLSX.write(montarWorkbook(registros), { bookType: 'xlsx', type: 'array' });
+            const d = new Date();
+            const nome = 'lixeira_pontos_' + d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') + '.xlsx';
+            baixarArquivo(new Blob([bytes], { type: MIME_XLSX }), nome);
+            toast('✅ Planilha da lixeira baixada (' + registros.length + ' ponto' + (registros.length === 1 ? '' : 's') + ')');
+        } catch (e) {
+            alert('Não foi possível gerar a planilha.');
+        }
+    }
+
+    /* ---------- Upload / restauração para o banco local (painel de registros) ---------- */
+    async function importar(arquivo) {
+        if (!arquivo || !temBiblioteca()) return;
+        if (!/\.xlsx$/i.test(arquivo.name)) { alert('Selecione um arquivo Excel no formato .xlsx.'); return; }
+        let lidos;
+        try {
+            const wb = XLSX.read(await arquivo.arrayBuffer(), { type: 'array' });
+            const nomePontos = wb.SheetNames.indexOf('Pontos') >= 0 ? 'Pontos' : wb.SheetNames[0];
+            const linhas = XLSX.utils.sheet_to_json(wb.Sheets[nomePontos], { defval: '', raw: false });
+            const fotos = wb.Sheets['Fotos'] ? XLSX.utils.sheet_to_json(wb.Sheets['Fotos'], { defval: '', raw: false }) : [];
+            lidos = PlanilhaPontos.dePlanilha(linhas, fotos);
+        } catch (e) {
+            alert('Não foi possível ler a planilha. Use um arquivo .xlsx gerado por este aplicativo.');
+            return;
+        }
+
+        // Ignora pontos que já estão no painel (mesmo CPF + data/hora) e repetidos dentro do próprio arquivo
+        const historico = ler('historico_pontos');
+        const vistos = new Set(historico.map(PlanilhaPontos.chave));
+        const novos = [];
+        lidos.validos.forEach((p) => { const c = PlanilhaPontos.chave(p); if (!vistos.has(c)) { vistos.add(c); novos.push(p); } });
+        const ignorados = lidos.validos.length - novos.length;
+        const invalidos = lidos.invalidos.length;
+        const resumoExtra = (ignorados ? '\n• ' + ignorados + ' já existem no painel (ignorados)' : '') +
+                            (invalidos ? '\n• ' + invalidos + ' linha(s) inválida(s) (ignoradas): ' + lidos.invalidos.slice(0, 10).join(', ') + (invalidos > 10 ? '…' : '') : '');
+        if (!novos.length) { alert('Nenhum ponto novo para restaurar.' + resumoExtra); return; }
+        if (!confirm('Restaurar ' + novos.length + ' ponto(s) para o painel de registros?' + resumoExtra)) return;
+
+        try {
+            localStorage.setItem('historico_pontos', JSON.stringify(historico.concat(novos)));
+        } catch (e) {
+            alert('Armazenamento cheio: não foi possível restaurar os pontos.');
+            return;
+        }
+        // Se algum dos pontos restaurados estava na lixeira, sai de lá (evita duplicidade)
+        const chaves = new Set(novos.map(PlanilhaPontos.chave));
+        localStorage.setItem('lixeira_pontos', JSON.stringify(ler('lixeira_pontos').filter(p => !chaves.has(PlanilhaPontos.chave(p)))));
+
+        renderizarPontosAdmin();
+        renderizarLixeira();
+        toast('✅ ' + novos.length + ' ponto(s) restaurado(s)');
+    }
+
+    $('btnLixBaixarExcel').addEventListener('click', exportar);
+    $('btnLixUploadExcel').addEventListener('click', () => $('inputPlanilhaLixeira').click());
+    $('inputPlanilhaLixeira').addEventListener('change', (e) => { importar(e.target.files[0]); e.target.value = ''; });
+})();
+
+/* =====================================================================
+   ExclusaoTotal — "Excluir Todos os Pontos da Lixeira" com DUPLA confirmação em modal de 2 telas
+   Máquina de estados (única fonte de verdade: estado.etapa):
+     FECHADO ──abrir()──▶ CONFIRMACAO ──"Sim, tenho certeza"──▶ SENHA ──senha correta──▶ executa e volta a FECHADO
+   Regras: só se chega a SENHA vindo de CONFIRMACAO; cancelar em qualquer tela volta a FECHADO (sem apagar nada);
+   3 senhas erradas encerram o fluxo. A senha é a mesma do login do admin (senhaAdminAtual).
+   ===================================================================== */
+(function ExclusaoTotal() {
+    'use strict';
+    const ETAPA = { FECHADO: 0, CONFIRMACAO: 1, SENHA: 2 };
+    const MAX_TENTATIVAS = 3;
+    const estado = { etapa: ETAPA.FECHADO, tentativas: 0 };
+    const $ = (id) => document.getElementById(id);
+    const toast = (m) => { if (typeof mostrarToast === 'function') mostrarToast(m); };
+
+    // Desenha a tela correspondente ao estado atual
+    function renderizar() {
+        $('modalExclusaoTotal').classList.toggle('open', estado.etapa !== ETAPA.FECHADO);
+        $('exclEtapa1').style.display = estado.etapa === ETAPA.CONFIRMACAO ? 'block' : 'none';
+        $('exclEtapa2').style.display = estado.etapa === ETAPA.SENHA ? 'block' : 'none';
+        $('exclErro').style.display = 'none';
+        $('exclSenha').value = '';                       // a senha nunca fica no campo ao trocar de tela/fechar
+        if (estado.etapa === ETAPA.SENHA) setTimeout(() => $('exclSenha').focus(), 50);
+    }
+    function irPara(etapa) { estado.etapa = etapa; renderizar(); }
+
+    function abrir() {
+        const qtd = (JSON.parse(localStorage.getItem('lixeira_pontos')) || []).length;
+        if (!qtd) { alert('A lixeira já está vazia.'); return; }
+        estado.tentativas = 0;
+        irPara(ETAPA.CONFIRMACAO);
+    }
+    function cancelar() { irPara(ETAPA.FECHADO); }
+    function avancarParaSenha() {
+        if (estado.etapa !== ETAPA.CONFIRMACAO) return;   // trava: não existe atalho direto para a tela de senha
+        irPara(ETAPA.SENHA);
+    }
+    function executarExclusao() {
+        localStorage.setItem('lixeira_pontos', JSON.stringify([]));
+        if (typeof renderizarLixeira === 'function') renderizarLixeira();
+        toast('🗑️ Todos os pontos da lixeira foram excluídos');
+    }
+    function validarSenha() {
+        if (estado.etapa !== ETAPA.SENHA) return;
+        if ($('exclSenha').value === senhaAdminAtual()) {
+            irPara(ETAPA.FECHADO);
+            executarExclusao();                           // só chega aqui passando pelas duas etapas
+            return;
+        }
+        estado.tentativas++;
+        const restam = MAX_TENTATIVAS - estado.tentativas;
+        if (restam <= 0) {
+            irPara(ETAPA.FECHADO);
+            alert('Senha incorreta 3 vezes. A exclusão foi cancelada e nada foi apagado.');
+            return;
+        }
+        $('exclErro').textContent = '⚠️ Senha incorreta. Tentativas restantes: ' + restam;
+        $('exclErro').style.display = 'block';
+        $('exclSenha').value = '';
+        $('exclSenha').focus();
+    }
+
+    $('btnExcluirTodosLixeira').addEventListener('click', abrir);
+    $('exclSim').addEventListener('click', avancarParaSenha);
+    $('exclCancelar1').addEventListener('click', cancelar);
+    $('exclCancelar2').addEventListener('click', cancelar);
+    $('exclConfirmar').addEventListener('click', validarSenha);
+    $('exclSenha').addEventListener('keydown', (e) => { if (e.key === 'Enter') validarSenha(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && estado.etapa !== ETAPA.FECHADO) cancelar(); });
+    renderizar();
 })();
 </script>
 </body>
