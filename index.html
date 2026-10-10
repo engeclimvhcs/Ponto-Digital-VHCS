@@ -320,6 +320,34 @@
         .aviso-lixeira b { color: #fbbf24; }
         .lix-ferramentas { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
         .lix-ferramentas .btn { margin: 0; font-size: 12px; padding: 10px 6px; line-height: 1.3; }
+
+        /* ===== Área do colaborador: conta, perfil, histórico ===== */
+        .colab-barra { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid #374151; border-radius: 12px; background: rgba(0,0,0,.2); margin-bottom: 12px; }
+        .colab-saudacao { flex: 1; min-width: 0; font-size: 14px; line-height: 1.25; }
+        .colab-saudacao b { display: block; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .colab-sair { background: transparent; border: 1px solid #4b5563; color: var(--text-muted); border-radius: 8px; padding: 6px 10px; font-size: 12px; cursor: pointer; }
+        .avatar { width: 44px; height: 44px; flex: none; border-radius: 50%; box-sizing: border-box; background: var(--primary) center / cover no-repeat;
+            color: var(--on-primary, #fff); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; border: 2px solid #fff; }
+        .avatar-grande { width: 104px; height: 104px; font-size: 36px; }
+        .perfil-avatar-wrap { position: relative; width: 104px; margin: 4px auto 16px; }
+        .perfil-camera { position: absolute; right: -4px; bottom: -4px; width: 36px; height: 36px; padding: 0; border-radius: 50%; border: 2px solid #fff;
+            background: var(--primary); color: var(--on-primary, #fff); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .colab-nav { display: flex; gap: 6px; margin-bottom: 14px; }
+        .colab-nav-btn { flex: 1; padding: 9px 4px; border: 1px solid #4b5563; border-radius: 10px; background: var(--card-light); color: var(--text-muted); font-weight: 700; font-size: 13px; cursor: pointer; }
+        .colab-nav-btn.active { color: var(--primary); border-color: var(--primary); }
+        .cod-audit { font-family: ui-monospace, Menlo, Consolas, monospace; font-weight: 700; letter-spacing: 1px; color: var(--primary); }
+        .log-alteracoes { margin-top: 8px; border: 1px solid #374151; border-radius: 10px; padding: 8px 10px; background: rgba(0,0,0,.2); font-size: 12px; }
+        .log-item { padding: 6px 0; border-bottom: 1px solid #374151; line-height: 1.45; }
+        .log-item:last-child { border-bottom: none; }
+        .log-de { color: #f87171; text-decoration: line-through; }
+        .log-para { color: #4ade80; font-weight: 700; }
+        .log-vazio { margin: 4px 0; color: var(--text-muted); text-align: center; }
+        .nota-colab { font-size: 12px; color: var(--text-muted); line-height: 1.45; margin: 0 0 12px 0; }
+        .dado-fixo { display: flex; justify-content: space-between; gap: 10px; padding: 7px 0; border-bottom: 1px solid #374151; font-size: 13px; }
+        .dado-fixo:last-child { border-bottom: none; }
+        .dado-fixo span:first-child { color: var(--text-muted); }
+        .dado-fixo span:last-child { text-align: right; font-weight: 600; word-break: break-word; }
+        #nome[readonly], #cpf[readonly] { opacity: .75; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -333,6 +361,51 @@
     </div>
 
     <div id="tab-ponto" class="content active">
+
+        <!-- ===== Acesso do colaborador (credenciais próprias) ===== -->
+        <div id="colabAuth">
+            <h2>Acesso do Colaborador</h2>
+            <div class="colab-nav">
+                <button type="button" class="colab-nav-btn active" id="authTabEntrar">Entrar</button>
+                <button type="button" class="colab-nav-btn" id="authTabCriar">Criar conta</button>
+            </div>
+            <div id="authEntrar">
+                <div class="form-group"><label for="colabLoginCpf">CPF</label>
+                    <input type="text" id="colabLoginCpf" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" autocomplete="username" oninput="aplicarMascaraCPF(this)"></div>
+                <div class="form-group"><label for="colabLoginSenha">Senha</label>
+                    <input type="password" id="colabLoginSenha" placeholder="Sua senha" autocomplete="current-password"></div>
+                <div id="colabLoginErro" class="alerta-erro"></div>
+                <button type="button" class="btn btn-primary" id="colabBtnEntrar">Entrar</button>
+            </div>
+            <div id="authCriar" style="display:none;">
+                <p class="nota-colab">O nome e o CPF informados aqui são o seu <b>cadastro oficial</b> e ficam gravados em todos os seus pontos. Não poderão ser alterados por você depois.</p>
+                <div class="form-group"><label for="colabCadNome">Nome Completo</label>
+                    <input type="text" id="colabCadNome" placeholder="Seu nome completo" autocomplete="name"></div>
+                <div class="form-group"><label for="colabCadCpf">CPF</label>
+                    <input type="text" id="colabCadCpf" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" oninput="aplicarMascaraCPF(this)"></div>
+                <div class="form-group"><label for="colabCadSenha">Senha (mín. 6 caracteres)</label>
+                    <input type="password" id="colabCadSenha" autocomplete="new-password"></div>
+                <div class="form-group"><label for="colabCadSenha2">Confirmar senha</label>
+                    <input type="password" id="colabCadSenha2" autocomplete="new-password"></div>
+                <div id="colabCadErro" class="alerta-erro"></div>
+                <button type="button" class="btn btn-primary" id="colabBtnCriar">Criar conta</button>
+            </div>
+        </div>
+
+        <!-- ===== Área do colaborador logado ===== -->
+        <div id="colabApp" style="display:none;">
+        <div class="colab-barra">
+            <div class="avatar" id="colabBarraAvatar"></div>
+            <div class="colab-saudacao">Olá,<b id="colabBarraNome"></b></div>
+            <button type="button" class="colab-sair" id="colabBtnSair">Sair</button>
+        </div>
+        <div class="colab-nav">
+            <button type="button" class="colab-nav-btn active" data-pane="ponto">⏱️ Ponto</button>
+            <button type="button" class="colab-nav-btn" data-pane="hist">🕘 Histórico</button>
+            <button type="button" class="colab-nav-btn" data-pane="perfil">👤 Perfil</button>
+        </div>
+
+        <div id="colabPane-ponto">
         <h2>Registro de Ponto</h2>
         <form id="pontoForm" onsubmit="enviarPonto(event)">
             <div class="form-group">
@@ -365,6 +438,40 @@
 
             <button type="submit" id="btnEnviar" class="btn btn-primary" disabled>Confirmar e Enviar Ponto</button>
         </form>
+        </div>
+
+        <!-- ===== Histórico de Pontos (espelho original, somente leitura) ===== -->
+        <div id="colabPane-hist" style="display:none;">
+            <h2>Histórico de Pontos</h2>
+            <p class="nota-colab">Este extrato é o espelho <b>original</b> do que você registrou e não pode ser editado ou excluído. Ajustes feitos pelo administrador não alteram estes dados: aparecem apenas no <b>Histórico de Alterações</b> de cada ponto, ligados ao mesmo <b>Código Único</b>.</p>
+            <div class="form-group"><label for="histMes">Mês</label><input type="month" id="histMes"></div>
+            <button type="button" class="btn btn-secondary" id="histBtnExcel" style="margin-bottom:10px;">📥 Baixar histórico do mês (Excel)</button>
+            <p id="histResumo" class="nota-colab" style="text-align:center;"></p>
+            <div id="histLista"></div>
+        </div>
+
+        <!-- ===== Meu Perfil ===== -->
+        <div id="colabPane-perfil" style="display:none;">
+            <h2>Meu Perfil</h2>
+            <div class="perfil-avatar-wrap">
+                <div class="avatar avatar-grande" id="perfilAvatar"></div>
+                <button type="button" class="perfil-camera" id="perfilBtnFoto" title="Alterar foto" aria-label="Alterar foto de perfil">📷</button>
+            </div>
+            <div class="form-group">
+                <label for="perfilNomeExib">Nome de exibição</label>
+                <input type="text" id="perfilNomeExib" maxlength="60" autocomplete="off">
+                <div id="perfilNomeErro" class="alerta-erro">⚠️ O nome não pode ficar vazio.</div>
+            </div>
+            <button type="button" class="btn btn-primary" id="perfilBtnSalvar">Salvar Alterações</button>
+            <div class="card-ponto" style="margin-top:16px; padding:10px 14px;">
+                <div class="dado-fixo"><span>Nome jurídico (cadastro)</span><span id="perfilNomeJuridico"></span></div>
+                <div class="dado-fixo"><span>CPF</span><span id="perfilCpf"></span></div>
+                <div class="dado-fixo"><span>ID do colaborador</span><span id="perfilId"></span></div>
+                <div class="dado-fixo"><span>Conta criada em</span><span id="perfilCriadoEm"></span></div>
+            </div>
+            <p class="nota-colab" style="margin-top:10px;">Dados fixos: não podem ser alterados por você. O nome de exibição muda apenas como você aparece no aplicativo; o <b>nome jurídico</b> usado nos registros de ponto continua o do cadastro.</p>
+        </div>
+        </div><!-- /colabApp -->
     </div>
 
     <div id="tab-admin" class="content">
@@ -601,6 +708,7 @@
             </div>
 
             <button type="button" class="btn" style="background: var(--primary); color: white; font-size:13px; padding:10px; margin-bottom:15px;" onclick="toggleLixeira()">🗑️ Lixeira</button>
+            <button type="button" class="btn btn-secondary" style="font-size:13px; padding:10px; margin-bottom:15px;" onclick="exportarConciliacao()">📊 Relatório de Conciliação (Excel)</button>
 
             <div id="lixeiraPanel" style="display:none; margin-bottom:20px; border:1px solid #4b5563; border-radius:10px; padding:14px; background:#111827;">
                 <h3 style="margin-top:0; font-size:16px; text-align:center; color:var(--primary);">Lixeira - Registros Excluídos</h3>
@@ -657,6 +765,33 @@
         <button type="button" class="btn btn-primary" id="edAplicar">Aplicar ✅</button>
         <button type="button" class="btn btn-secondary" style="margin-top:8px;" id="edRedefinir">Redefinir</button>
         <button type="button" class="btn btn-secondary" style="margin-top:8px;" id="edCancelar">Cancelar</button>
+    </div>
+</div>
+
+<div id="modalFotoPerfil" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-box">
+        <h2>Foto de Perfil</h2>
+        <button type="button" class="btn btn-primary" id="fotoSheetCamera">📷 Tirar Foto</button>
+        <button type="button" class="btn btn-secondary" style="margin-top:8px;" id="fotoSheetGaleria">🖼️ Escolher da Galeria</button>
+        <button type="button" class="btn btn-secondary" style="margin-top:8px;" id="fotoSheetCancelar">Cancelar</button>
+        <input type="file" id="perfilInputCamera" accept="image/*" capture="user" style="display:none;">
+        <input type="file" id="perfilInputGaleria" accept="image/png,image/jpeg" style="display:none;">
+    </div>
+</div>
+
+<div id="modalAjustePonto" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-box" style="max-height:94vh; overflow-y:auto;">
+        <h2>✏️ Ajustar Ponto</h2>
+        <p id="ajInfo" style="font-size:12px; color:var(--text-muted); text-align:center; margin-top:0;"></p>
+        <div class="form-group"><label for="ajNome">Nome Completo</label><input type="text" id="ajNome"></div>
+        <div class="form-group"><label for="ajCpf">CPF</label><input type="text" id="ajCpf" maxlength="14" oninput="aplicarMascaraCPF(this)"></div>
+        <div class="form-group"><label for="ajData">Data</label><input type="date" id="ajData"></div>
+        <div class="form-group"><label for="ajHora">Hora</label><input type="time" step="1" id="ajHora"></div>
+        <div class="form-group"><label for="ajEndereco">Endereço</label><input type="text" id="ajEndereco"></div>
+        <div class="form-group"><label for="ajMotivo">Motivo do ajuste (obrigatório)</label><input type="text" id="ajMotivo" maxlength="200" placeholder="Ex.: esquecimento de registro, falha do aparelho"></div>
+        <div id="ajErro" class="alerta-erro"></div>
+        <button type="button" class="btn btn-primary" style="margin-top:12px;" id="ajSalvar">Salvar Ajuste</button>
+        <button type="button" class="btn btn-secondary" style="margin-top:8px;" id="ajCancelar">Cancelar</button>
     </div>
 </div>
 
@@ -1263,19 +1398,34 @@
 
     function enviarPonto(e) {
         e.preventDefault();
-        dadosPonto.nome = document.getElementById('nome').value.trim();
-        dadosPonto.cpf = document.getElementById('cpf').value.trim();
+        const colab = (typeof Colab !== 'undefined') ? Colab.usuarioAtual() : null;
+        if (!colab) { alert("Entre na sua conta de colaborador para registrar o ponto."); return; }
+        // Nome jurídico e CPF vêm sempre do cadastro da conta (não do que está na tela)
+        dadosPonto.nome = colab.nome;
+        dadosPonto.cpf = colab.cpf;
 
         const btn = document.getElementById('btnEnviar');
         btn.disabled = true;
         btn.innerText = "Sincronizando Ponto...";
 
-        let historico = JSON.parse(localStorage.getItem('historico_pontos')) || [];
-        historico.push(Object.assign({}, dadosPonto));
-        localStorage.setItem('historico_pontos', JSON.stringify(historico));
+        dadosPonto.codigo = PontoStore.gerarCodigo();          // Código Único de auditoria (6 dígitos)
+        try {
+            PontoStore.registrarOriginal(dadosPonto);          // 1) espelho original imutável (histórico do colaborador)
+            let historico = JSON.parse(localStorage.getItem('historico_pontos')) || [];
+            historico.push(Object.assign({}, dadosPonto));      // 2) cópia de trabalho do admin, com o MESMO código
+            localStorage.setItem('historico_pontos', JSON.stringify(historico));
+        } catch (erro) {
+            PontoStore.desfazerOriginal(dadosPonto.codigo);
+            alert("Não foi possível gravar o ponto: o armazenamento do aparelho está cheio. Avise o administrador.");
+            btn.disabled = false;
+            btn.innerText = "Confirmar e Enviar Ponto";
+            return;
+        }
+        sessionStorage.setItem('colab_pane', 'hist');          // ao recarregar, abre o histórico com o código do novo ponto
+        const msgCodigo = "\n\nCódigo Único do ponto: " + dadosPonto.codigo;
 
         if(URL_GOOGLE_SHEETS.includes("SUA_URL_DO_GOOGLE")) {
-            alert("Ponto gravado localmente no dispositivo!\n\nAgora o painel admin está corrigido para visualização.");
+            alert("Ponto gravado localmente no dispositivo!\n\nAgora o painel admin está corrigido para visualização." + msgCodigo);
             location.reload();
             return;
         }
@@ -1286,10 +1436,10 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(dadosPonto)
         }).then(() => {
-            alert("Ponto eletrônico transmitido com sucesso!");
+            alert("Ponto eletrônico transmitido com sucesso!" + msgCodigo);
             location.reload();
         }).catch(() => {
-            alert("Erro na transmissão. Salvo localmente.");
+            alert("Erro na transmissão. Salvo localmente." + msgCodigo);
             location.reload();
         });
     }
@@ -1320,6 +1470,8 @@
             
             let cardHtml = '<div class="card-ponto">' +
                 '<div class="dados-prestador">' +
+                    '<b>🔖 Código Único:</b> <span class="cod-audit">' + escHtml(p.codigo || '—') + '</span>' +
+                        (PontoStore.logDoCodigo(p.codigo).some(l => l.tipo === 'ajuste') ? ' <span class="badge" style="background:#d97706; margin-left:6px;">Ajustado</span>' : '') + '<br>' +
                     '<b>👤 Prestador:</b> ' + p.nome + '<br>' +
                     '<b>🪪 CPF:</b> ' + p.cpf + '<br>' +
                     '<b>📅 Horário do Registro:</b> ' + p.dataHora + '<br>' +
@@ -1332,6 +1484,7 @@
                     '<button type="button" class="btn btn-secondary" style="font-size:14px; padding:12px;" onclick="baixarFotoAdmin(' + idxOriginal + ')">⬇️ Salvar Imagem</button>' +
                 '</div>' +
                 '<img id="' + fotoId + '" src="' + p.foto + '" class="foto-large-admin" alt="Foto do Prestador" style="display:none;">' +
+                htmlHistoricoAlteracoes(p.codigo, 'logAdmin_' + i, 'admin') +
                 '<div style="display:flex; gap:8px; margin-top:10px;">' +
                     '<button type="button" class="btn btn-secondary" style="font-size:13px; padding:10px;" onclick="editarPontoAdmin(' + idxOriginal + ')">Alterar Dados ✏️</button>' +
                     '<button type="button" class="btn" style="font-size:13px; padding:10px; background:var(--danger); color:white;" onclick="excluirPontoAdmin(' + idxOriginal + ')">Excluir Registro 🗑️</button>' +
@@ -1356,20 +1509,8 @@
             alert("Senha incorreta!");
             return;
         }
-
-        let historico = JSON.parse(localStorage.getItem('historico_pontos')) || [];
-        if (!historico[index]) return;
-
-        const novoNome = prompt("Nome Completo:", historico[index].nome);
-        if (novoNome === null || novoNome.trim() === "") return;
-
-        const novoCpf = prompt("CPF:", historico[index].cpf);
-        if (novoCpf === null || novoCpf.trim() === "") return;
-
-        historico[index].nome = novoNome.trim();
-        historico[index].cpf = novoCpf.trim();
-        localStorage.setItem('historico_pontos', JSON.stringify(historico));
-        renderizarPontosAdmin();
+        // O ajuste vale só para a cópia do administrador e é registrado com o mesmo Código Único (ver módulo AjustePonto)
+        AjustePonto.abrir(index);
     }
 
     function excluirPontoAdmin(index) {
@@ -1421,6 +1562,7 @@
             let cardHtml = '<div class="card-ponto">' +
                 '<div class="dados-prestador">' +
                     '<b>👤 Prestador:</b> ' + p.nome + '<br>' +
+                    '<b>🔖 Código Único:</b> <span class="cod-audit">' + escHtml(p.codigo || '—') + '</span><br>' +
                     '<b>🪪 CPF:</b> ' + p.cpf + '<br>' +
                     '<b>📅 Horário do Registro:</b> ' + p.dataHora +
                 '</div>' +
@@ -2147,7 +2289,9 @@ async function baixarFotoAdmin(index) {
     function novoCanvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
     function copiar(c) { const n = novoCanvas(c.width, c.height); n.getContext('2d').drawImage(c, 0, 0); return n; }
 
-    function abrirEditor(fonte, w, h) {
+    function abrirEditor(fonte, w, h, opts) {
+        ED.opts = opts || null;      // {lado, mime, titulo, aoAplicar} quando o editor é usado fora da logo (ex.: foto de perfil)
+        $('modalEditorLogo').querySelector('h2').textContent = (opts && opts.titulo) || '✂️ Editar Logo';
         const esc = Math.min(1, BASE_MAX / Math.max(w, h));
         ED.base = novoCanvas(Math.max(1, Math.round(w * esc)), Math.max(1, Math.round(h * esc)));
         ED.base.getContext('2d').drawImage(fonte, 0, 0, ED.base.width, ED.base.height);
@@ -2157,7 +2301,7 @@ async function baixarFotoAdmin(index) {
     }
     function fecharEditor() {
         $('modalEditorLogo').classList.remove('open');
-        ED.base = ED.work = null;
+        ED.base = ED.work = null; ED.opts = null;
     }
     function redefinirEditor() {
         ED.work = copiar(ED.base);
@@ -2284,9 +2428,18 @@ async function baixarFotoAdmin(index) {
         const W = ED.work.width, H = ED.work.height, c = ED.crop;
         const sx = clamp(Math.round(c.x * W), 0, W - 1), sy = clamp(Math.round(c.y * H), 0, H - 1);
         const sw = clamp(Math.round(c.w * W), 1, W - sx), sh = clamp(Math.round(c.h * H), 1, H - sy);
-        const esc = Math.min(1, LADO_MAX / Math.max(sw, sh));
+        const lado = (ED.opts && ED.opts.lado) || LADO_MAX;
+        const esc = Math.min(1, lado / Math.max(sw, sh));
         const out = novoCanvas(Math.max(1, Math.round(sw * esc)), Math.max(1, Math.round(sh * esc)));
-        out.getContext('2d').drawImage(ED.work, sx, sy, sw, sh, 0, 0, out.width, out.height);
+        const gx = out.getContext('2d');
+        if (ED.opts && ED.opts.mime === 'image/jpeg') { gx.fillStyle = '#fff'; gx.fillRect(0, 0, out.width, out.height); }   // JPEG não tem transparência
+        gx.drawImage(ED.work, sx, sy, sw, sh, 0, 0, out.width, out.height);
+        if (ED.opts && ED.opts.aoAplicar) {                    // uso externo: devolve a imagem pronta ao chamador
+            const cb = ED.opts.aoAplicar, mime = ED.opts.mime || 'image/png';
+            try { const du = out.toDataURL(mime, 0.88); fecharEditor(); cb(du); }
+            catch (e) { alert("Não foi possível processar a imagem."); }
+            return;
+        }
         try {
             const dataUrl = out.toDataURL('image/png');
             localStorage.setItem(CHAVE, dataUrl);
@@ -2348,6 +2501,7 @@ async function baixarFotoAdmin(index) {
         atualizarCabecalho();
     });
 
+    window.abrirEditorImagem = abrirEditor;   // usado pelo perfil do colaborador
     aplicar(localStorage.getItem(CHAVE));   // restaura ao abrir o app
 })();
 </script>
@@ -2486,7 +2640,7 @@ async function baixarFotoAdmin(index) {
    ===================================================================== */
 const PlanilhaPontos = (function () {
     'use strict';
-    const COLUNAS = ['ID', 'Nome', 'CPF', 'Data', 'Hora', 'Endereço', 'Latitude', 'Longitude', 'Foto'];
+    const COLUNAS = ['ID', 'Código', 'Nome', 'CPF', 'Data', 'Hora', 'Endereço', 'Latitude', 'Longitude', 'Foto'];
     const COLUNAS_FOTO = ['ID', 'Parte', 'Dados'];
     const TAM_PARTE = 30000;
 
@@ -2494,6 +2648,7 @@ const PlanilhaPontos = (function () {
     const soDigitos = (t) => String(t == null ? '' : t).replace(/\D/g, '');
     const norm = (t) => String(t == null ? '' : t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
     const numero = (v) => { const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : ''; };
+    const codigoValido = (c) => { let t = String(c == null ? '' : c).trim().toUpperCase(); if (/^\d{1,6}$/.test(t)) t = t.padStart(6, '0'); return /^[A-Z0-9]{6}$/.test(t) ? t : ''; };
     const mascararCpf = (d) => d.slice(0, 3) + '.' + d.slice(3, 6) + '.' + d.slice(6, 9) + '-' + d.slice(9);
 
     // "05/10/2026, 15:30:00" ou "05/10/2026 15:30:00" -> { data, hora }
@@ -2524,7 +2679,7 @@ const PlanilhaPontos = (function () {
         const pontos = [], fotos = [];
         registros.forEach((p, i) => {
             const id = i + 1, dh = partirDataHora(p.dataHora);
-            pontos.push({ 'ID': id, 'Nome': p.nome || '', 'CPF': p.cpf || '', 'Data': dh.data, 'Hora': dh.hora,
+            pontos.push({ 'ID': id, 'Código': p.codigo || '', 'Nome': p.nome || '', 'CPF': p.cpf || '', 'Data': dh.data, 'Hora': dh.hora,
                           'Endereço': p.endereco || '', 'Latitude': numero(p.lat), 'Longitude': numero(p.lng), 'Foto': p.foto ? 'Sim' : 'Não' });
             if (p.foto) {
                 for (let k = 0, parte = 1; k < p.foto.length; k += TAM_PARTE, parte++) {
@@ -2558,13 +2713,13 @@ const PlanilhaPontos = (function () {
                 foto = partes.sort((a, b) => a.parte - b.parte).map(x => x.dados).join('');
                 if (!/^data:image\//.test(foto)) foto = '';
             }
-            validos.push({ nome: nome, cpf: mascararCpf(cpf), foto: foto, lat: numero(r.latitude), lng: numero(r.longitude),
+            validos.push({ codigo: codigoValido(r.codigo), nome: nome, cpf: mascararCpf(cpf), foto: foto, lat: numero(r.latitude), lng: numero(r.longitude),
                            endereco: String(r.endereco || '').trim(), dataHora: data.br + ' ' + lerHora(r.hora), dataSimples: data.iso });
         });
         return { validos: validos, invalidos: invalidos };
     }
 
-    return { COLUNAS: COLUNAS, COLUNAS_FOTO: COLUNAS_FOTO, paraPlanilha: paraPlanilha, dePlanilha: dePlanilha, chave: chave };
+    return { COLUNAS: COLUNAS, COLUNAS_FOTO: COLUNAS_FOTO, paraPlanilha: paraPlanilha, dePlanilha: dePlanilha, chave: chave, partirDataHora: partirDataHora };
 })();
 
 /* =====================================================================
@@ -2588,7 +2743,7 @@ const PlanilhaPontos = (function () {
         const dados = PlanilhaPontos.paraPlanilha(registros);
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.json_to_sheet(dados.pontos, { header: PlanilhaPontos.COLUNAS });
-        ws['!cols'] = [{ wch: 6 }, { wch: 30 }, { wch: 16 }, { wch: 12 }, { wch: 10 }, { wch: 55 }, { wch: 12 }, { wch: 12 }, { wch: 8 }];
+        ws['!cols'] = [{ wch: 6 }, { wch: 10 }, { wch: 30 }, { wch: 16 }, { wch: 12 }, { wch: 10 }, { wch: 55 }, { wch: 12 }, { wch: 12 }, { wch: 8 }];
         ws['!autofilter'] = { ref: ws['!ref'] };                              // filtros no cabeçalho
         XLSX.utils.book_append_sheet(wb, ws, 'Pontos');
         if (dados.fotos.length) {                                              // fotos em planilha auxiliar oculta
@@ -2641,6 +2796,10 @@ const PlanilhaPontos = (function () {
         const vistos = new Set(historico.map(PlanilhaPontos.chave));
         const novos = [];
         lidos.validos.forEach((p) => { const c = PlanilhaPontos.chave(p); if (!vistos.has(c)) { vistos.add(c); novos.push(p); } });
+        // Códigos da planilha só são mantidos se não colidirem com OUTRO ponto (o mesmo ponto vindo da lixeira mantém o código)
+        const chavesNovas = new Set(novos.map(PlanilhaPontos.chave));
+        const usados = new Set(historico.concat(ler('lixeira_pontos').filter(p => !chavesNovas.has(PlanilhaPontos.chave(p)))).map(p => p.codigo).filter(Boolean));
+        novos.forEach((p) => { if (p.codigo && usados.has(p.codigo)) p.codigo = ''; if (p.codigo) usados.add(p.codigo); });
         const ignorados = lidos.validos.length - novos.length;
         const invalidos = lidos.invalidos.length;
         const resumoExtra = (ignorados ? '\n• ' + ignorados + ' já existem no painel (ignorados)' : '') +
@@ -2658,6 +2817,7 @@ const PlanilhaPontos = (function () {
         const chaves = new Set(novos.map(PlanilhaPontos.chave));
         localStorage.setItem('lixeira_pontos', JSON.stringify(ler('lixeira_pontos').filter(p => !chaves.has(PlanilhaPontos.chave(p)))));
 
+        if (typeof PontoStore !== 'undefined') PontoStore.migrar();   // pontos sem código recebem um novo
         renderizarPontosAdmin();
         renderizarLixeira();
         toast('✅ ' + novos.length + ' ponto(s) restaurado(s)');
@@ -2740,5 +2900,645 @@ const PlanilhaPontos = (function () {
     renderizar();
 })();
 </script>
+<script>
+/* =====================================================================
+   MODELO DE DADOS — como o registro ORIGINAL do colaborador e o AJUSTE do admin coexistem
+   Todos compartilham o mesmo "codigo" (ID de auditoria de 6 dígitos, ex.: 482910):
+
+   pontos_originais   (ledger do colaborador — SOMENTE ACRÉSCIMO, nenhuma tela de admin escreve aqui)
+     { codigo, cpf, nome(jurídico), foto, lat, lng, endereco, dataHora, dataSimples, registradoEm, origem:'app'|'migracao' }
+   historico_pontos   (cópia de trabalho do ADMIN — pode ser ajustada; é o que o painel admin e a planilha mostram)
+     { codigo, ...mesmos campos... }                       (mesmo codigo do original)
+   lixeira_pontos     (cópias do admin enviadas à lixeira — mantêm o codigo)
+   log_alteracoes_pontos (trilha de auditoria — SOMENTE ACRÉSCIMO)
+     { codigo, em(ISO), tipo:'ajuste'|'evento', campo, de, para, motivo, por }
+   usuarios_app       { [cpfSoDigitos]: { id, cpf, nome(jurídico, imutável), nomeExibicao, foto(avatar), salt, hash, criadoEm } }
+
+   A tela do colaborador lê SOMENTE pontos_originais (filtrado pelo CPF logado). Ajustes do admin só tocam
+   historico_pontos + log_alteracoes_pontos; cruzando pelo codigo gera-se o relatório de conciliação.
+   ===================================================================== */
+const PontoStore = (function () {
+    'use strict';
+    const K_ORIG = 'pontos_originais', K_LOG = 'log_alteracoes_pontos', K_HIST = 'historico_pontos', K_LIX = 'lixeira_pontos';
+    // Códigos NOVOS são numéricos (6 dígitos, ex.: 482910). COD_RE ainda aceita 6 caracteres A-Z/0-9 para não quebrar registros antigos.
+    const COD_RE = /^[A-Z0-9]{6}$/;
+    const ler = (k) => { try { const v = JSON.parse(localStorage.getItem(k)); return Array.isArray(v) ? v : []; } catch (e) { return []; } };
+    const gravar = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+    const soDig = (t) => String(t == null ? '' : t).replace(/\D/g, '');
+
+    function codigosEmUso() {
+        const s = new Set();
+        [K_ORIG, K_HIST, K_LIX, K_LOG].forEach(k => ler(k).forEach(x => { if (x && x.codigo) s.add(x.codigo); }));
+        return s;
+    }
+    // Código numérico aleatório de 6 dígitos (pode começar com 0), único entre original, painel admin, lixeira e log
+    function gerarCodigo(reservados) {
+        const usados = codigosEmUso();
+        if (reservados) reservados.forEach(c => usados.add(c));
+        const LIMITE = 4294967290;                       // múltiplo de 10 abaixo de 2^32: descarta o resto para não haver viés
+        for (let t = 0; t < 1000; t++) {
+            let c = '';
+            while (c.length < 6) {
+                const buf = new Uint32Array(8);
+                if (globalThis.crypto && crypto.getRandomValues) crypto.getRandomValues(buf);
+                else for (let i = 0; i < 8; i++) buf[i] = Math.floor(Math.random() * 4294967296);
+                for (let i = 0; i < buf.length && c.length < 6; i++) if (buf[i] < LIMITE) c += String(buf[i] % 10);
+            }
+            if (!usados.has(c)) return c;
+        }
+        throw new Error('Não foi possível gerar um código único.');
+    }
+
+    function snapshot(p, origem) {
+        return { codigo: p.codigo, cpf: p.cpf, nome: p.nome, foto: p.foto || '', lat: p.lat, lng: p.lng, endereco: p.endereco || '',
+                 dataHora: p.dataHora, dataSimples: p.dataSimples, registradoEm: origem === 'app' ? new Date().toISOString() : null, origem: origem };
+    }
+    /* ---------- Selo de integridade: SHA-256 encadeado (cada original carrega o hash do anterior) ----------
+       Detecta edição ou remoção de originais feitas fora do app (ex.: no console do navegador).
+       LIMITE: não há chave secreta num app só de navegador; quem souber o algoritmo consegue recalcular a cadeia.
+       Para prova realmente à prova de adulteração é preciso gravar o original num servidor (ver planilha Google). */
+    const K256 = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+        0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+        0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+        0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+    function sha256(texto) {                              // síncrono e sem depender de crypto.subtle (que exige HTTPS)
+        const bytes = new TextEncoder().encode(texto), l = bytes.length;
+        const total = ((l + 9 + 63) >> 6) << 6, buf = new Uint8Array(total);
+        buf.set(bytes); buf[l] = 0x80;
+        const dv = new DataView(buf.buffer);
+        dv.setUint32(total - 8, Math.floor(l / 0x20000000)); dv.setUint32(total - 4, (l << 3) >>> 0);
+        const H = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19], w = new Uint32Array(64);
+        const rotr = (x, n) => (x >>> n) | (x << (32 - n));
+        for (let off = 0; off < total; off += 64) {
+            for (let i = 0; i < 16; i++) w[i] = dv.getUint32(off + i * 4);
+            for (let i = 16; i < 64; i++) {
+                const s0 = rotr(w[i-15], 7) ^ rotr(w[i-15], 18) ^ (w[i-15] >>> 3), s1 = rotr(w[i-2], 17) ^ rotr(w[i-2], 19) ^ (w[i-2] >>> 10);
+                w[i] = (w[i-16] + s0 + w[i-7] + s1) >>> 0;
+            }
+            let [a, b, c, d, e, f, g, h] = H;
+            for (let i = 0; i < 64; i++) {
+                const t1 = (h + (rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25)) + ((e & f) ^ (~e & g)) + K256[i] + w[i]) >>> 0;
+                const t2 = ((rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22)) + ((a & b) ^ (a & c) ^ (b & c))) >>> 0;
+                h = g; g = f; f = e; e = (d + t1) >>> 0; d = c; c = b; b = a; a = (t1 + t2) >>> 0;
+            }
+            [a, b, c, d, e, f, g, h].forEach((x, i) => { H[i] = (H[i] + x) >>> 0; });
+        }
+        return H.map(x => x.toString(16).padStart(8, '0')).join('');
+    }
+    // Conteúdo selado: os dados do ponto (não inclui o próprio selo nem a data em que foi selado)
+    const canon = (o) => JSON.stringify([o.codigo, o.cpf, o.nome, o.foto || '', o.lat, o.lng, o.endereco || '', o.dataHora, o.dataSimples, o.registradoEm || null, o.origem]);
+    const calcSelo = (anterior, o) => sha256((anterior || '') + '|' + canon(o));
+    // Sela, em ordem, os originais que ainda não têm selo (registros anteriores ao selo são selados na atualização)
+    function selarPendentes(orig) {
+        let prev = '', mudou = false;
+        orig.forEach(o => { if (!o.selo) { o.selo = calcSelo(prev, o); o.seladoEm = new Date().toISOString(); mudou = true; } prev = o.selo; });
+        return mudou;
+    }
+    // Confere o selo dos originais (só do CPF informado, ou de todos). Devolve { [codigo]: 'ok' | 'diverge' | 'sem' }
+    function verificarOriginais(cpf) {
+        const orig = ler(K_ORIG), r = {}; let prev = '';
+        orig.forEach(o => {
+            if (!cpf || soDig(o.cpf) === soDig(cpf)) r[o.codigo] = !o.selo ? 'sem' : (calcSelo(prev, o) === o.selo ? 'ok' : 'diverge');
+            prev = o.selo || '';
+        });
+        return r;
+    }
+    // ÚNICA porta de escrita do ledger: acrescenta. Não existe função de editar/excluir original.
+    function registrarOriginal(ponto) {
+        const orig = ler(K_ORIG);
+        if (orig.some(o => o.codigo === ponto.codigo)) throw new Error('Código já existe no registro original.');
+        selarPendentes(orig);                                   // garante cadeia contínua antes de acrescentar
+        const novo = snapshot(ponto, 'app');
+        novo.selo = calcSelo(orig.length ? orig[orig.length - 1].selo : '', novo);
+        orig.push(novo);
+        gravar(K_ORIG, orig);
+    }
+    // Uso restrito: desfaz a gravação do MESMO envio quando a segunda escrita falha (ex.: armazenamento cheio)
+    function desfazerOriginal(codigo) {
+        try { gravar(K_ORIG, ler(K_ORIG).filter(o => o.codigo !== codigo)); } catch (e) {}
+    }
+    const originaisDoCpf = (cpf) => ler(K_ORIG).filter(o => soDig(o.cpf) === soDig(cpf));
+
+    function registrarLog(e) {
+        const log = ler(K_LOG);
+        log.push({ codigo: e.codigo, em: new Date().toISOString(), tipo: e.tipo || 'ajuste', campo: e.campo || '',
+                   de: e.de == null ? '' : e.de, para: e.para == null ? '' : e.para, motivo: e.motivo || '', por: e.por || 'Administrador' });
+        gravar(K_LOG, log);
+    }
+    const logDoCodigo = (codigo) => ler(K_LOG).filter(l => l.codigo === codigo).sort((a, b) => a.em < b.em ? -1 : a.em > b.em ? 1 : 0);
+
+    // Registros antigos (sem código): recebe código + um "original" reconstruído a partir da cópia atual
+    function migrar() {
+        const hist = ler(K_HIST), lix = ler(K_LIX);
+        const vistos = new Set(), novos = new Set();
+        let mudouCodigo = false;
+        [hist, lix].forEach(arr => arr.forEach(p => {
+            if (!COD_RE.test(p.codigo || '') || vistos.has(p.codigo)) { p.codigo = gerarCodigo(novos); novos.add(p.codigo); mudouCodigo = true; }
+            vistos.add(p.codigo);
+        }));
+        try {
+            if (mudouCodigo) { gravar(K_HIST, hist); gravar(K_LIX, lix); }
+            const orig = ler(K_ORIG), tem = new Set(orig.map(o => o.codigo));
+            let add = false;
+            hist.concat(lix).forEach(p => { if (!tem.has(p.codigo)) { orig.push(snapshot(p, 'migracao')); tem.add(p.codigo); add = true; } });
+            if (selarPendentes(orig) || add) gravar(K_ORIG, orig);
+        } catch (e) { console.warn('Migração de códigos adiada (armazenamento cheio?)', e); return false; }
+        return true;
+    }
+
+    return { gerarCodigo: gerarCodigo, registrarOriginal: registrarOriginal, desfazerOriginal: desfazerOriginal, originaisDoCpf: originaisDoCpf,
+             registrarLog: registrarLog, logDoCodigo: logDoCodigo, migrar: migrar, ler: ler, COD_RE: COD_RE,
+             sha256: sha256, verificarOriginais: verificarOriginais, selarPendentes: selarPendentes };
+})();
+
+/* =====================================================================
+   Conciliacao — cruza ORIGINAL x ADMIN pelo código de 6 caracteres (função pura)
+   ===================================================================== */
+const Conciliacao = (function () {
+    'use strict';
+    const dig = (t) => String(t == null ? '' : t).replace(/\D/g, '');
+    const txt = (t) => String(t == null ? '' : t).trim();
+    const CAMPOS = [['Nome', 'nome', txt], ['CPF', 'cpf', dig], ['Data/Hora', 'dataHora', dig], ['Endereço', 'endereco', txt]];
+    const quando = (iso) => iso ? new Date(iso).toLocaleString('pt-BR') : '';
+
+    function gerar(originais, vigentes, lixeira, log, integ) {
+        integ = integ || {};
+        const idx = (a) => { const m = {}; a.forEach(p => { if (p && p.codigo) m[p.codigo] = p; }); return m; };
+        const O = idx(originais), V = idx(vigentes), X = idx(lixeira);
+        const codigos = Array.from(new Set(Object.keys(O).concat(Object.keys(V), Object.keys(X)))).sort();
+        const ajustes = {};
+        log.forEach(l => { if (l.tipo === 'ajuste') (ajustes[l.codigo] = ajustes[l.codigo] || []).push(l); });
+        const ordem = (a, b) => a.em < b.em ? -1 : a.em > b.em ? 1 : 0;
+
+        const linhas = codigos.map((c) => {
+            const o = O[c], v = V[c], x = X[c], adm = v || x;
+            const difs = [];
+            if (o && adm) CAMPOS.forEach(([rot, k, norm]) => { if (norm(o[k]) !== norm(adm[k])) difs.push(rot); });
+            const aj = (ajustes[c] || []).slice().sort(ordem);
+            let situacao;
+            if (!o) situacao = 'Sem original (registro legado)';
+            else if (!adm) situacao = 'Removido do painel (sem cópia vigente)';
+            else if (x && !v) situacao = difs.length ? 'Na lixeira (ajustado)' : 'Na lixeira';
+            else situacao = difs.length ? 'Ajustado pelo administrador' : 'Idêntico ao original';
+            if (difs.length && !aj.length) situacao += ' — SEM registro de ajuste';
+            return {
+                'Código Único': c,
+                'CPF (original)': o ? o.cpf : '', 'Nome (original)': o ? o.nome : '', 'Data/Hora (original)': o ? o.dataHora : '', 'Endereço (original)': o ? o.endereco : '',
+                'Nome (admin)': adm ? adm.nome : '', 'CPF (admin)': adm ? adm.cpf : '', 'Data/Hora (admin)': adm ? adm.dataHora : '', 'Endereço (admin)': adm ? adm.endereco : '',
+                'Selo do original': !o ? '' : integ[c] === 'ok' ? 'Íntegro' : integ[c] === 'diverge' ? 'DIVERGENTE' : 'Sem selo',
+                'Situação': situacao, 'Campos divergentes': difs.join(', '), 'Nº de ajustes': aj.length,
+                'Último ajuste em': aj.length ? quando(aj[aj.length - 1].em) : ''
+            };
+        });
+        const alteracoes = log.slice().sort(ordem).map(l => ({
+            'Código Único': l.codigo, 'Data/Hora': quando(l.em), 'Tipo': l.tipo === 'ajuste' ? 'Ajuste' : 'Evento',
+            'Campo': l.campo || '', 'De': l.de == null ? '' : l.de, 'Para': l.para == null ? '' : l.para, 'Motivo': l.motivo || '', 'Por': l.por || 'Administrador'
+        }));
+        return { linhas: linhas, alteracoes: alteracoes };
+    }
+    return { gerar: gerar };
+})();
+
+/* =====================================================================
+   Histórico de alterações (compartilhado: admin e colaborador) + utilitários de tela
+   ===================================================================== */
+function escHtml(t) {
+    return String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function htmlItemLog(l) {
+    const quando = new Date(l.em).toLocaleString('pt-BR');
+    if (l.tipo === 'ajuste') {
+        return '<div class="log-item"><b>' + escHtml(quando) + '</b> · ' + escHtml(l.por) + '<br>' + escHtml(l.campo) + ': <span class="log-de">' +
+               escHtml(l.de) + '</span> → <span class="log-para">' + escHtml(l.para) + '</span>' +
+               (l.motivo ? '<br><small>Motivo: ' + escHtml(l.motivo) + '</small>' : '') + '</div>';
+    }
+    return '<div class="log-item"><b>' + escHtml(quando) + '</b> · ' + escHtml(l.por) + '<br>' + escHtml(l.campo) + '</div>';
+}
+// modo 'admin' mostra tudo (ajustes + eventos); 'usuario' mostra só os ajustes de dados
+function htmlHistoricoAlteracoes(codigo, idDom, modo) {
+    const todos = PontoStore.logDoCodigo(codigo);
+    const lista = modo === 'admin' ? todos : todos.filter(l => l.tipo === 'ajuste');
+    const corpo = lista.length ? lista.map(htmlItemLog).join('') : '<p class="log-vazio">Nenhuma alteração: registro original.</p>';
+    return '<button type="button" class="btn btn-secondary" style="font-size:13px; padding:10px; margin-top:10px;" onclick="toggleHistAlt(\'' + idDom + '\', this, ' + lista.length + ')">Histórico de Alterações 🕘 (' + lista.length + ')</button>' +
+           '<div id="' + idDom + '" class="log-alteracoes" style="display:none;">' + corpo + '</div>';
+}
+function toggleHistAlt(id, btn, qtd) {
+    const box = document.getElementById(id);
+    const oculta = box.style.display === 'none';
+    box.style.display = oculta ? 'block' : 'none';
+    btn.innerText = (oculta ? 'Ocultar Histórico 🙈 (' : 'Histórico de Alterações 🕘 (') + qtd + ')';
+}
+
+/* =====================================================================
+   AjustePonto — o ADMIN corrige o ponto na SUA cópia (historico_pontos). O original do colaborador não é tocado.
+   Cada campo alterado vira uma linha em log_alteracoes_pontos com o MESMO código do ponto.
+   ===================================================================== */
+const AjustePonto = (function () {
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    let indice = null;
+    const pad = (n) => String(n).padStart(2, '0');
+
+    function partir(dh) {
+        const m = /^(\d{2})\/(\d{2})\/(\d{4})[,\s]+(\d{1,2}):(\d{2})(?::(\d{2}))?/.exec(String(dh || '').trim());
+        return m ? { iso: m[3] + '-' + m[2] + '-' + m[1], hora: pad(m[4]) + ':' + m[5] + ':' + (m[6] || '00') } : { iso: '', hora: '' };
+    }
+    const hora3 = (h) => { const m = /^(\d{1,2}):(\d{2})(?::(\d{2}))?$/.exec(String(h || '').trim()); return m ? pad(m[1]) + ':' + m[2] + ':' + (m[3] || '00') : ''; };
+    const mascara = (d) => d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+    const dig = (t) => String(t || '').replace(/\D/g, '');
+
+    function abrir(index) {
+        const p = PontoStore.ler('historico_pontos')[index];
+        if (!p) return;
+        indice = index;
+        const dh = partir(p.dataHora);
+        $('ajInfo').innerHTML = 'Código <b class="cod-audit">' + escHtml(p.codigo) + '</b> — a versão do colaborador permanece intacta; este ajuste fica registrado no histórico de alterações.';
+        $('ajNome').value = p.nome || '';
+        $('ajCpf').value = p.cpf || '';
+        $('ajData').value = dh.iso || p.dataSimples || '';
+        $('ajHora').value = dh.hora;
+        $('ajEndereco').value = p.endereco || '';
+        $('ajMotivo').value = '';
+        $('ajErro').style.display = 'none';
+        $('modalAjustePonto').classList.add('open');
+    }
+    function fechar() { indice = null; $('modalAjustePonto').classList.remove('open'); }
+    function erro(m) { $('ajErro').textContent = '⚠️ ' + m; $('ajErro').style.display = 'block'; }
+
+    // Calcula o que mudou (função de apoio, sem efeitos colaterais)
+    function diferencas(p, novo) {
+        const d = [];
+        if (novo.nome !== String(p.nome || '').trim()) d.push({ campo: 'Nome', de: p.nome, para: novo.nome });
+        if (dig(novo.cpf) !== dig(p.cpf)) d.push({ campo: 'CPF', de: p.cpf, para: novo.cpf });
+        const atual = partir(p.dataHora);
+        if (novo.iso !== atual.iso || novo.hora !== atual.hora) d.push({ campo: 'Data/Hora', de: p.dataHora, para: novo.dataHora });
+        if (novo.endereco !== String(p.endereco || '').trim()) d.push({ campo: 'Endereço', de: p.endereco, para: novo.endereco });
+        return d;
+    }
+
+    function salvar() {
+        const hist = PontoStore.ler('historico_pontos');
+        const p = hist[indice];
+        if (!p) { fechar(); return; }
+        const nome = $('ajNome').value.trim().replace(/\s+/g, ' ');
+        const cpfTxt = $('ajCpf').value.trim();
+        const iso = $('ajData').value, hora = hora3($('ajHora').value), endereco = $('ajEndereco').value.trim(), motivo = $('ajMotivo').value.trim();
+        if (!nome) return erro('O nome não pode ficar vazio.');
+        if (!validarCPF(cpfTxt)) return erro('CPF inválido.');
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return erro('Informe uma data válida.');
+        if (!hora) return erro('Informe uma hora válida.');
+        if (motivo.length < 5) return erro('Informe o motivo do ajuste (mínimo 5 caracteres) — ele fica na trilha de auditoria.');
+
+        const novo = { nome: nome, cpf: mascara(dig(cpfTxt)), iso: iso, hora: hora, endereco: endereco,
+                       dataHora: iso.slice(8, 10) + '/' + iso.slice(5, 7) + '/' + iso.slice(0, 4) + ' ' + hora };
+        const difs = diferencas(p, novo);
+        if (!difs.length) return erro('Nenhum dado foi alterado.');
+
+        try {
+            difs.forEach(d => PontoStore.registrarLog({ codigo: p.codigo, tipo: 'ajuste', campo: d.campo, de: d.de, para: d.para, motivo: motivo }));
+            p.nome = novo.nome; p.cpf = novo.cpf; p.endereco = novo.endereco;
+            if (difs.some(d => d.campo === 'Data/Hora')) { p.dataHora = novo.dataHora; p.dataSimples = novo.iso; }
+            localStorage.setItem('historico_pontos', JSON.stringify(hist));      // só a CÓPIA DO ADMIN; pontos_originais fica intacto
+        } catch (e) {
+            return erro('Não foi possível salvar (armazenamento cheio?).');
+        }
+        fechar();
+        renderizarPontosAdmin();
+        if (typeof mostrarToast === 'function') mostrarToast('✅ Ajuste registrado (código ' + p.codigo + ')');
+    }
+
+    $('ajSalvar').addEventListener('click', salvar);
+    $('ajCancelar').addEventListener('click', fechar);
+    return { abrir: abrir, diferencas: diferencas };
+})();
+
+// Eventos de lixeira/restauração entram na trilha do código (para o admin acompanhar o ciclo de vida do ponto)
+(function () {
+    const excluirOriginal = excluirPontoAdmin;
+    excluirPontoAdmin = function (i) {
+        const p = PontoStore.ler('historico_pontos')[i], c = p && p.codigo;
+        excluirOriginal(i);
+        if (c && !PontoStore.ler('historico_pontos').some(x => x.codigo === c)) PontoStore.registrarLog({ codigo: c, tipo: 'evento', campo: 'Registro enviado para a lixeira' });
+    };
+    const restaurarOriginal = restaurarPontoAdmin;
+    restaurarPontoAdmin = function (i) {
+        const p = PontoStore.ler('lixeira_pontos')[i], c = p && p.codigo;
+        restaurarOriginal(i);
+        if (c && PontoStore.ler('historico_pontos').some(x => x.codigo === c)) PontoStore.registrarLog({ codigo: c, tipo: 'evento', campo: 'Registro restaurado da lixeira' });
+    };
+})();
+
+/* ---------- Relatório de conciliação (Excel): original x admin pelo código ---------- */
+function exportarConciliacao() {
+    if (typeof XLSX === 'undefined') { alert('A biblioteca de Excel não foi carregada. Verifique a conexão com a internet.'); return; }
+    const r = Conciliacao.gerar(PontoStore.ler('pontos_originais'), PontoStore.ler('historico_pontos'), PontoStore.ler('lixeira_pontos'), PontoStore.ler('log_alteracoes_pontos'), PontoStore.verificarOriginais());
+    if (!r.linhas.length) { alert('Não há registros para conciliar.'); return; }
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(r.linhas);
+    ws['!cols'] = [12, 16, 28, 20, 40, 28, 16, 20, 40, 14, 34, 24, 12, 20].map(w => ({ wch: w }));
+    ws['!autofilter'] = { ref: ws['!ref'] };
+    XLSX.utils.book_append_sheet(wb, ws, 'Conciliação');
+    if (r.alteracoes.length) {
+        const wl = XLSX.utils.json_to_sheet(r.alteracoes);
+        wl['!cols'] = [12, 20, 10, 14, 36, 36, 40, 16].map(w => ({ wch: w }));
+        XLSX.utils.book_append_sheet(wb, wl, 'Alterações');
+    }
+    const d = new Date(), p2 = (n) => String(n).padStart(2, '0');
+    XLSX.writeFile(wb, 'conciliacao_pontos_' + d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate()) + '.xlsx');
+    if (typeof mostrarToast === 'function') mostrarToast('✅ Relatório de conciliação baixado');
+}
+
+PontoStore.migrar();   // atribui código aos registros antigos e cria o espelho original
+</script>
+
+<script>
+/* =====================================================================
+   MÓDULO Colab — contas por CPF (credenciais próprias), sessão, perfil (foto + nome de exibição)
+   Isolamento: a interface só lê/grava dados do usuário logado. (Sem servidor, isso é isolamento de INTERFACE no
+   aparelho; para isolamento real entre aparelhos/contas é necessário um backend com autenticação.)
+   Nome jurídico e CPF são gravados no cadastro e NUNCA são alterados por esta tela; o "nome de exibição" é só visual.
+   ===================================================================== */
+const Colab = (function () {
+    'use strict';
+    const K_USERS = 'usuarios_app', K_SESSAO = 'colab_cpf', K_PANE = 'colab_pane';
+    const $ = (id) => document.getElementById(id);
+    const toast = (m) => { if (typeof mostrarToast === 'function') mostrarToast(m); };
+    const dig = (t) => String(t || '').replace(/\D/g, '');
+    const mascaraCpf = (d) => d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+
+    const lerUsers = () => { try { const v = JSON.parse(localStorage.getItem(K_USERS)); return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; } catch (e) { return {}; } };
+    const gravarUsers = (u) => localStorage.setItem(K_USERS, JSON.stringify(u));
+
+    let usuario = null;                 // estado: usuário logado (objeto do cadastro)
+    const falhas = {};                  // contador de tentativas de login por CPF (memória)
+
+    /* ---------- Senha: derivação PBKDF2-SHA256 (Web Crypto) com sal por usuário ---------- */
+    const bytesParaHex = (b) => Array.from(b).map(x => x.toString(16).padStart(2, '0')).join('');
+    const hexParaBytes = (h) => new Uint8Array((h.match(/.{2}/g) || []).map(x => parseInt(x, 16)));
+    function novoSal() { const b = new Uint8Array(16); (globalThis.crypto || {}).getRandomValues ? crypto.getRandomValues(b) : b.forEach((_, i) => { b[i] = Math.floor(Math.random() * 256); }); return bytesParaHex(b); }
+    async function derivar(senha, salHex, esquema) {
+        const enc = new TextEncoder();
+        if (esquema !== 'fnv' && globalThis.crypto && crypto.subtle) {
+            const chave = await crypto.subtle.importKey('raw', enc.encode(senha), 'PBKDF2', false, ['deriveBits']);
+            const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: hexParaBytes(salHex), iterations: 100000, hash: 'SHA-256' }, chave, 256);
+            return 'pbkdf2$' + bytesParaHex(new Uint8Array(bits));
+        }
+        let h = 2166136261;                                        // alternativa fraca, só se o navegador não tiver crypto.subtle
+        const t = salHex + senha;
+        for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+        return 'fnv$' + h.toString(16);
+    }
+
+    /* ---------- Cadastro e login ---------- */
+    function proximoId(users) {
+        const max = Object.keys(users).reduce((m, k) => Math.max(m, parseInt(String(users[k].id || '').replace(/\D/g, ''), 10) || 0), 0);
+        return 'U' + String(max + 1).padStart(5, '0');
+    }
+    function mostrarErro(id, msg) { const e = $(id); e.textContent = '⚠️ ' + msg; e.style.display = msg ? 'block' : 'none'; }
+
+    async function cadastrar() {
+        mostrarErro('colabCadErro', '');
+        const nome = $('colabCadNome').value.trim().replace(/\s+/g, ' ');
+        const cpfTxt = $('colabCadCpf').value.trim(), s1 = $('colabCadSenha').value, s2 = $('colabCadSenha2').value;
+        const users = lerUsers(), d = dig(cpfTxt);
+        if (nome.length < 5 || nome.indexOf(' ') < 0) return mostrarErro('colabCadErro', 'Informe seu nome completo.');
+        if (!validarCPF(cpfTxt)) return mostrarErro('colabCadErro', 'CPF inválido.');
+        if (users[d]) return mostrarErro('colabCadErro', 'Já existe uma conta para este CPF. Use "Entrar".');
+        if (s1.length < 6) return mostrarErro('colabCadErro', 'A senha deve ter pelo menos 6 caracteres.');
+        if (s1 !== s2) return mostrarErro('colabCadErro', 'As senhas não conferem.');
+        const sal = novoSal();
+        const hash = await derivar(s1, sal);
+        users[d] = { id: proximoId(users), cpf: mascaraCpf(d), nome: nome, nomeExibicao: '', foto: '', salt: sal, hash: hash, criadoEm: new Date().toISOString() };
+        try { gravarUsers(users); } catch (e) { return mostrarErro('colabCadErro', 'Não foi possível salvar a conta (armazenamento cheio?).'); }
+        $('colabCadSenha').value = $('colabCadSenha2').value = '';
+        entrarNaApp(users[d], 'ponto');
+        toast('✅ Conta criada! Bem-vindo(a).');
+    }
+
+    async function entrar() {
+        mostrarErro('colabLoginErro', '');
+        const d = dig($('colabLoginCpf').value), senha = $('colabLoginSenha').value;
+        const f = falhas[d] || { n: 0, ate: 0 };
+        if (Date.now() < f.ate) return mostrarErro('colabLoginErro', 'Muitas tentativas. Aguarde ' + Math.ceil((f.ate - Date.now()) / 1000) + 's.');
+        const u = lerUsers()[d];
+        let ok = false;
+        if (u && senha) ok = (await derivar(senha, u.salt, String(u.hash).split('$')[0] === 'fnv' ? 'fnv' : undefined)) === u.hash;
+        if (!ok) {
+            f.n++; if (f.n >= 5) { f.ate = Date.now() + 30000; f.n = 0; }
+            falhas[d] = f;
+            return mostrarErro('colabLoginErro', 'CPF ou senha incorretos.');
+        }
+        delete falhas[d];
+        $('colabLoginSenha').value = '';
+        entrarNaApp(u, 'ponto');
+    }
+
+    function sair() {
+        sessionStorage.removeItem(K_SESSAO);
+        sessionStorage.removeItem(K_PANE);
+        location.reload();               // limpa formulário, câmera e estado em memória
+    }
+
+    /* ---------- Entrar na área do colaborador ---------- */
+    function entrarNaApp(u, pane) {
+        usuario = u;
+        sessionStorage.setItem(K_SESSAO, dig(u.cpf));
+        $('colabAuth').style.display = 'none';
+        $('colabApp').style.display = 'block';
+        // Formulário de ponto: nome jurídico e CPF vêm do cadastro e ficam travados
+        $('nome').value = u.nome; $('cpf').value = u.cpf;
+        $('nome').readOnly = true; $('cpf').readOnly = true;
+        if (typeof validarFormulario === 'function') validarFormulario();
+        atualizarUi();
+        mostrarPane(pane || sessionStorage.getItem(K_PANE) || 'ponto');
+    }
+
+    /* ---------- Avatar e textos (um único lugar que atualiza TODA a interface) ---------- */
+    function iniciais(nome) {
+        const p = String(nome || '').trim().split(/\s+/).filter(Boolean);
+        if (!p.length) return '?';
+        return (p[0][0] + (p.length > 1 ? p[p.length - 1][0] : '')).toUpperCase();
+    }
+    function pintarAvatar(el, u) {
+        if (u.foto) { el.style.backgroundImage = 'url("' + u.foto + '")'; el.textContent = ''; }
+        else { el.style.backgroundImage = 'none'; el.textContent = iniciais(u.nomeExibicao || u.nome); }
+    }
+    function atualizarUi() {
+        if (!usuario) return;
+        const nomeUi = usuario.nomeExibicao || usuario.nome;
+        $('colabBarraNome').textContent = nomeUi;
+        pintarAvatar($('colabBarraAvatar'), usuario);
+        pintarAvatar($('perfilAvatar'), usuario);
+        $('perfilNomeJuridico').textContent = usuario.nome;
+        $('perfilCpf').textContent = usuario.cpf;
+        $('perfilId').textContent = usuario.id;
+        $('perfilCriadoEm').textContent = new Date(usuario.criadoEm).toLocaleDateString('pt-BR');
+    }
+
+    function mostrarPane(p) {
+        ['ponto', 'hist', 'perfil'].forEach(n => { $('colabPane-' + n).style.display = n === p ? 'block' : 'none'; });
+        document.querySelectorAll('.colab-nav-btn[data-pane]').forEach(b => b.classList.toggle('active', b.dataset.pane === p));
+        sessionStorage.setItem(K_PANE, p);
+        if (p === 'hist') HistoricoColab.render();
+        if (p === 'perfil') { $('perfilNomeExib').value = usuario.nomeExibicao || usuario.nome; $('perfilNomeErro').style.display = 'none'; }
+    }
+
+    /* ---------- Perfil: nome de exibição e foto ---------- */
+    function persistirUsuario(campos) {
+        const users = lerUsers(), d = dig(usuario.cpf);
+        if (!users[d]) return false;
+        Object.keys(campos).forEach(k => {                           // whitelist: nome jurídico, CPF e ID nunca são tocados
+            if (k === 'nomeExibicao' || k === 'foto') users[d][k] = campos[k];
+        });
+        try { gravarUsers(users); } catch (e) { return false; }
+        usuario = users[d];
+        return true;
+    }
+    function salvarNome() {
+        const v = $('perfilNomeExib').value.trim().replace(/\s+/g, ' ');
+        if (!v) { $('perfilNomeErro').style.display = 'block'; return; }
+        $('perfilNomeErro').style.display = 'none';
+        // se for igual ao nome jurídico, apaga o nome de exibição (volta ao padrão)
+        if (!persistirUsuario({ nomeExibicao: v === usuario.nome ? '' : v })) { alert('Não foi possível salvar (armazenamento cheio?).'); return; }
+        atualizarUi();
+        toast('✅ Perfil atualizado');
+    }
+    function salvarFoto(dataUrl) {
+        if (!persistirUsuario({ foto: dataUrl })) { alert('Não foi possível salvar a foto (armazenamento cheio?).'); return; }
+        atualizarUi();
+        toast('✅ Foto de perfil atualizada');
+    }
+    async function aoEscolherArquivo(file) {
+        if (!file) return;
+        if (!/^image\/(png|jpeg)$/.test(file.type)) { alert('Selecione uma imagem PNG ou JPEG.'); return; }
+        const url = URL.createObjectURL(file);
+        try {
+            const img = new Image();
+            await new Promise((ok, er) => { img.onload = ok; img.onerror = er; img.src = url; });
+            if (typeof abrirEditorImagem !== 'function') { alert('Editor de imagem indisponível.'); return; }
+            // recorte quadrado (prévia circular), reduzido a 256 px e salvo em JPEG: leve e atualiza na hora
+            abrirEditorImagem(img, img.naturalWidth, img.naturalHeight, { lado: 256, mime: 'image/jpeg', titulo: '✂️ Foto de Perfil', aoAplicar: salvarFoto });
+        } catch (e) { alert('Não foi possível abrir a imagem.'); }
+        finally { URL.revokeObjectURL(url); }
+    }
+    const sheet = (abrir) => $('modalFotoPerfil').classList.toggle('open', abrir);
+
+    /* ---------- Ligações de eventos ---------- */
+    function ligar() {
+        $('authTabEntrar').addEventListener('click', () => { $('authEntrar').style.display = 'block'; $('authCriar').style.display = 'none'; $('authTabEntrar').classList.add('active'); $('authTabCriar').classList.remove('active'); });
+        $('authTabCriar').addEventListener('click', () => { $('authEntrar').style.display = 'none'; $('authCriar').style.display = 'block'; $('authTabCriar').classList.add('active'); $('authTabEntrar').classList.remove('active'); });
+        $('colabBtnEntrar').addEventListener('click', entrar);
+        $('colabLoginSenha').addEventListener('keydown', (e) => { if (e.key === 'Enter') entrar(); });
+        $('colabBtnCriar').addEventListener('click', cadastrar);
+        $('colabBtnSair').addEventListener('click', sair);
+        document.querySelectorAll('.colab-nav-btn[data-pane]').forEach(b => b.addEventListener('click', () => mostrarPane(b.dataset.pane)));
+        $('perfilBtnSalvar').addEventListener('click', salvarNome);
+        $('perfilNomeExib').addEventListener('keydown', (e) => { if (e.key === 'Enter') salvarNome(); });
+        $('perfilBtnFoto').addEventListener('click', () => sheet(true));
+        $('fotoSheetCancelar').addEventListener('click', () => sheet(false));
+        $('fotoSheetCamera').addEventListener('click', () => { sheet(false); $('perfilInputCamera').click(); });
+        $('fotoSheetGaleria').addEventListener('click', () => { sheet(false); $('perfilInputGaleria').click(); });
+        $('perfilInputCamera').addEventListener('change', (e) => { aoEscolherArquivo(e.target.files[0]); e.target.value = ''; });
+        $('perfilInputGaleria').addEventListener('change', (e) => { aoEscolherArquivo(e.target.files[0]); e.target.value = ''; });
+    }
+
+    function iniciar() {
+        ligar();
+        const d = sessionStorage.getItem(K_SESSAO), u = d ? lerUsers()[d] : null;
+        if (u) entrarNaApp(u, sessionStorage.getItem(K_PANE) || 'ponto');
+    }
+
+    return { iniciar: iniciar, usuarioAtual: () => usuario, derivar: derivar, iniciais: iniciais };
+})();
+
+/* =====================================================================
+   MÓDULO HistoricoColab — extrato do colaborador (espelho ORIGINAL, somente leitura) + Excel do mês
+   Fonte de dados: PontoStore.originaisDoCpf(cpf) -> pontos_originais. Nada que o admin edita aparece aqui como dado do
+   ponto; ajustes aparecem só como entradas do "Histórico de Alterações".
+   ===================================================================== */
+const HistoricoColab = (function () {
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    const p2 = (n) => String(n).padStart(2, '0');
+    const mesAtual = () => { const d = new Date(); return d.getFullYear() + '-' + p2(d.getMonth() + 1); };
+
+    function doMes(mes) {
+        const u = Colab.usuarioAtual();
+        if (!u) return [];
+        const digitos = (t) => String(t || '').replace(/\D/g, '');
+        return PontoStore.originaisDoCpf(u.cpf)
+            .filter(o => String(o.dataSimples || '').slice(0, 7) === mes)
+            .sort((a, b) => (digitos(b.dataSimples) + digitos(b.dataHora)) < (digitos(a.dataSimples) + digitos(a.dataHora)) ? -1 : 1);
+    }
+    const qtdAjustes = (codigo) => PontoStore.logDoCodigo(codigo).filter(l => l.tipo === 'ajuste').length;
+
+    function render() {
+        if (!$('histMes').value) $('histMes').value = mesAtual();
+        const mes = $('histMes').value;
+        const lista = doMes(mes), box = $('histLista');
+        const integ = PontoStore.verificarOriginais(Colab.usuarioAtual().cpf);
+        const ruins = lista.filter(o => integ[o.codigo] === 'diverge').length;
+        $('histResumo').textContent = lista.length + (lista.length === 1 ? ' ponto' : ' pontos') + ' em ' + mes.slice(5) + '/' + mes.slice(0, 4) +
+            (ruins ? ' · ⚠️ ' + ruins + ' com selo de integridade divergente' : (lista.length ? ' · 🔒 selos íntegros' : ''));
+        if (!lista.length) { box.innerHTML = "<p style='text-align:center; color:var(--text-muted); margin-top:16px;'>Nenhum ponto registrado neste mês.</p>"; return; }
+        box.innerHTML = lista.map((o, i) => {
+            const n = qtdAjustes(o.codigo);
+            const mapa = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(o.lat + ',' + o.lng);
+            return '<div class="card-ponto">' +
+                '<div class="dados-prestador">' +
+                    '<b>🔖 Código Único:</b> <span class="cod-audit">' + escHtml(o.codigo) + '</span>' +
+                    (n ? ' <span class="badge" style="background:#d97706; margin-left:6px;">Ajustado pelo admin</span>' : '') +
+                    (integ[o.codigo] === 'diverge' ? ' <span class="badge" style="background:#dc2626; margin-left:6px;" title="O conteúdo deste registro não confere com o selo gravado no momento do ponto">⚠️ Selo divergente</span>' : '') + '<br>' +
+                    '<b>📅 Registro:</b> ' + escHtml(o.dataHora) + '<br>' +
+                    '<b>📍 Endereço:</b><br><span style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">' + escHtml(o.endereco) + '</span>' +
+                    '<b>🗺️ Rastreamento:</b> <a class="link-mapa" href="' + mapa + '" target="_blank" rel="noopener">Abrir no Google Maps</a>' +
+                '</div>' +
+                '<button type="button" class="btn btn-secondary" style="font-size:13px; padding:10px;" onclick="toggleFotoHist(\'fotoHist_' + i + '\', this)">Exibir Foto 👁️</button>' +
+                '<img id="fotoHist_' + i + '" src="' + escHtml(o.foto || '') + '" class="foto-large-admin" alt="Foto do registro" style="display:none;">' +
+                htmlHistoricoAlteracoes(o.codigo, 'logHist_' + i, 'usuario') +
+            '</div>';
+        }).join('');
+    }
+
+    // Linhas do Excel (função pura): código ao lado de cada ponto
+    function linhasExcel(originais, ajustesPorCodigo, integ) {
+        integ = integ || {};
+        return originais.map(o => {
+            const dh = PlanilhaPontos.partirDataHora(o.dataHora), n = ajustesPorCodigo[o.codigo] || 0;
+            return { 'Código Único (6 dígitos)': o.codigo, 'Data': dh.data, 'Hora': dh.hora, 'Nome': o.nome, 'CPF': o.cpf, 'Endereço': o.endereco || '',
+                     'Latitude': o.lat === '' || o.lat == null ? '' : Number(o.lat), 'Longitude': o.lng === '' || o.lng == null ? '' : Number(o.lng),
+                     'Ajustado pelo admin': n ? 'Sim (' + n + ')' : 'Não',
+                     'Selo de integridade': integ[o.codigo] === 'ok' ? 'Íntegro' : integ[o.codigo] === 'diverge' ? 'DIVERGENTE' : 'Sem selo' };
+        });
+    }
+    function exportar() {
+        if (typeof XLSX === 'undefined') { alert('A biblioteca de Excel não foi carregada. Verifique a conexão com a internet.'); return; }
+        const mes = $('histMes').value || mesAtual();
+        const lista = doMes(mes).slice().reverse();                      // cronológico no arquivo
+        if (!lista.length) { alert('Não há pontos neste mês para baixar.'); return; }
+        const aj = {}; lista.forEach(o => { aj[o.codigo] = qtdAjustes(o.codigo); });
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(linhasExcel(lista, aj, PontoStore.verificarOriginais(Colab.usuarioAtual().cpf)));
+        ws['!cols'] = [24, 12, 10, 30, 16, 55, 12, 12, 20, 18].map(w => ({ wch: w }));
+        ws['!autofilter'] = { ref: ws['!ref'] };
+        XLSX.utils.book_append_sheet(wb, ws, 'Histórico ' + mes);
+        XLSX.writeFile(wb, 'historico_pontos_' + mes + '.xlsx');
+        if (typeof mostrarToast === 'function') mostrarToast('✅ Histórico de ' + mes.slice(5) + '/' + mes.slice(0, 4) + ' baixado');
+    }
+
+    $('histMes').addEventListener('change', render);
+    $('histBtnExcel').addEventListener('click', exportar);
+    return { render: render, exportar: exportar, linhasExcel: linhasExcel };
+})();
+
+function toggleFotoHist(id, btn) {
+    const img = document.getElementById(id), oculta = img.style.display === 'none';
+    img.style.display = oculta ? 'block' : 'none';
+    btn.innerText = oculta ? 'Ocultar Foto 🙈' : 'Exibir Foto 👁️';
+}
+
+Colab.iniciar();
+</script>
+
 </body>
 </html>
