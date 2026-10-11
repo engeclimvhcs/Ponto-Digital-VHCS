@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ponto Eletrônico Digital</title>
+    <script>/* aplica o tema ANTES de pintar a tela (evita "piscar"): preferência salva ou a do sistema */
+    (function(){try{var m=localStorage.getItem('tema_modo')||'sistema';var c=m==='sistema'?(matchMedia('(prefers-color-scheme: light)').matches?'claro':'escuro'):m;document.documentElement.setAttribute('data-tema',c);}catch(e){}})();</script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <!-- SheetJS (xlsx): leitura e geração real de arquivos Excel .xlsx -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -15,6 +17,9 @@
             --bg: #111827; /* Cinza Escuro */
             --card: #1f2937; /* Cinza Medio */
             --card-light: #374151;
+            --line: #374151;
+            --line-strong: #4b5563;
+            color-scheme: dark;
             --text: #f3f4f6; 
             --text-muted: #9ca3af;
             --success: #22c55e;
@@ -39,12 +44,12 @@
             border-radius: 16px;
             box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
             overflow: hidden;
-            border: 1px solid #374151;
+            border: 1px solid var(--line);
         }
         .tabs {
             display: flex;
-            background: #111827;
-            border-bottom: 2px solid #374151;
+            background: var(--bg);
+            border-bottom: 2px solid var(--line);
         }
         .tab-btn {
             flex: 1;
@@ -89,7 +94,7 @@
         input {
             width: 100%;
             padding: 14px;
-            border: 1px solid #4b5563;
+            border: 1px solid var(--line-strong);
             border-radius: 10px;
             box-sizing: border-box;
             font-size: 16px;
@@ -101,11 +106,11 @@
             border-color: var(--primary);
         }
         .camera-container {
-            border: 2px dashed #4b5563;
+            border: 2px dashed var(--line-strong);
             border-radius: 14px;
             padding: 15px;
             text-align: center;
-            background: #111827;
+            background: var(--bg);
             margin-bottom: 18px;
             min-height: 100px;
             display: flex;
@@ -133,20 +138,20 @@
         }
         .btn-primary { background: var(--primary); color: var(--on-primary, white); }
         .btn-primary:hover { background: var(--primary-hover); }
-        .btn-secondary { background: #4b5563; color: white; }
+        .btn-secondary { background: var(--line-strong); color: white; }
         .btn:disabled {
-            background: #4b5563 !important;
+            background: var(--line-strong) !important;
             color: #9ca3af !important;
             cursor: not-allowed;
             opacity: 0.6;
         }
         .status-panel {
-            background: #111827;
+            background: var(--bg);
             border-radius: 10px;
             padding: 14px;
             font-size: 13px;
             margin-bottom: 18px;
-            border: 1px solid #374151;
+            border: 1px solid var(--line);
         }
         .status-item {
             display: flex;
@@ -172,7 +177,7 @@
             padding: 16px;
             border-radius: 12px;
             margin-bottom: 16px;
-            border: 1px solid #4b5563;
+            border: 1px solid var(--line-strong);
         }
         .dados-prestador {
             font-size: 14px;
@@ -205,7 +210,7 @@
         }
 
         /* ===== Seletor de Cores (Color Picker) ===== */
-        .cp-area { position: relative; width: 100%; border-radius: 10px; overflow: hidden; border: 1px solid #4b5563; margin-bottom: 12px; }
+        .cp-area { position: relative; width: 100%; border-radius: 10px; overflow: hidden; border: 1px solid var(--line-strong); margin-bottom: 12px; }
         #cpCanvas { display: block; width: 100%; height: auto; cursor: crosshair; touch-action: none; }
         #cpMarcador { position: absolute; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%;
             border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.6), inset 0 0 0 1px rgba(0,0,0,.4); pointer-events: none; }
@@ -214,7 +219,7 @@
             background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%); }
         .cp-hue::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 2px solid #111827; }
         .cp-hue::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 2px solid #111827; }
-        .cp-grupo { border: 1px solid #4b5563; border-radius: 10px; padding: 12px; margin-bottom: 12px; background: #111827; }
+        .cp-grupo { border: 1px solid var(--line-strong); border-radius: 10px; padding: 12px; margin-bottom: 12px; background: var(--bg); }
         .cp-grupo-titulo { margin: 0 0 10px 0; font-size: 12px; font-weight: bold; color: var(--primary); text-transform: uppercase; letter-spacing: .5px; }
         .cp-linha { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
         .cp-linha:last-child { margin-bottom: 0; }
@@ -224,9 +229,9 @@
         .cp-cmyk { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
         .cp-cmyk div { text-align: center; }
         .cp-cmyk small { display: block; margin-top: 3px; font-size: 11px; color: var(--text-muted); }
-        #cpPreview { height: 34px; border-radius: 8px; border: 1px solid #4b5563; margin-bottom: 12px; background: var(--primary); }
+        #cpPreview { height: 34px; border-radius: 8px; border: 1px solid var(--line-strong); margin-bottom: 12px; background: var(--primary); }
         #cpHistorico { display: flex; flex-wrap: wrap; gap: 10px; }
-        .cp-swatch { position: relative; width: 40px; height: 40px; border-radius: 10px; border: 2px solid #4b5563; cursor: pointer; box-sizing: border-box; outline: none; }
+        .cp-swatch { position: relative; width: 40px; height: 40px; border-radius: 10px; border: 2px solid var(--line-strong); cursor: pointer; box-sizing: border-box; outline: none; }
         .cp-swatch:focus-visible { border-color: var(--text); }
         .cp-swatch.ativo { border-color: #fff; }
         /* O X ocupa o bloco inteiro (alvo de toque grande), mas só o selinho central é visível. Só aparece no estado .ativo */
@@ -237,7 +242,7 @@
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.65); display: none;
             align-items: center; justify-content: center; padding: 15px; z-index: 100; box-sizing: border-box; }
         .modal-overlay.open { display: flex; }
-        .modal-box { background: var(--card); border: 1px solid #4b5563; border-radius: 16px; padding: 20px; width: 100%; max-width: 400px; box-sizing: border-box; }
+        .modal-box { background: var(--card); border: 1px solid var(--line-strong); border-radius: 16px; padding: 20px; width: 100%; max-width: 400px; box-sizing: border-box; }
 
         /* ===== Câmera: preview sem recorte + toast ===== */
         #video, #fotoPreview { object-fit: contain; max-height: 340px; background: #000; }
@@ -254,7 +259,7 @@
             width: min(450px, calc(100% - 30px));
             gap: 10px; box-sizing: border-box; height: calc(52px + env(safe-area-inset-top, 0px)); padding: env(safe-area-inset-top, 0px) 16px 0;
             background: linear-gradient(90deg, var(--primary), var(--primary-dark, #ae500f)); color: var(--on-primary, white);
-            border: 1px solid #374151; border-top: none; box-shadow: 0 8px 14px -8px rgba(0,0,0,.55); }
+            border: 1px solid var(--line); border-top: none; box-shadow: 0 8px 14px -8px rgba(0,0,0,.55); }
         .cab-fixo.visivel { display: flex; }
         #cabLogo { height: 40px; width: 40px; flex: none; box-sizing: border-box; border-radius: 50%; border: 2px solid #fff;
             background: rgba(255,255,255,.2) center / cover no-repeat; box-shadow: 0 0 0 2px rgba(0,0,0,.18), 0 2px 6px rgba(0,0,0,.35); }
@@ -262,12 +267,12 @@
         /* Com cabeçalho: o app começa colado embaixo dele (sem espaço) e perde a borda/cantos de cima, formando uma peça só */
         body.com-cabecalho { padding-top: calc(52px + env(safe-area-inset-top, 0px)); align-items: flex-start; }
         body.com-cabecalho .app-container { border-top: none; border-top-left-radius: 0; border-top-right-radius: 0; }
-        .logo-preview { width: 56px; height: 56px; flex: none; border: 2px solid #fff; border-radius: 50%; background: #111827 center / cover no-repeat;
+        .logo-preview { width: 56px; height: 56px; flex: none; border: 2px solid #fff; border-radius: 50%; background: var(--bg) center / cover no-repeat;
             display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--text-muted); }
 
         /* ===== Editor de logo (cortar / girar / espelhar) ===== */
         .ed-wrap { padding: 11px; overflow: hidden; display: flex; justify-content: center; margin-bottom: 8px; }
-        .ed-area { position: relative; line-height: 0; border: 1px solid #4b5563; touch-action: none;
+        .ed-area { position: relative; line-height: 0; border: 1px solid var(--line-strong); touch-action: none;
             background-color: #555;
             background-image: linear-gradient(45deg, #666 25%, transparent 25%, transparent 75%, #666 75%), linear-gradient(45deg, #666 25%, transparent 25%, transparent 75%, #666 75%);
             background-size: 16px 16px; background-position: 0 0, 8px 8px; }
@@ -287,16 +292,16 @@
         .ed-lock .ed-h.ed-borda { display: none; }   /* com proporção travada só os cantos redimensionam */
         .ed-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
         .ed-tools .btn { font-size: 12px; padding: 10px 6px; }
-        .ed-select { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #4b5563; background: var(--card-light); color: var(--text); font-size: 15px; margin-bottom: 12px; }
+        .ed-select { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--line-strong); background: var(--card-light); color: var(--text); font-size: 15px; margin-bottom: 12px; }
 
         /* ===== Configurações: abas retráteis e visual compacto ===== */
-        .acc { border: 1px solid #374151; border-radius: 10px; margin-bottom: 8px; background: rgba(0,0,0,.2); overflow: hidden; }
+        .acc { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; background: rgba(0,0,0,.2); overflow: hidden; }
         .acc > summary { list-style: none; cursor: pointer; padding: 10px 12px; font-size: 13px; font-weight: 700; color: var(--primary);
             display: flex; align-items: center; justify-content: space-between; user-select: none; -webkit-tap-highlight-color: transparent; }
         .acc > summary::-webkit-details-marker { display: none; }
         .acc > summary::after { content: '▾'; font-size: 14px; color: var(--text-muted); transition: transform .2s; transform: rotate(-90deg); }
         .acc[open] > summary::after { transform: rotate(0deg); }
-        .acc[open] > summary { border-bottom: 1px solid #374151; }
+        .acc[open] > summary { border-bottom: 1px solid var(--line); }
         .acc-corpo { padding: 10px 12px 12px; }
         .acc-sub { background: transparent; margin-bottom: 8px; }
         .acc-sub > summary { font-size: 11px; padding: 8px 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .4px; }
@@ -310,7 +315,7 @@
 
         /* ===== Limpeza automática da lixeira ===== */
         .cfg-range { padding: 0 !important; border: none !important; background: transparent !important; height: 30px; accent-color: var(--primary); margin: 4px 0 6px; }
-        .cont-lixeira { font-size: 12px; text-align: center; padding: 8px 10px; border-radius: 8px; margin-bottom: 12px; background: rgba(0,0,0,.25); border: 1px solid #374151; color: var(--text-muted); }
+        .cont-lixeira { font-size: 12px; text-align: center; padding: 8px 10px; border-radius: 8px; margin-bottom: 12px; background: rgba(0,0,0,.25); border: 1px solid var(--line); color: var(--text-muted); }
         .cont-lixeira b { color: var(--text); }
         .cont-lixeira.venceu { border-color: var(--danger); color: var(--text); }
 
@@ -322,10 +327,10 @@
         .lix-ferramentas .btn { margin: 0; font-size: 12px; padding: 10px 6px; line-height: 1.3; }
 
         /* ===== Área do colaborador: conta, perfil, histórico ===== */
-        .colab-barra { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid #374151; border-radius: 12px; background: rgba(0,0,0,.2); margin-bottom: 12px; }
+        .colab-barra { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: rgba(0,0,0,.2); margin-bottom: 12px; }
         .colab-saudacao { flex: 1; min-width: 0; font-size: 14px; line-height: 1.25; }
         .colab-saudacao b { display: block; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .colab-sair { background: transparent; border: 1px solid #4b5563; color: var(--text-muted); border-radius: 8px; padding: 6px 10px; font-size: 12px; cursor: pointer; }
+        .colab-sair { background: transparent; border: 1px solid var(--line-strong); color: var(--text-muted); border-radius: 8px; padding: 6px 10px; font-size: 12px; cursor: pointer; }
         .avatar { width: 44px; height: 44px; flex: none; border-radius: 50%; box-sizing: border-box; background: var(--primary) center / cover no-repeat;
             color: var(--on-primary, #fff); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; border: 2px solid #fff; }
         .avatar-grande { width: 104px; height: 104px; font-size: 36px; }
@@ -333,21 +338,72 @@
         .perfil-camera { position: absolute; right: -4px; bottom: -4px; width: 36px; height: 36px; padding: 0; border-radius: 50%; border: 2px solid #fff;
             background: var(--primary); color: var(--on-primary, #fff); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .colab-nav { display: flex; gap: 6px; margin-bottom: 14px; }
-        .colab-nav-btn { flex: 1; padding: 9px 4px; border: 1px solid #4b5563; border-radius: 10px; background: var(--card-light); color: var(--text-muted); font-weight: 700; font-size: 13px; cursor: pointer; }
+        .colab-nav-btn { flex: 1; padding: 9px 4px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--card-light); color: var(--text-muted); font-weight: 700; font-size: 13px; cursor: pointer; }
         .colab-nav-btn.active { color: var(--primary); border-color: var(--primary); }
         .cod-audit { font-family: ui-monospace, Menlo, Consolas, monospace; font-weight: 700; letter-spacing: 1px; color: var(--primary); }
-        .log-alteracoes { margin-top: 8px; border: 1px solid #374151; border-radius: 10px; padding: 8px 10px; background: rgba(0,0,0,.2); font-size: 12px; }
-        .log-item { padding: 6px 0; border-bottom: 1px solid #374151; line-height: 1.45; }
+        .log-alteracoes { margin-top: 8px; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; background: rgba(0,0,0,.2); font-size: 12px; }
+        .log-item { padding: 6px 0; border-bottom: 1px solid var(--line); line-height: 1.45; }
         .log-item:last-child { border-bottom: none; }
         .log-de { color: #f87171; text-decoration: line-through; }
         .log-para { color: #4ade80; font-weight: 700; }
         .log-vazio { margin: 4px 0; color: var(--text-muted); text-align: center; }
         .nota-colab { font-size: 12px; color: var(--text-muted); line-height: 1.45; margin: 0 0 12px 0; }
-        .dado-fixo { display: flex; justify-content: space-between; gap: 10px; padding: 7px 0; border-bottom: 1px solid #374151; font-size: 13px; }
+        .dado-fixo { display: flex; justify-content: space-between; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
         .dado-fixo:last-child { border-bottom: none; }
         .dado-fixo span:first-child { color: var(--text-muted); }
         .dado-fixo span:last-child { text-align: right; font-weight: 600; word-break: break-word; }
         #nome[readonly], #cpf[readonly] { opacity: .75; cursor: not-allowed; }
+
+        /* ===== Gestão global de arquivos (backup) ===== */
+        .barra-prog { height: 10px; border-radius: 6px; background: var(--bg); border: 1px solid var(--line); overflow: hidden; }
+        .barra-prog > div { height: 100%; width: 0; background: var(--primary); transition: width .25s; }
+        #baseErros { text-align: left; white-space: pre-wrap; font-size: 12px; line-height: 1.5; max-height: 220px; overflow-y: auto; }
+
+        /* ===== Ponto offline / sincronização ===== */
+        .badge-warning { background: #d97706; }
+        .sync-ic { font-size: 14px; margin-left: 6px; vertical-align: middle; }
+        .sync-pend { color: #9ca3af; }
+        .sync-ok { color: #22c55e; font-weight: bold; }
+        .alerta-offline { border: 1px solid #d97706; background: rgba(217,119,6,.12); border-radius: 8px; padding: 8px 10px; margin: 8px 0; font-size: 12px; line-height: 1.5; }
+        .alerta-suspeita { margin-top: 6px; padding: 5px 8px; border-radius: 6px; background: rgba(220,38,38,.2); border: 1px solid var(--danger); font-weight: bold; }
+        .alerta-motivo { display: block; color: var(--text-muted); margin-top: 3px; }
+        .offline-icone { font-size: 44px; text-align: center; margin-bottom: 4px; }
+        .offline-titulo { text-align: center; color: var(--primary); margin: 0 0 12px 0; font-size: 22px; }
+        .offline-texto { font-size: 14px; line-height: 1.55; margin: 0 0 12px 0; }
+        .offline-instrucao { font-size: 13px; line-height: 1.5; margin: 0 0 14px 0; padding: 10px 12px; border-radius: 10px; background: rgba(0,0,0,.25); border: 1px solid var(--line); color: var(--text-muted); }
+
+        /* ===== Tema claro/escuro (herda do sistema; pode ser forçado em Configurações) ===== */
+        :root[data-tema="claro"] { color-scheme: light; --bg: #f3f4f6; --card: #ffffff; --card-light: #e5e7eb; --text: #111827; --text-muted: #6b7280;
+            --line: #d1d5db; --line-strong: #9ca3af; --success: #16a34a; }
+        :root[data-tema="escuro"] { color-scheme: dark; }
+        html.tema-anim, html.tema-anim * { transition: background-color .3s ease, color .3s ease, border-color .3s ease !important; }
+        .seg-tema { display: flex; gap: 6px; }
+        .seg-tema button { flex: 1; padding: 10px 4px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--card-light); color: var(--text-muted); font-weight: 700; font-size: 12px; cursor: pointer; }
+        .seg-tema button.ativo { color: var(--primary); border-color: var(--primary); }
+        /* ===== Mostrar/ocultar senha ===== */
+        .senha-wrap { position: relative; display: block; }
+        .senha-wrap input { padding-right: 48px !important; }
+        .btn-olho { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 40px; height: 36px; padding: 0; border: none; border-radius: 8px;
+            background: transparent; color: var(--text-muted); font-size: 18px; cursor: pointer; line-height: 1; }
+        .btn-olho:focus-visible { outline: 2px solid var(--primary); }
+        /* ===== Acesso rápido (último CPF) ===== */
+        #atalhoCpfBox { display: none; gap: 6px; margin-bottom: 14px; }
+        .atalho-cpf { flex: 1; text-align: left; padding: 10px 12px; border: 1px dashed var(--line-strong); border-radius: 10px; background: transparent; color: var(--text); font-size: 13px; cursor: pointer; }
+        .atalho-cpf b { color: var(--primary); letter-spacing: .5px; }
+        .atalho-esquecer { width: 40px; border: 1px solid var(--line); border-radius: 10px; background: transparent; color: var(--text-muted); cursor: pointer; }
+
+        /* ===== Carregamento, paginação e justificativa ===== */
+        .overlay-carga { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.55); display: none; align-items: center; justify-content: center; z-index: 90; padding: 20px; box-sizing: border-box; }
+        .overlay-carga.ativo { display: flex; }
+        .carga-box { background: var(--card); border: 1px solid var(--line-strong); border-radius: 16px; padding: 22px; width: 100%; max-width: 300px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,.4); }
+        .spinner { width: 38px; height: 38px; margin: 0 auto 12px; border: 4px solid var(--line-strong); border-top-color: var(--primary); border-radius: 50%; animation: gira .8s linear infinite; }
+        @keyframes gira { to { transform: rotate(360deg); } }
+        #cargaRotulo { font-weight: 700; font-size: 14px; }
+        .resumo-lista { text-align: center; font-size: 12px; color: var(--text-muted); margin: 6px 0 10px; }
+        .pag-mais { margin-bottom: 12px; }
+        textarea { width: 100%; padding: 12px; border: 1px solid var(--line-strong); border-radius: 10px; box-sizing: border-box; font-size: 15px; font-family: inherit; background-color: var(--card-light); color: var(--text); resize: vertical; }
+        .just-conta { text-align: right; font-size: 11px; color: var(--text-muted); margin: 2px 0 10px; }
+        .motivo-lixeira { display: block; font-size: 12px; color: var(--text-muted); margin-top: 4px; }
     </style>
 </head>
 <body>
@@ -369,27 +425,28 @@
                 <button type="button" class="colab-nav-btn active" id="authTabEntrar">Entrar</button>
                 <button type="button" class="colab-nav-btn" id="authTabCriar">Criar conta</button>
             </div>
-            <div id="authEntrar">
+            <form id="authEntrar" autocomplete="on" novalidate>
+                <div id="atalhoCpfBox"><button type="button" class="atalho-cpf" id="colabAtalhoCpf">👤 Entrar como <b id="atalhoCpfTxt"></b></button><button type="button" class="atalho-esquecer" id="colabAtalhoEsquecer" title="Não sou eu" aria-label="Esquecer este CPF">✕</button></div>
                 <div class="form-group"><label for="colabLoginCpf">CPF</label>
-                    <input type="text" id="colabLoginCpf" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" autocomplete="username" oninput="aplicarMascaraCPF(this)"></div>
+                    <input type="text" id="colabLoginCpf" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" name="username" autocomplete="username" oninput="aplicarMascaraCPF(this)"></div>
                 <div class="form-group"><label for="colabLoginSenha">Senha</label>
-                    <input type="password" id="colabLoginSenha" placeholder="Sua senha" autocomplete="current-password"></div>
+                    <input type="password" id="colabLoginSenha" name="password" placeholder="Sua senha" autocomplete="current-password"></div>
                 <div id="colabLoginErro" class="alerta-erro"></div>
-                <button type="button" class="btn btn-primary" id="colabBtnEntrar">Entrar</button>
-            </div>
-            <div id="authCriar" style="display:none;">
+                <button type="submit" class="btn btn-primary" id="colabBtnEntrar">Entrar</button>
+            </form>
+            <form id="authCriar" style="display:none;" autocomplete="on" novalidate>
                 <p class="nota-colab">O nome e o CPF informados aqui são o seu <b>cadastro oficial</b> e ficam gravados em todos os seus pontos. Não poderão ser alterados por você depois.</p>
                 <div class="form-group"><label for="colabCadNome">Nome Completo</label>
                     <input type="text" id="colabCadNome" placeholder="Seu nome completo" autocomplete="name"></div>
                 <div class="form-group"><label for="colabCadCpf">CPF</label>
-                    <input type="text" id="colabCadCpf" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" oninput="aplicarMascaraCPF(this)"></div>
+                    <input type="text" id="colabCadCpf" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" name="username" autocomplete="username" oninput="aplicarMascaraCPF(this)"></div>
                 <div class="form-group"><label for="colabCadSenha">Senha (mín. 6 caracteres)</label>
                     <input type="password" id="colabCadSenha" autocomplete="new-password"></div>
                 <div class="form-group"><label for="colabCadSenha2">Confirmar senha</label>
                     <input type="password" id="colabCadSenha2" autocomplete="new-password"></div>
                 <div id="colabCadErro" class="alerta-erro"></div>
-                <button type="button" class="btn btn-primary" id="colabBtnCriar">Criar conta</button>
-            </div>
+                <button type="submit" class="btn btn-primary" id="colabBtnCriar">Criar conta</button>
+            </form>
         </div>
 
         <!-- ===== Área do colaborador logado ===== -->
@@ -469,6 +526,28 @@
                 <div class="dado-fixo"><span>ID do colaborador</span><span id="perfilId"></span></div>
                 <div class="dado-fixo"><span>Conta criada em</span><span id="perfilCriadoEm"></span></div>
             </div>
+            <div class="card-ponto" style="margin-top:10px; padding:10px 14px;">
+                <p style="margin:0 0 8px 0; font-size:12px; font-weight:700; color:var(--primary);">🌓 Aparência</p>
+                <div class="seg-tema" role="group" aria-label="Tema do aplicativo">
+                <button type="button" data-modo="sistema">🖥️ Sistema</button>
+                <button type="button" data-modo="claro">☀️ Claro</button>
+                <button type="button" data-modo="escuro">🌙 Escuro</button>
+                </div>
+            </div>
+            <div class="card-ponto" style="margin-top:10px; padding:10px 14px;">
+                <p style="margin:0 0 6px 0; font-size:12px; font-weight:700; color:var(--primary);">🪪 Alterar Nome jurídico / CPF</p>
+                <p class="nota-colab" style="margin:0 0 8px 0;">Só o administrador pode autorizar. Seus pontos antigos continuam no histórico.</p>
+                <div id="idSolStatus"></div>
+                <button type="button" class="btn btn-secondary" id="idSolAbrir">Solicitar alteração</button>
+                <div id="idSolForm" style="display:none; margin-top:10px;">
+                    <div class="form-group"><label for="idSolNome">Novo nome completo</label><input type="text" id="idSolNome" maxlength="80" autocomplete="off"></div>
+                    <div class="form-group"><label for="idSolCpf">Novo CPF</label><input type="text" id="idSolCpf" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" autocomplete="off" oninput="aplicarMascaraCPF(this)"></div>
+                    <div class="form-group"><label for="idSolSenha">Sua senha atual</label><input type="password" id="idSolSenha" autocomplete="current-password"></div>
+                    <div id="idSolErro" class="alerta-erro"></div>
+                    <button type="button" class="btn btn-primary" id="idSolEnviar">Enviar solicitação</button>
+                    <button type="button" class="btn btn-secondary" style="margin-top:8px;" id="idSolCancelar">Cancelar</button>
+                </div>
+            </div>
             <p class="nota-colab" style="margin-top:10px;">Dados fixos: não podem ser alterados por você. O nome de exibição muda apenas como você aparece no aplicativo; o <b>nome jurídico</b> usado nos registros de ponto continua o do cadastro.</p>
         </div>
         </div><!-- /colabApp -->
@@ -487,7 +566,7 @@
                 <a href="#" id="linkEsqueciSenha" style="color:var(--primary); font-size:13px; font-weight:600; text-decoration:none;" onclick="toggleRecuperacaoSenha(event)">Esqueci a Senha 🔑</a>
             </p>
 
-            <div id="painelRecuperacao" style="display:none; margin-top:16px; border-top:1px solid #374151; padding-top:16px;">
+            <div id="painelRecuperacao" style="display:none; margin-top:16px; border-top:1px solid var(--line); padding-top:16px;">
 
                 <div id="etapaEmailRecuperacao">
                     <div class="form-group">
@@ -529,6 +608,20 @@
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
                 <p style="color:var(--success); font-weight:bold; margin:0;">🔓 Acesso Permitido</p>
                 <button type="button" class="btn" style="background:var(--danger); color:white; font-size:12px; padding:8px 12px; width:auto;" onclick="encerrarSessaoAdmin()">Encerrar Sessão 🚪</button>
+            </div>
+
+            <div class="card-ponto" id="painelBackup" style="margin-bottom:16px;">
+                <p style="margin:0 0 10px 0; font-weight:bold; color:var(--primary); text-align:center;">🗂️ Gestão de Arquivos (Backup)</p>
+                <div class="lix-ferramentas">
+                    <button type="button" class="btn btn-primary" id="btnBaseExportar">📥 Exportar Base de Dados (Excel)</button>
+                    <button type="button" class="btn btn-secondary" id="btnBaseImportar">📤 Importar / Sincronizar Planilha de Pontos</button>
+                    <input type="file" id="inputBaseImportar" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display:none;">
+                </div>
+                <div id="baseProgresso" style="display:none; margin-top:4px;">
+                    <div class="barra-prog"><div id="baseProgressoBarra"></div></div>
+                    <small id="baseProgressoTxt" style="display:block; text-align:center; color:var(--text-muted); margin-top:4px;"></small>
+                </div>
+                <div id="baseErros" class="alerta-erro" role="alert"></div>
             </div>
 
             <div id="painelPrimeiroAcesso" class="card-ponto" style="display:none; margin-bottom:20px; border-color:var(--primary);">
@@ -616,6 +709,27 @@
                     <button type="button" class="btn btn-primary" onclick="salvarTrocaSenha()">Salvar Nova Senha ✅</button>
                     <p id="msgSucessoTrocaSenha" style="display:none; color:var(--success); text-align:center; font-weight:bold; margin-top:10px;">✅ Senha alterada com sucesso!</p>
                 </div>
+                        </div>
+                    </details>
+
+                    <details class="acc" id="accIdentidade">
+                        <summary>🪪 Alterações de Nome/CPF <span id="idBadge" style="display:none; background:var(--danger); color:#fff; border-radius:10px; padding:1px 7px; font-size:11px; margin-left:4px;"></span></summary>
+                        <div class="acc-corpo">
+                            <div id="idListaPend"></div>
+                            <p style="margin:12px 0 4px 0; font-size:12px; font-weight:700; color:var(--primary);">Trilha de auditoria (somente acréscimo)</p>
+                            <div id="idListaAud"></div>
+                        </div>
+                    </details>
+
+                    <details class="acc">
+                        <summary>🌓 Aparência (claro / escuro)</summary>
+                        <div class="acc-corpo">
+                            <div class="seg-tema" role="group" aria-label="Tema do aplicativo">
+                                <button type="button" data-modo="sistema">🖥️ Sistema</button>
+                                <button type="button" data-modo="claro">☀️ Claro</button>
+                                <button type="button" data-modo="escuro">🌙 Escuro</button>
+                            </div>
+                            <p style="font-size:11px; color:var(--text-muted); margin:8px 0 0 0;">"Sistema" segue a preferência do seu aparelho automaticamente.</p>
                         </div>
                     </details>
 
@@ -709,8 +823,9 @@
 
             <button type="button" class="btn" style="background: var(--primary); color: white; font-size:13px; padding:10px; margin-bottom:15px;" onclick="toggleLixeira()">🗑️ Lixeira</button>
             <button type="button" class="btn btn-secondary" style="font-size:13px; padding:10px; margin-bottom:15px;" onclick="exportarConciliacao()">📊 Relatório de Conciliação (Excel)</button>
+            <button type="button" class="btn" id="btnMoverFiltrados" style="background:var(--danger); color:white; font-size:13px; padding:10px; margin-bottom:15px;">🗑️ Mover resultados do filtro (data) para a Lixeira</button>
 
-            <div id="lixeiraPanel" style="display:none; margin-bottom:20px; border:1px solid #4b5563; border-radius:10px; padding:14px; background:#111827;">
+            <div id="lixeiraPanel" style="display:none; margin-bottom:20px; border:1px solid var(--line-strong); border-radius:10px; padding:14px; background: var(--bg);">
                 <h3 style="margin-top:0; font-size:16px; text-align:center; color:var(--primary);">Lixeira - Registros Excluídos</h3>
                 <div id="avisoExpiracaoLixeira" class="aviso-lixeira" role="alert">⚠️ <b>Atenção:</b> A lixeira será esvaziada automaticamente em breve. Lembre-se de baixar os dados dos pontos batidos antes que eles sejam apagados permanentemente.</div>
                 <div id="contagemLixeira" class="cont-lixeira"></div>
@@ -723,6 +838,11 @@
                     <label>Buscar na Lixeira</label>
                     <input type="text" id="filtroLixeira" placeholder="Digite o nome para pesquisar..." oninput="renderizarLixeira()">
                 </div>
+                <div class="form-group">
+                    <label>Filtrar Lixeira por Data do Ponto</label>
+                    <input type="date" id="filtroLixeiraData" onchange="renderizarLixeira()">
+                </div>
+                <button type="button" class="btn btn-primary" id="btnRestaurarFiltrados" style="font-size:13px; padding:10px; margin-bottom:12px;">♻️ Restaurar resultados do filtro</button>
                 <button type="button" class="btn" id="btnExcluirTodosLixeira" style="background:var(--danger); color:white; font-size:14px; font-weight:bold; padding:12px; margin-bottom:12px;">Excluir Todos os Pontos da Lixeira</button>
                 <div id="listaLixeira"></div>
             </div>
@@ -733,6 +853,47 @@
 </div>
 
 <div id="toastApp" role="status" aria-live="polite"></div>
+
+<div id="overlayCarga" class="overlay-carga" role="alert" aria-live="assertive">
+    <div class="carga-box">
+        <div class="spinner"></div>
+        <div id="cargaRotulo">Processando…</div>
+        <div class="barra-prog" id="cargaBarraWrap" style="display:none; margin-top:10px;"><div id="cargaBarra"></div></div>
+        <small id="cargaTxt" style="display:block; color:var(--text-muted); margin-top:6px;"></small>
+    </div>
+</div>
+
+<div id="modalJustificativa" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-box">
+        <h2 id="justTitulo">Justificativa de Exclusão</h2>
+        <p id="justDescricao" style="text-align:center; color:var(--text-muted); font-size:13px; margin-top:0;"></p>
+        <label for="justMotivo">Motivo (obrigatório)</label>
+        <select id="justMotivo" class="ed-select">
+            <option value="">Selecione…</option>
+            <option>Marcação duplicada</option>
+            <option>Erro operacional</option>
+            <option>Ajuste solicitado pelo funcionário</option>
+            <option>Ponto fora do expediente</option>
+            <option value="__outro">Outro (descrever abaixo)</option>
+        </select>
+        <label for="justTexto" id="justTextoLabel">Detalhes (opcional)</label>
+        <textarea id="justTexto" rows="3" maxlength="300" placeholder="Descreva o motivo"></textarea>
+        <div class="just-conta"><span id="justConta">0</span>/300</div>
+        <button type="button" class="btn" id="justConfirmar" style="background:var(--danger); color:white;" disabled>Confirmar</button>
+        <button type="button" class="btn btn-secondary" id="justCancelar" style="margin-top:8px;">Cancelar</button>
+    </div>
+</div>
+
+<div id="modalPontoOffline" class="modal-overlay" role="alertdialog" aria-modal="true" aria-labelledby="offlineTitulo">
+    <div class="modal-box">
+        <div class="offline-icone">📴</div>
+        <h2 id="offlineTitulo" class="offline-titulo">Ponto Salvo no Dispositivo!</h2>
+        <p class="offline-texto">Você está sem conexão com a internet no momento, mas não se preocupe! Você pode continuar usando o aplicativo normalmente. Suas informações de ponto foram salvas com segurança no seu celular.</p>
+        <p class="offline-instrucao">Assim que o seu aparelho estiver online novamente (via Wi-Fi ou dados móveis), todos os dados salvos serão atualizados e sincronizados com o sistema da empresa automaticamente.</p>
+        <p style="font-size:12px; text-align:center; color:var(--text-muted); margin:0 0 12px 0;">Código Único do ponto: <b class="cod-audit" id="offlineCodigo"></b></p>
+        <button type="button" class="btn btn-primary" id="offlineEntendido">Entendido</button>
+    </div>
+</div>
 
 <div id="modalEditorLogo" class="modal-overlay">
     <div class="modal-box" style="max-width:420px; max-height:94vh; overflow-y:auto;">
@@ -800,7 +961,7 @@
         <!-- Tela 1: pergunta de confirmação -->
         <div id="exclEtapa1" style="display:none;">
             <h2 style="color:var(--danger);">⚠️ Confirmação</h2>
-            <p style="font-size:15px; line-height:1.5; text-align:center; margin-top:0;">Você tem certeza absoluta de que deseja apagar de forma permanente todos os pontos da lixeira? Esta ação <b>NÃO</b> poderá ser desfeita e os dados sumirão do sistema.</p>
+            <p style="font-size:15px; line-height:1.5; text-align:center; margin-top:0;">Você tem certeza absoluta de que deseja apagar de forma permanente <b id="exclQtd">todos os pontos</b> da lixeira? Esta ação <b>NÃO</b> poderá ser desfeita e os dados sumirão do sistema.</p>
             <button type="button" class="btn" style="background:var(--danger); color:white;" id="exclSim">Sim, tenho certeza</button>
             <button type="button" class="btn btn-secondary" style="margin-top:8px;" id="exclCancelar1">Cancelar</button>
         </div>
@@ -831,7 +992,7 @@
         <p id="msgModalSenha" style="text-align:center; color:var(--text-muted); font-size:14px; margin-top:0;"></p>
         <input type="password" id="senhaModalInput" placeholder="Senha administrativa" onkeydown="if(event.key==='Enter')confirmarModalSenha()">
         <div id="erroModalSenha" class="alerta-erro">⚠️ Senha incorreta.</div>
-        <button type="button" class="btn" style="background:var(--danger); color:white; margin-top:14px;" onclick="confirmarModalSenha()">Confirmar exclusão</button>
+        <button type="button" class="btn" style="background:var(--danger); color:white; margin-top:14px;" onclick="confirmarModalSenha()">Confirmar</button>
         <button type="button" class="btn btn-secondary" style="margin-top:8px;" onclick="fecharModalSenha()">Cancelar</button>
     </div>
 </div>
@@ -883,6 +1044,7 @@
                 (position) => {
                     dadosPonto.lat = position.coords.latitude;
                     dadosPonto.lng = position.coords.longitude;
+                    if (typeof PontoOffline !== 'undefined') PontoOffline.fixGps();   // antifraude: GPS funcionava neste instante
                     
                     fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + dadosPonto.lat + '&lon=' + dadosPonto.lng + '&zoom=18&addressdetails=1', {
                         headers: { 'Accept-Language': 'pt-BR' }
@@ -922,7 +1084,7 @@
                 () => {
                     document.getElementById('txtGps').innerHTML = "<b style='color:var(--danger)'>Erro: Ative o GPS nas configurações.</b>";
                     document.getElementById('btnRetryGps').style.display = "block";
-                    alert("📍 Ative a localização (GPS) nas configurações do seu celular e depois toque em \"Tentar Ativar Localização\".");
+                    if (navigator.onLine !== false) alert("📍 Ative a localização (GPS) nas configurações do seu celular e depois toque em \"Tentar Ativar Localização\".");   // offline o GPS é opcional
                 },
                 { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
             );
@@ -974,7 +1136,8 @@
     function checarDuplicidadeHoje(cpf) {
         let limpoCpf = cpf.replace(/[^\d]+/g, '');
         let historico = JSON.parse(localStorage.getItem('historico_pontos')) || [];
-        return historico.some(p => p.cpf.replace(/[^\d]+/g, '') === limpoCpf && p.dataSimples === dadosPonto.dataSimples);
+        // Pontos feitos offline não contam para a trava: depois que a internet volta, o colaborador pode bater de novo
+        return historico.some(p => !p.registro_offline && p.cpf.replace(/[^\d]+/g, '') === limpoCpf && p.dataSimples === dadosPonto.dataSimples);
     }
 
     async function gerenciarCapturaFoto() {
@@ -1053,15 +1216,17 @@
             }
         }
 
+        // Offline: a trava "um ponto por CPF por dia" NÃO se aplica (o ponto offline segue com a hora local original)
         let duplicado = false;
-        if(cpfValido) {
+        if(cpfValido && navigator.onLine !== false) {
             if(checarDuplicidadeHoje(cpf)) {
                 duplicado = true;
                 divErroDup.style.display = "block";
             }
         }
 
-        if (nome && cpfValido && !duplicado && dadosPonto.foto && dadosPonto.lat) {
+        // GPS é obrigatório, EXCETO quando o aparelho está sem internet (navigator.onLine === false)
+        if (nome && cpfValido && !duplicado && dadosPonto.foto && (dadosPonto.lat || navigator.onLine === false)) {
             btn.disabled = false;
         } else {
             btn.disabled = true;
@@ -1403,6 +1568,8 @@
         // Nome jurídico e CPF vêm sempre do cadastro da conta (não do que está na tela)
         dadosPonto.nome = colab.nome;
         dadosPonto.cpf = colab.cpf;
+        // Sem internet: fluxo offline (GPS opcional, auditoria antifraude, fila FIFO e modal explicativo)
+        if (navigator.onLine === false && typeof PontoOffline !== 'undefined') { PontoOffline.registrar(); return; }
 
         const btn = document.getElementById('btnEnviar');
         btn.disabled = true;
@@ -1439,65 +1606,90 @@
             alert("Ponto eletrônico transmitido com sucesso!" + msgCodigo);
             location.reload();
         }).catch(() => {
-            alert("Erro na transmissão. Salvo localmente." + msgCodigo);
+            if (typeof PontoOffline !== 'undefined') PontoOffline.marcarPendente(dadosPonto.codigo);   // entra na fila e será reenviado
+            alert("Sem resposta do servidor. Ponto salvo no aparelho e será enviado automaticamente." + msgCodigo);
             location.reload();
         });
     }
 
+    /* ===== Listas paginadas (lazy loading): só 20 cards entram na tela por vez; rolagem infinita + botão "Carregar mais" ===== */
+    const PAG_TAM = 20;
+    let limitePontos = PAG_TAM, sigPontos = '';
+    const obsMais = {};
+    // Quando o botão "Carregar mais" aparece na tela, carrega o próximo lote automaticamente (IntersectionObserver)
+    function observarMais(id, aoPrecisar) {
+        const b = document.getElementById(id);
+        if (!b) return;
+        b.onclick = aoPrecisar;                                   // alternativa manual (e para navegadores sem IntersectionObserver)
+        if (!('IntersectionObserver' in window)) return;
+        if (obsMais[id]) obsMais[id].disconnect();
+        obsMais[id] = new IntersectionObserver((es) => { if (es.some(e => e.isIntersecting)) { obsMais[id].disconnect(); aoPrecisar(); } }, { rootMargin: '250px' });
+        obsMais[id].observe(b);
+    }
+    // Cache do JSON: evita reprocessar megabytes a cada tecla digitada nos filtros
+    const cacheJson = {};
+    function lerBase(chave) {
+        const raw = localStorage.getItem(chave);
+        if (!cacheJson[chave] || cacheJson[chave].raw !== raw) cacheJson[chave] = { raw: raw, arr: JSON.parse(raw) || [] };
+        return cacheJson[chave].arr;
+    }
+    function cardPontoAdmin(p, idx) {
+        const fotoId = 'fotoAdmin_' + idx;
+        return '<div class="card-ponto">' +
+            '<div class="dados-prestador">' +
+                '<b>🔖 Código Único:</b> <span class="cod-audit">' + escHtml(p.codigo || '—') + '</span>' +
+                    (PontoStore.logDoCodigo(p.codigo).some(l => l.tipo === 'ajuste') ? ' <span class="badge" style="background:#d97706; margin-left:6px;">Ajustado</span>' : '') +
+                    (p.importadoEm ? ' <span class="badge" style="background:#2563eb; margin-left:6px;">Importado</span>' : '') + '<br>' +
+                '<b>👤 Prestador:</b> ' + escHtml(p.nome) + '<br>' +
+                '<b>🪪 CPF:</b> ' + escHtml(p.cpf) + '<br>' +
+                '<b>📅 Horário do Registro:</b> ' + escHtml(p.dataHora) + '<br>' +
+                '<b>📍 Endereço:</b><br>' +
+                '<span style="font-size:12px; color:var(--text-muted); display:block; margin-bottom: 4px;">' + escHtml(p.endereco) + '</span>' +
+                '<b>🗺️ Rastreamento:</b> <a class="link-mapa" href="https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(p.lat + ',' + p.lng) + '" target="_blank" rel="noopener">Abrir no Google Maps</a>' +
+            '</div>' +
+            '<div style="display:flex; gap:8px;">' +
+                '<button type="button" class="btn btn-secondary" style="font-size:14px; padding:12px;" onclick="toggleFotoAdmin(\'' + fotoId + '\', this)">Exibir Foto 👁️</button>' +
+                '<button type="button" class="btn btn-secondary" style="font-size:14px; padding:12px;" onclick="baixarFotoAdmin(' + idx + ')">⬇️ Salvar Imagem</button>' +
+            '</div>' +
+            // sem "src": a foto (base64 pesado) só é carregada quando o admin clica em "Exibir Foto"
+            '<img id="' + fotoId + '" data-idx="' + idx + '" class="foto-large-admin" alt="Foto do Prestador" style="display:none;">' +
+            htmlHistoricoAlteracoes(p.codigo, 'logAdmin_' + idx, 'admin') +
+            '<div style="display:flex; gap:8px; margin-top:10px;">' +
+                '<button type="button" class="btn btn-secondary" style="font-size:13px; padding:10px;" onclick="editarPontoAdmin(' + idx + ')">Alterar Dados ✏️</button>' +
+                '<button type="button" class="btn" style="font-size:13px; padding:10px; background:var(--danger); color:white;" onclick="excluirPontoAdmin(' + idx + ')">Excluir Registro 🗑️</button>' +
+            '</div>' +
+        '</div>';
+    }
     function renderizarPontosAdmin() {
         const filtroData = document.getElementById('filtroData').value;
         const filtroNome = document.getElementById('filtroNome').value.trim().toLowerCase();
         const lista = document.getElementById('listaPontos');
-        
-        let historico = JSON.parse(localStorage.getItem('historico_pontos')) || [];
-        
-        let filtrados = historico.filter(p => {
-            const matchesData = filtroData ? p.dataSimples === filtroData : true;
-            const matchesNome = filtroNome ? p.nome.toLowerCase().includes(filtroNome) : true;
-            return matchesData && matchesNome;
-        });
+        const sig = filtroData + '|' + filtroNome;
+        if (sig !== sigPontos) { sigPontos = sig; limitePontos = PAG_TAM; }      // filtro mudou: volta à primeira página
 
-        if(filtrados.length === 0) {
+        const historico = lerBase('historico_pontos');
+        const idxs = [];
+        historico.forEach((p, i) => {
+            if ((!filtroData || p.dataSimples === filtroData) && (!filtroNome || String(p.nome).toLowerCase().includes(filtroNome))) idxs.push(i);
+        });
+        if (idxs.length === 0) {
             lista.innerHTML = "<p style='text-align:center; color:var(--text-muted); margin-top:20px;'>Nenhum registro encontrado para este filtro.</p>";
             return;
         }
-
-        lista.innerHTML = "";
-        for (let i = 0; i < filtrados.length; i++) {
-            let p = filtrados[i];
-            let idxOriginal = historico.indexOf(p);
-            let fotoId = 'fotoAdmin_' + i;
-            
-            let cardHtml = '<div class="card-ponto">' +
-                '<div class="dados-prestador">' +
-                    '<b>🔖 Código Único:</b> <span class="cod-audit">' + escHtml(p.codigo || '—') + '</span>' +
-                        (PontoStore.logDoCodigo(p.codigo).some(l => l.tipo === 'ajuste') ? ' <span class="badge" style="background:#d97706; margin-left:6px;">Ajustado</span>' : '') + '<br>' +
-                    '<b>👤 Prestador:</b> ' + p.nome + '<br>' +
-                    '<b>🪪 CPF:</b> ' + p.cpf + '<br>' +
-                    '<b>📅 Horário do Registro:</b> ' + p.dataHora + '<br>' +
-                    '<b>📍 Endereço:</b><br>' +
-                    '<span style="font-size:12px; color:var(--text-muted); display:block; margin-bottom: 4px;">' + p.endereco + '</span>' +
-                    '<b>🗺️ Rastreamento:</b> <a class="link-mapa" href="https://www.google.com/maps/search/?api=1&query=' + p.lat + ',' + p.lng + '" target="_blank">Abrir no Google Maps</a>' +
-                '</div>' +
-                '<div style="display:flex; gap:8px;">' +
-                    '<button type="button" class="btn btn-secondary" style="font-size:14px; padding:12px;" onclick="toggleFotoAdmin(\'' + fotoId + '\', this)">Exibir Foto 👁️</button>' +
-                    '<button type="button" class="btn btn-secondary" style="font-size:14px; padding:12px;" onclick="baixarFotoAdmin(' + idxOriginal + ')">⬇️ Salvar Imagem</button>' +
-                '</div>' +
-                '<img id="' + fotoId + '" src="' + p.foto + '" class="foto-large-admin" alt="Foto do Prestador" style="display:none;">' +
-                htmlHistoricoAlteracoes(p.codigo, 'logAdmin_' + i, 'admin') +
-                '<div style="display:flex; gap:8px; margin-top:10px;">' +
-                    '<button type="button" class="btn btn-secondary" style="font-size:13px; padding:10px;" onclick="editarPontoAdmin(' + idxOriginal + ')">Alterar Dados ✏️</button>' +
-                    '<button type="button" class="btn" style="font-size:13px; padding:10px; background:var(--danger); color:white;" onclick="excluirPontoAdmin(' + idxOriginal + ')">Excluir Registro 🗑️</button>' +
-                '</div>' +
-            '</div>';
-            
-            lista.innerHTML += cardHtml;
-        }
+        const visiveis = idxs.slice(0, limitePontos);
+        lista.innerHTML = '<p class="resumo-lista">Mostrando ' + visiveis.length + ' de ' + idxs.length + ' registro(s)</p>' +
+            visiveis.map(i => cardPontoAdmin(historico[i], i)).join('') +             // um único join (sem innerHTML += em laço)
+            (idxs.length > visiveis.length ? '<button type="button" class="btn btn-secondary pag-mais" id="btnMaisPontos">Carregar mais (' + (idxs.length - visiveis.length) + ' restantes)</button>' : '');
+        observarMais('btnMaisPontos', () => { limitePontos += PAG_TAM; renderizarPontosAdmin(); });
     }
 
     function toggleFotoAdmin(id, btn) {
         const img = document.getElementById(id);
         const oculta = img.style.display === "none";
+        if (oculta && !img.getAttribute('src')) {                     // carrega a foto sob demanda
+            const p = lerBase('historico_pontos')[+img.dataset.idx];
+            if (p && p.foto) img.src = p.foto;
+        }
         img.style.display = oculta ? "block" : "none";
         btn.innerText = oculta ? "Ocultar Foto 🙈" : "Exibir Foto 👁️";
     }
@@ -1542,38 +1734,43 @@
         if (oculta) renderizarLixeira();
     }
 
+    let limiteLixeira = PAG_TAM, sigLixeira = '';
+    function cardLixeira(p, idx) {
+        return '<div class="card-ponto">' +
+            '<div class="dados-prestador">' +
+                '<b>👤 Prestador:</b> ' + escHtml(p.nome) + '<br>' +
+                '<b>🔖 Código Único:</b> <span class="cod-audit">' + escHtml(p.codigo || '—') + '</span><br>' +
+                '<b>🪪 CPF:</b> ' + escHtml(p.cpf) + '<br>' +
+                '<b>📅 Horário do Registro:</b> ' + escHtml(p.dataHora) +
+                (p.justificativaExclusao ? '<span class="motivo-lixeira">📝 Justificativa: ' + escHtml(p.justificativaExclusao) + (p.excluidoEm ? ' · ' + escHtml(p.excluidoEm) : '') + '</span>' : '') +
+            '</div>' +
+            '<div style="display:flex; gap:8px;">' +
+                '<button type="button" class="btn btn-primary" style="font-size:13px; padding:10px;" onclick="restaurarPontoAdmin(' + idx + ')">Restaurar ♻️</button>' +
+                '<button type="button" class="btn" style="font-size:13px; padding:10px; background:var(--danger); color:white;" onclick="excluirDefinitivoLixeira(' + idx + ')">Excluir Definitivamente ❌</button>' +
+            '</div>' +
+        '</div>';
+    }
     function renderizarLixeira() {
         const filtro = document.getElementById('filtroLixeira').value.trim().toLowerCase();
+        const fData = document.getElementById('filtroLixeiraData').value;
         const lista = document.getElementById('listaLixeira');
-        let lixeira = JSON.parse(localStorage.getItem('lixeira_pontos')) || [];
+        const sig = filtro + '|' + fData;
+        if (sig !== sigLixeira) { sigLixeira = sig; limiteLixeira = PAG_TAM; }
 
-        let filtrados = lixeira.filter(p => filtro ? p.nome.toLowerCase().includes(filtro) : true);
-
-        if (filtrados.length === 0) {
+        const lixeira = lerBase('lixeira_pontos');
+        const idxs = [];
+        lixeira.forEach((p, i) => {
+            if ((!filtro || String(p.nome).toLowerCase().includes(filtro)) && (!fData || p.dataSimples === fData)) idxs.push(i);
+        });
+        if (idxs.length === 0) {
             lista.innerHTML = "<p style='text-align:center; color:var(--text-muted); margin-top:10px;'>Nenhum registro excluído encontrado.</p>";
             return;
         }
-
-        lista.innerHTML = "";
-        for (let i = 0; i < filtrados.length; i++) {
-            let p = filtrados[i];
-            let idxLixeira = lixeira.indexOf(p);
-
-            let cardHtml = '<div class="card-ponto">' +
-                '<div class="dados-prestador">' +
-                    '<b>👤 Prestador:</b> ' + p.nome + '<br>' +
-                    '<b>🔖 Código Único:</b> <span class="cod-audit">' + escHtml(p.codigo || '—') + '</span><br>' +
-                    '<b>🪪 CPF:</b> ' + p.cpf + '<br>' +
-                    '<b>📅 Horário do Registro:</b> ' + p.dataHora +
-                '</div>' +
-                '<div style="display:flex; gap:8px;">' +
-                    '<button type="button" class="btn btn-primary" style="font-size:13px; padding:10px;" onclick="restaurarPontoAdmin(' + idxLixeira + ')">Restaurar ♻️</button>' +
-                    '<button type="button" class="btn" style="font-size:13px; padding:10px; background:var(--danger); color:white;" onclick="excluirDefinitivoLixeira(' + idxLixeira + ')">Excluir Definitivamente ❌</button>' +
-                '</div>' +
-            '</div>';
-
-            lista.innerHTML += cardHtml;
-        }
+        const vis = idxs.slice(0, limiteLixeira);
+        lista.innerHTML = '<p class="resumo-lista">Mostrando ' + vis.length + ' de ' + idxs.length + ' registro(s)</p>' +
+            vis.map(i => cardLixeira(lixeira[i], i)).join('') +
+            (idxs.length > vis.length ? '<button type="button" class="btn btn-secondary pag-mais" id="btnMaisLixeira">Carregar mais (' + (idxs.length - vis.length) + ' restantes)</button>' : '');
+        observarMais('btnMaisLixeira', () => { limiteLixeira += PAG_TAM; renderizarLixeira(); });
     }
 
     function restaurarPontoAdmin(indexLixeira) {
@@ -1878,8 +2075,10 @@ let acaoPendenteModalSenha = null;
 function senhaAdminAtual() {
     return localStorage.getItem('senha_admin') || SENHA_PADRAO_INICIAL;
 }
-function pedirSenhaAdmin(mensagem, callback) {
+let acaoCancelarModalSenha = null;
+function pedirSenhaAdmin(mensagem, callback, aoCancelar) {
     acaoPendenteModalSenha = callback;
+    acaoCancelarModalSenha = aoCancelar || null;
     document.getElementById('msgModalSenha').innerText = mensagem;
     document.getElementById('senhaModalInput').value = "";
     document.getElementById('erroModalSenha').style.display = "none";
@@ -1887,7 +2086,9 @@ function pedirSenhaAdmin(mensagem, callback) {
     setTimeout(() => document.getElementById('senhaModalInput').focus(), 50);
 }
 function fecharModalSenha() {
-    acaoPendenteModalSenha = null;
+    const cancelar = acaoCancelarModalSenha;
+    acaoPendenteModalSenha = null; acaoCancelarModalSenha = null;
+    if (cancelar) cancelar();                     // fechou sem confirmar
     document.getElementById('senhaModalInput').value = "";
     document.getElementById('modalSenhaExclusao').classList.remove('open');
 }
@@ -1895,6 +2096,7 @@ function confirmarModalSenha() {
     const campo = document.getElementById('senhaModalInput');
     if (campo.value === senhaAdminAtual()) {
         const acao = acaoPendenteModalSenha;
+        acaoCancelarModalSenha = null;            // confirmou: não é cancelamento
         fecharModalSenha();
         if (acao) acao();
     } else {
@@ -2823,9 +3025,9 @@ const PlanilhaPontos = (function () {
         toast('✅ ' + novos.length + ' ponto(s) restaurado(s)');
     }
 
-    $('btnLixBaixarExcel').addEventListener('click', exportar);
+    $('btnLixBaixarExcel').addEventListener('click', () => Carga.executar('Gerando planilha…', async () => { await new Promise(r => setTimeout(r, 60)); exportar(); }));
     $('btnLixUploadExcel').addEventListener('click', () => $('inputPlanilhaLixeira').click());
-    $('inputPlanilhaLixeira').addEventListener('change', (e) => { importar(e.target.files[0]); e.target.value = ''; });
+    $('inputPlanilhaLixeira').addEventListener('change', (e) => { const f = e.target.files[0]; e.target.value = ''; Carga.executar('Restaurando pontos da planilha…', () => importar(f)); });
 })();
 
 /* =====================================================================
@@ -2854,21 +3056,53 @@ const PlanilhaPontos = (function () {
     }
     function irPara(etapa) { estado.etapa = etapa; renderizar(); }
 
-    function abrir() {
-        const qtd = (JSON.parse(localStorage.getItem('lixeira_pontos')) || []).length;
-        if (!qtd) { alert('A lixeira já está vazia.'); return; }
+    // Escopo = o que está filtrado na aba Lixeira (nome e/ou data). Sem filtro, é a lixeira inteira.
+    function filtroAtual() {
+        const nome = ($('filtroLixeira').value || '').trim().toLowerCase();
+        const data = $('filtroLixeiraData').value || '';
+        return { nome: nome, data: data, casa: (p) => (!data || p.dataSimples === data) && (!nome || String(p.nome).toLowerCase().includes(nome)) };
+    }
+    async function abrir() {
+        const f = filtroAtual();
+        const qtd = (JSON.parse(localStorage.getItem('lixeira_pontos')) || []).filter(f.casa).length;
+        if (!qtd) { alert(f.nome || f.data ? 'Nenhum registro da lixeira corresponde ao filtro.' : 'A lixeira já está vazia.'); return; }
+        // Justificativa obrigatória ANTES das confirmações (fica no log de auditoria de cada código excluído)
+        const motivo = await Justificativa.pedir({ titulo: 'Excluir ' + qtd + ' ponto(s) da Lixeira', descricao: (f.nome || f.data) ? 'Somente os registros do filtro atual.' : 'Toda a lixeira.' });
+        if (!motivo) return;
+        estado.motivo = motivo; estado.filtro = f; estado.qtd = qtd;
         estado.tentativas = 0;
         irPara(ETAPA.CONFIRMACAO);
+        $('exclQtd').textContent = qtd + ' ponto(s)' + ((f.nome || f.data) ? ' do filtro atual' : '');
     }
     function cancelar() { irPara(ETAPA.FECHADO); }
     function avancarParaSenha() {
         if (estado.etapa !== ETAPA.CONFIRMACAO) return;   // trava: não existe atalho direto para a tela de senha
         irPara(ETAPA.SENHA);
     }
+    // Exclusão em lotes (não trava a tela), com overlay de progresso, gravação atômica e evento de auditoria por código
     function executarExclusao() {
-        localStorage.setItem('lixeira_pontos', JSON.stringify([]));
-        if (typeof renderizarLixeira === 'function') renderizarLixeira();
-        toast('🗑️ Todos os pontos da lixeira foram excluídos');
+        const f = estado.filtro, motivo = estado.motivo;
+        return Carga.executar('Excluindo pontos da lixeira…', async (prog) => {
+            const lix = PontoStore.ler('lixeira_pontos'), log = PontoStore.ler('log_alteracoes_pontos'), ficam = [], vao = [];
+            await Lote.processar(lix, 250, p => { (f.casa(p) ? vao : ficam).push(p); }, fr => prog(fr * 50, 'Separando registros…'));
+            const em = new Date().toISOString();
+            await Lote.processar(vao, 250, p => {
+                log.push({ codigo: p.codigo, em: em, tipo: 'evento', campo: 'Registro excluído definitivamente da lixeira (em massa)', de: '', para: '', motivo: motivo, por: 'Administrador' });
+            }, fr => prog(50 + fr * 45, 'Excluindo ' + Math.round(fr * vao.length) + ' de ' + vao.length + '…'));
+            prog(98, 'Gravando…');
+            const antes = { l: localStorage.getItem('lixeira_pontos'), g: localStorage.getItem('log_alteracoes_pontos') };
+            try {
+                localStorage.setItem('lixeira_pontos', JSON.stringify(ficam));
+                localStorage.setItem('log_alteracoes_pontos', JSON.stringify(log));
+            } catch (e) {                                  // atômico: se falhar, volta tudo como estava
+                if (antes.l != null) localStorage.setItem('lixeira_pontos', antes.l);
+                if (antes.g != null) localStorage.setItem('log_alteracoes_pontos', antes.g);
+                alert('Não foi possível concluir: armazenamento cheio. Nada foi alterado.');
+                return;
+            }
+            if (typeof renderizarLixeira === 'function') renderizarLixeira();
+            toast('🗑️ ' + vao.length + ' ponto(s) excluído(s) da lixeira');
+        });
     }
     function validarSenha() {
         if (estado.etapa !== ETAPA.SENHA) return;
@@ -3017,7 +3251,13 @@ const PontoStore = (function () {
     function desfazerOriginal(codigo) {
         try { gravar(K_ORIG, ler(K_ORIG).filter(o => o.codigo !== codigo)); } catch (e) {}
     }
-    const originaisDoCpf = (cpf) => ler(K_ORIG).filter(o => soDig(o.cpf) === soDig(cpf));
+    // Inclui os CPFs anteriores do colaborador (troca autorizada pelo admin): o espelho original nunca some
+    const cpfsDoColab = (cpf) => {
+        const d = soDig(cpf); let u = null;
+        try { u = (JSON.parse(localStorage.getItem('usuarios_app')) || {})[d]; } catch (e) {}
+        return [d].concat((u && u.cpfsAnteriores) || []);
+    };
+    const originaisDoCpf = (cpf) => { const set = cpfsDoColab(cpf); return ler(K_ORIG).filter(o => set.indexOf(soDig(o.cpf)) >= 0); };
 
     function registrarLog(e) {
         const log = ler(K_LOG);
@@ -3040,7 +3280,8 @@ const PontoStore = (function () {
             if (mudouCodigo) { gravar(K_HIST, hist); gravar(K_LIX, lix); }
             const orig = ler(K_ORIG), tem = new Set(orig.map(o => o.codigo));
             let add = false;
-            hist.concat(lix).forEach(p => { if (!tem.has(p.codigo)) { orig.push(snapshot(p, 'migracao')); tem.add(p.codigo); add = true; } });
+            hist.concat(lix).forEach(p => { if (!tem.has(p.codigo) && !p.importadoEm) {   // importado pelo admin: não vira original do colaborador
+                orig.push(snapshot(p, 'migracao')); tem.add(p.codigo); add = true; } });
             if (selarPendentes(orig) || add) gravar(K_ORIG, orig);
         } catch (e) { console.warn('Migração de códigos adiada (armazenamento cheio?)', e); return false; }
         return true;
@@ -3076,7 +3317,7 @@ const Conciliacao = (function () {
             if (o && adm) CAMPOS.forEach(([rot, k, norm]) => { if (norm(o[k]) !== norm(adm[k])) difs.push(rot); });
             const aj = (ajustes[c] || []).slice().sort(ordem);
             let situacao;
-            if (!o) situacao = 'Sem original (registro legado)';
+            if (!o) situacao = (v || x).importadoEm ? 'Importado pelo admin (sem original do colaborador)' : 'Sem original (registro legado)';
             else if (!adm) situacao = 'Removido do painel (sem cópia vigente)';
             else if (x && !v) situacao = difs.length ? 'Na lixeira (ajustado)' : 'Na lixeira';
             else situacao = difs.length ? 'Ajustado pelo administrador' : 'Idêntico ao original';
@@ -3112,7 +3353,8 @@ function htmlItemLog(l) {
                escHtml(l.de) + '</span> → <span class="log-para">' + escHtml(l.para) + '</span>' +
                (l.motivo ? '<br><small>Motivo: ' + escHtml(l.motivo) + '</small>' : '') + '</div>';
     }
-    return '<div class="log-item"><b>' + escHtml(quando) + '</b> · ' + escHtml(l.por) + '<br>' + escHtml(l.campo) + '</div>';
+    return '<div class="log-item"><b>' + escHtml(quando) + '</b> · ' + escHtml(l.por) + '<br>' + escHtml(l.campo) +
+           (l.motivo ? '<br><small>Motivo: ' + escHtml(l.motivo) + '</small>' : '') + '</div>';
 }
 // modo 'admin' mostra tudo (ajustes + eventos); 'usuario' mostra só os ajustes de dados
 function htmlHistoricoAlteracoes(codigo, idDom, modo) {
@@ -3180,7 +3422,7 @@ const AjustePonto = (function () {
         const hist = PontoStore.ler('historico_pontos');
         const p = hist[indice];
         if (!p) { fechar(); return; }
-        const nome = $('ajNome').value.trim().replace(/\s+/g, ' ');
+        const nome = Texto.capitalizarNome($('ajNome').value.trim().replace(/\s+/g, ' '));
         const cpfTxt = $('ajCpf').value.trim();
         const iso = $('ajData').value, hora = hora3($('ajHora').value), endereco = $('ajEndereco').value.trim(), motivo = $('ajMotivo').value.trim();
         if (!nome) return erro('O nome não pode ficar vazio.');
@@ -3298,7 +3540,7 @@ const Colab = (function () {
 
     async function cadastrar() {
         mostrarErro('colabCadErro', '');
-        const nome = $('colabCadNome').value.trim().replace(/\s+/g, ' ');
+        const nome = Texto.capitalizarNome($('colabCadNome').value.trim().replace(/\s+/g, ' '));
         const cpfTxt = $('colabCadCpf').value.trim(), s1 = $('colabCadSenha').value, s2 = $('colabCadSenha2').value;
         const users = lerUsers(), d = dig(cpfTxt);
         if (nome.length < 5 || nome.indexOf(' ') < 0) return mostrarErro('colabCadErro', 'Informe seu nome completo.');
@@ -3310,6 +3552,7 @@ const Colab = (function () {
         const hash = await derivar(s1, sal);
         users[d] = { id: proximoId(users), cpf: mascaraCpf(d), nome: nome, nomeExibicao: '', foto: '', salt: sal, hash: hash, criadoEm: new Date().toISOString() };
         try { gravarUsers(users); } catch (e) { return mostrarErro('colabCadErro', 'Não foi possível salvar a conta (armazenamento cheio?).'); }
+        try { if (typeof GerenciadorSenha !== 'undefined') GerenciadorSenha.salvar(cpfTxt, s1, nome); } catch (e) {}
         $('colabCadSenha').value = $('colabCadSenha2').value = '';
         entrarNaApp(users[d], 'ponto');
         toast('✅ Conta criada! Bem-vindo(a).');
@@ -3329,20 +3572,49 @@ const Colab = (function () {
             return mostrarErro('colabLoginErro', 'CPF ou senha incorretos.');
         }
         delete falhas[d];
+        try { if (typeof GerenciadorSenha !== 'undefined') GerenciadorSenha.salvar($('colabLoginCpf').value, senha, u.nome); } catch (e) {}
         $('colabLoginSenha').value = '';
         entrarNaApp(u, 'ponto');
     }
 
     function sair() {
-        sessionStorage.removeItem(K_SESSAO);
+        encerrarSessao();                // invalida o token: só o botão Sair desloga
         sessionStorage.removeItem(K_PANE);
         location.reload();               // limpa formulário, câmera e estado em memória
+    }
+
+    /* ---------- Sessão permanente ("manter conectado") ----------
+       Um token aleatório fica no aparelho (localStorage) E no cadastro do usuário. A sessão só é válida se os dois
+       coincidirem e NUNCA expira por tempo; "Sair" apaga o token e invalida a sessão. (Navegador não tem Keychain/Keystore:
+       localStorage é o armazenamento persistente disponível. Num app nativo, guardar o token no Keychain/Keystore.) */
+    const K_TOKEN = 'colab_sessao', K_ULTIMO = 'colab_ultimo_cpf';
+    function novoToken() {
+        const b = new Uint8Array(24);
+        if (globalThis.crypto && crypto.getRandomValues) crypto.getRandomValues(b); else b.forEach((_, i) => { b[i] = Math.floor(Math.random() * 256); });
+        return bytesParaHex(b);
+    }
+    function abrirSessao(u) {
+        const d = dig(u.cpf), token = novoToken(), users = lerUsers();
+        if (users[d]) { users[d].sessaoToken = token; try { gravarUsers(users); } catch (e) {} }
+        try { localStorage.setItem(K_TOKEN, JSON.stringify({ cpf: d, token: token, desde: new Date().toISOString() })); localStorage.setItem(K_ULTIMO, d); } catch (e) {}
+    }
+    function sessaoValida() {
+        try {
+            const s = JSON.parse(localStorage.getItem(K_TOKEN));
+            if (!s || !s.cpf || !s.token) return null;
+            const u = lerUsers()[s.cpf];
+            return u && u.sessaoToken === s.token ? u : null;
+        } catch (e) { return null; }
+    }
+    function encerrarSessao() {
+        try { const s = JSON.parse(localStorage.getItem(K_TOKEN)), users = lerUsers(); if (s && users[s.cpf]) { delete users[s.cpf].sessaoToken; gravarUsers(users); } } catch (e) {}
+        localStorage.removeItem(K_TOKEN);      // o último CPF continua guardado para o acesso rápido
     }
 
     /* ---------- Entrar na área do colaborador ---------- */
     function entrarNaApp(u, pane) {
         usuario = u;
-        sessionStorage.setItem(K_SESSAO, dig(u.cpf));
+        abrirSessao(u);                  // sessão permanente (token no aparelho) + guarda o último CPF
         $('colabAuth').style.display = 'none';
         $('colabApp').style.display = 'block';
         // Formulário de ponto: nome jurídico e CPF vêm do cadastro e ficam travados
@@ -3395,7 +3667,7 @@ const Colab = (function () {
         return true;
     }
     function salvarNome() {
-        const v = $('perfilNomeExib').value.trim().replace(/\s+/g, ' ');
+        const v = Texto.capitalizarNome($('perfilNomeExib').value.trim().replace(/\s+/g, ' '));
         if (!v) { $('perfilNomeErro').style.display = 'block'; return; }
         $('perfilNomeErro').style.display = 'none';
         // se for igual ao nome jurídico, apaga o nome de exibição (volta ao padrão)
@@ -3427,9 +3699,8 @@ const Colab = (function () {
     function ligar() {
         $('authTabEntrar').addEventListener('click', () => { $('authEntrar').style.display = 'block'; $('authCriar').style.display = 'none'; $('authTabEntrar').classList.add('active'); $('authTabCriar').classList.remove('active'); });
         $('authTabCriar').addEventListener('click', () => { $('authEntrar').style.display = 'none'; $('authCriar').style.display = 'block'; $('authTabCriar').classList.add('active'); $('authTabEntrar').classList.remove('active'); });
-        $('colabBtnEntrar').addEventListener('click', entrar);
-        $('colabLoginSenha').addEventListener('keydown', (e) => { if (e.key === 'Enter') entrar(); });
-        $('colabBtnCriar').addEventListener('click', cadastrar);
+        $('authEntrar').addEventListener('submit', (e) => { e.preventDefault(); entrar(); });   // <form>: Enter e o gerenciador de senhas funcionam nativamente
+        $('authCriar').addEventListener('submit', (e) => { e.preventDefault(); cadastrar(); });
         $('colabBtnSair').addEventListener('click', sair);
         document.querySelectorAll('.colab-nav-btn[data-pane]').forEach(b => b.addEventListener('click', () => mostrarPane(b.dataset.pane)));
         $('perfilBtnSalvar').addEventListener('click', salvarNome);
@@ -3444,11 +3715,23 @@ const Colab = (function () {
 
     function iniciar() {
         ligar();
-        const d = sessionStorage.getItem(K_SESSAO), u = d ? lerUsers()[d] : null;
+        const u = sessaoValida();
         if (u) entrarNaApp(u, sessionStorage.getItem(K_PANE) || 'ponto');
     }
 
-    return { iniciar: iniciar, usuarioAtual: () => usuario, derivar: derivar, iniciais: iniciais };
+    // Relê o cadastro (após o admin aprovar troca de Nome/CPF) e repinta toda a interface do colaborador logado
+    function recarregar() {
+        if (!usuario) return;
+        const s = (function () { try { return JSON.parse(localStorage.getItem(K_TOKEN)); } catch (e) { return null; } })();
+        const u = s && lerUsers()[s.cpf];
+        if (!u) return;
+        usuario = u;
+        $('nome').value = u.nome; $('cpf').value = u.cpf;
+        if (typeof validarFormulario === 'function') validarFormulario();
+        atualizarUi();
+        if ($('colabPane-hist').style.display !== 'none') HistoricoColab.render();
+    }
+    return { iniciar: iniciar, usuarioAtual: () => usuario, derivar: derivar, iniciais: iniciais, recarregar: recarregar };
 })();
 
 /* =====================================================================
@@ -3486,7 +3769,7 @@ const HistoricoColab = (function () {
             const mapa = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(o.lat + ',' + o.lng);
             return '<div class="card-ponto">' +
                 '<div class="dados-prestador">' +
-                    '<b>🔖 Código Único:</b> <span class="cod-audit">' + escHtml(o.codigo) + '</span>' +
+                    '<b>🔖 Código Único:</b> <span class="cod-audit">' + escHtml(o.codigo) + '</span>' + statusSyncHtml(o.codigo) +
                     (n ? ' <span class="badge" style="background:#d97706; margin-left:6px;">Ajustado pelo admin</span>' : '') +
                     (integ[o.codigo] === 'diverge' ? ' <span class="badge" style="background:#dc2626; margin-left:6px;" title="O conteúdo deste registro não confere com o selo gravado no momento do ponto">⚠️ Selo divergente</span>' : '') + '<br>' +
                     '<b>📅 Registro:</b> ' + escHtml(o.dataHora) + '<br>' +
@@ -3540,5 +3823,1093 @@ function toggleFotoHist(id, btn) {
 Colab.iniciar();
 </script>
 
+<script>
+/* =====================================================================
+   BaseGlobal — conversão PURA entre a base ativa do app (historico_pontos) e linhas de planilha Excel (sem DOM; testável)
+   Planilha "Base":  Código Único | Nome | CPF | Data | Hora Registrada | Geolocalização | Endereço | Status
+   Planilha "Fotos" (oculta): Código Único | Parte | Dados   (foto em base64 dividida em partes de 30.000 caracteres,
+   porque uma célula do Excel aceita no máximo 32.767).
+   Geolocalização = "lat, lng" ou "flag_offline" quando o ponto não tem coordenadas.
+   ===================================================================== */
+const BaseGlobal = (function () {
+    'use strict';
+    const COLUNAS = ['Código Único', 'Nome', 'CPF', 'Data', 'Hora Registrada', 'Geolocalização', 'Endereço', 'Status'];
+    const COLUNAS_FOTO = ['Código Único', 'Parte', 'Dados'];
+    const TAM_PARTE = 30000, FLAG_OFFLINE = 'flag_offline';
+    const pad = (n) => String(n).padStart(2, '0');
+    const dig = (t) => String(t == null ? '' : t).replace(/\D/g, '');
+    const norm = (t) => String(t == null ? '' : t).normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase();
+    const mascara = (d) => d.slice(0, 3) + '.' + d.slice(3, 6) + '.' + d.slice(6, 9) + '-' + d.slice(9);
+    const temCoord = (p) => p.lat !== '' && p.lat != null && p.lng !== '' && p.lng != null && isFinite(Number(p.lat)) && isFinite(Number(p.lng));
+
+    /* ===== ESTADO DO APP -> LINHAS DO EXCEL ===== */
+    function paraPlanilha(ativos, statusPorCodigo) {
+        const linhas = [], fotos = [];
+        ativos.forEach((p) => {
+            const dh = PlanilhaPontos.partirDataHora(p.dataHora);
+            linhas.push({
+                'Código Único': p.codigo || '', 'Nome': p.nome || '', 'CPF': p.cpf || '', 'Data': dh.data, 'Hora Registrada': dh.hora,
+                'Geolocalização': temCoord(p) ? Number(p.lat).toFixed(6) + ', ' + Number(p.lng).toFixed(6) : FLAG_OFFLINE,
+                'Endereço': p.endereco || '', 'Status': (statusPorCodigo && statusPorCodigo[p.codigo]) || 'Original'
+            });
+            for (let k = 0, parte = 1; p.foto && k < p.foto.length; k += TAM_PARTE, parte++)
+                fotos.push({ 'Código Único': p.codigo, 'Parte': parte, 'Dados': p.foto.slice(k, k + TAM_PARTE) });
+        });
+        return { linhas: linhas, fotos: fotos };
+    }
+
+    /* ===== LINHAS DO EXCEL -> ESTADO DO APP (com validação) =====
+       Nada é gravado aqui: devolve { novos, ignorados, erros }. Se erros.length > 0 a importação inteira deve ser abortada. */
+    function lerData(v) {
+        const t = String(v == null ? '' : v).trim();
+        let m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(t), d, mo, a;
+        if (m) { d = +m[1]; mo = +m[2]; a = +m[3]; }
+        else if ((m = /^(\d{4})-(\d{2})-(\d{2})/.exec(t))) { a = +m[1]; mo = +m[2]; d = +m[3]; }
+        else return null;
+        const dt = new Date(a, mo - 1, d);
+        if (dt.getFullYear() !== a || dt.getMonth() !== mo - 1 || dt.getDate() !== d) return null;   // rejeita 31/02 etc.
+        return { br: pad(d) + '/' + pad(mo) + '/' + a, iso: a + '-' + pad(mo) + '-' + pad(d) };
+    }
+    function lerHora(v) {
+        const m = /^(\d{1,2}):(\d{2})(?::(\d{2}))?$/.exec(String(v == null ? '' : v).trim());   // estrita: rejeita "8:00 PM"
+        if (!m || +m[1] > 23 || +m[2] > 59 || (m[3] && +m[3] > 59)) return null;
+        return pad(m[1]) + ':' + m[2] + ':' + (m[3] || '00');
+    }
+    function lerCodigo(v) {
+        let t = String(v == null ? '' : v).trim().toUpperCase();
+        if (/^\d{1,6}$/.test(t)) t = t.padStart(6, '0');           // o Excel pode ter cortado zeros à esquerda
+        return /^[A-Z0-9]{6}$/.test(t) ? t : '';
+    }
+    function lerGeo(v) {
+        const t = String(v == null ? '' : v).trim();
+        if (t === '' || norm(t) === FLAG_OFFLINE) return { lat: '', lng: '' };
+        const n = t.replace(/;/g, ',').match(/-?\d+(?:[.,]\d+)?/g);
+        if (!n || n.length !== 2) return null;
+        const lat = parseFloat(n[0].replace(',', '.')), lng = parseFloat(n[1].replace(',', '.'));
+        return Math.abs(lat) <= 90 && Math.abs(lng) <= 180 ? { lat: lat, lng: lng } : null;
+    }
+    const normalizarLinha = (l) => { const r = {}; Object.keys(l).forEach(k => { r[norm(k)] = l[k]; }); return r; };
+    const celula = (r, prefixo) => { const k = Object.keys(r).find(x => x.indexOf(prefixo) === 0); return k ? r[k] : ''; };
+    const vazia = (l) => Object.keys(l).every(k => String(l[k]).trim() === '');
+    const chaveTempo = (cpf, dataHora) => dig(cpf) + '|' + dig(dataHora);
+
+    function validar(linhas, linhasFotos, ativos, lixeira, cpfValido, originais) {
+        const erros = [], novos = [], vistoCodigo = {}, vistoTempo = {};
+        let ignorados = 0;
+        const base = {}, tempoBase = {}, naLixeira = {}, donoOriginal = {};
+        (originais || []).forEach(o => { if (o.codigo) donoOriginal[o.codigo] = dig(o.cpf); });
+        ativos.forEach(p => { if (p.codigo) base[p.codigo] = p; tempoBase[chaveTempo(p.cpf, p.dataHora)] = p.codigo; });
+        lixeira.forEach(p => { if (p.codigo) naLixeira[p.codigo] = true; });
+        const partes = {};
+        (linhasFotos || []).forEach(l => {
+            const r = normalizarLinha(l), c = lerCodigo(celula(r, 'codigo'));
+            if (c) (partes[c] = partes[c] || []).push({ n: parseInt(r.parte, 10) || 0, d: String(r.dados || '') });
+        });
+
+        linhas.forEach((l, i) => {
+            if (vazia(l)) return;
+            const ln = i + 2, r = normalizarLinha(l), falhas = [];             // +2 = cabeçalho + base 1 (nº da linha no Excel)
+            const codigo = lerCodigo(celula(r, 'codigo'));
+            const nome = String(r.nome || '').replace(/\s+/g, ' ').trim();
+            const cpfDig = dig(r.cpf).length === 10 ? dig(r.cpf).padStart(11, '0') : dig(r.cpf);
+            const data = lerData(r.data), hora = lerHora(celula(r, 'hora')), geo = lerGeo(celula(r, 'geolocal'));
+            if (!codigo) falhas.push('Código de Ponto inválido (use 6 dígitos)');
+            if (!nome) falhas.push('Nome vazio');
+            if (cpfDig.length !== 11 || !cpfValido(cpfDig)) falhas.push('CPF inválido');
+            if (!data) falhas.push('Data inválida');
+            if (!hora) falhas.push('Hora inválida');
+            if (!geo) falhas.push('Geolocalização inválida (use "lat, lng" ou flag_offline)');
+            if (falhas.length) { erros.push('Linha ' + ln + ': ' + falhas.join('; ') + '.'); return; }
+
+            const dataHora = data.br + ' ' + hora, cpf = mascara(cpfDig), tempo = chaveTempo(cpf, dataHora);
+            if (vistoCodigo[codigo]) { erros.push('Linha ' + ln + ': Código de Ponto ' + codigo + ' duplicado (já aparece na linha ' + vistoCodigo[codigo] + ').'); return; }
+            if (vistoTempo[tempo]) { erros.push('Linha ' + ln + ': CPF ' + cpf + ' já tem ponto em ' + dataHora + ' (linha ' + vistoTempo[tempo] + ').'); return; }
+            vistoCodigo[codigo] = ln; vistoTempo[tempo] = ln;
+
+            if (donoOriginal[codigo] && donoOriginal[codigo] !== cpfDig) { erros.push('Linha ' + ln + ': Código ' + codigo + ' pertence ao ponto original de outro colaborador (CPF diferente).'); return; }
+            if (naLixeira[codigo]) { erros.push('Linha ' + ln + ': Código ' + codigo + ' está na lixeira. Restaure ou exclua o registro antes de importar.'); return; }
+            const existente = base[codigo];
+            if (existente) {                                                    // sincronizar: mesmo código + mesmos dados = já está na base
+                if (tempoBase[tempo] === codigo) { ignorados++; return; }
+                erros.push('Linha ' + ln + ': Código ' + codigo + ' já existe na base com CPF/Data/Hora diferentes (inconsistente).'); return;
+            }
+            if (tempoBase[tempo]) { erros.push('Linha ' + ln + ': o CPF ' + cpf + ' já tem ponto em ' + dataHora + ' com outro código (' + tempoBase[tempo] + ').'); return; }
+
+            let foto = '';
+            if (partes[codigo]) { foto = partes[codigo].sort((a, b) => a.n - b.n).map(x => x.d).join(''); if (!/^data:image\//.test(foto)) foto = ''; }
+            novos.push({ codigo: codigo, nome: nome, cpf: cpf, foto: foto, lat: geo.lat, lng: geo.lng, endereco: String(r.endereco || '').trim(),
+                         dataHora: dataHora, dataSimples: data.iso });
+        });
+        return { novos: novos, ignorados: ignorados, erros: erros };
+    }
+    return { COLUNAS: COLUNAS, COLUNAS_FOTO: COLUNAS_FOTO, paraPlanilha: paraPlanilha, validar: validar };
+})();
+
+/* =====================================================================
+   BackupAdmin — botões Exportar / Importar do painel (biblioteca SheetJS: global XLSX), progresso e senha
+   Fluxo da importação: ler arquivo -> converter linhas -> validar TUDO -> (erro? mostra e ABORTA) -> resumo + senha do admin
+   -> gravar de uma vez (com desfazer automático se o armazenamento falhar) -> toast.
+   ===================================================================== */
+(function BackupAdmin() {
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    const toast = (m) => { if (typeof mostrarToast === 'function') mostrarToast(m); };
+    const ler = (k) => PontoStore.ler(k);
+    const MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    const MAX_BYTES = 15 * 1024 * 1024, MAX_ERROS_NA_TELA = 15;
+    const pausa = () => new Promise(r => setTimeout(r, 30));                 // deixa o navegador redesenhar a barra
+    let ocupado = false;
+
+    function progresso(pct, txt) {
+        $('baseProgresso').style.display = pct == null ? 'none' : 'block';
+        if (pct != null) { $('baseProgressoBarra').style.width = pct + '%'; $('baseProgressoTxt').textContent = txt || ''; }
+    }
+    function mostrarErros(lista) {
+        const box = $('baseErros');
+        if (!lista) { box.style.display = 'none'; return; }
+        box.textContent = '⚠️ Falha na importação: nenhum dado foi alterado.\n' + lista.slice(0, MAX_ERROS_NA_TELA).join('\n') +
+            (lista.length > MAX_ERROS_NA_TELA ? '\n… e mais ' + (lista.length - MAX_ERROS_NA_TELA) + ' erro(s).' : '');
+        box.style.display = 'block';
+    }
+    function temBiblioteca() {
+        if (typeof XLSX !== 'undefined') return true;
+        alert('A biblioteca de Excel não foi carregada. Verifique a conexão com a internet e recarregue a página.');
+        return false;
+    }
+
+    /* ---------- Exportar ---------- */
+    function exportar() {
+        if (!temBiblioteca()) return;
+        mostrarErros(null);
+        const ativos = ler('historico_pontos');
+        if (!ativos.length) { alert('A base está vazia: não há pontos para exportar.'); return; }
+        const status = {};
+        ativos.forEach(p => {
+            if (PontoStore.logDoCodigo(p.codigo).some(l => l.tipo === 'ajuste')) status[p.codigo] = 'Ajustado pelo admin';
+            else if (p.importadoEm) status[p.codigo] = 'Importado';
+        });
+        const dados = BaseGlobal.paraPlanilha(ativos, status);
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(dados.linhas, { header: BaseGlobal.COLUNAS });
+        ws['!cols'] = [14, 30, 16, 12, 16, 24, 55, 20].map(w => ({ wch: w }));
+        ws['!autofilter'] = { ref: ws['!ref'] };
+        XLSX.utils.book_append_sheet(wb, ws, 'Base');
+        if (dados.fotos.length) {
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dados.fotos, { header: BaseGlobal.COLUNAS_FOTO }), 'Fotos');
+            wb.Workbook = { Sheets: [{ Hidden: 0 }, { Hidden: 1 }] };
+        }
+        const bytes = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const d = new Date(), p2 = (n) => String(n).padStart(2, '0');
+        const url = URL.createObjectURL(new Blob([bytes], { type: MIME }));
+        const a = document.createElement('a');
+        a.href = url; a.download = 'base_pontos_' + d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate()) + '.xlsx';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 30000);
+        toast('✅ Base exportada (' + ativos.length + ' ponto' + (ativos.length === 1 ? '' : 's') + ')');
+    }
+
+    /* ---------- Importar ---------- */
+    async function importar(arquivo) {
+        if (!arquivo || ocupado || !temBiblioteca()) return;
+        mostrarErros(null);
+        if (!/\.xlsx$/i.test(arquivo.name)) { alert('Selecione um arquivo Excel no formato .xlsx.'); return; }
+        if (arquivo.size > MAX_BYTES) { alert('Arquivo muito grande (limite de 15 MB).'); return; }
+        ocupado = true;
+        try {
+            progresso(10, 'Lendo a planilha…'); await pausa();
+            let linhas, fotos;
+            try {
+                // ===== EXCEL -> JSON: cada linha da aba "Base" vira um objeto { 'Código Único': '482910', 'Nome': '...', ... } =====
+                const wb = XLSX.read(await arquivo.arrayBuffer(), { type: 'array' });
+                const aba = wb.SheetNames.indexOf('Base') >= 0 ? 'Base' : wb.SheetNames[0];
+                linhas = XLSX.utils.sheet_to_json(wb.Sheets[aba], { defval: '', raw: false });
+                fotos = wb.Sheets['Fotos'] ? XLSX.utils.sheet_to_json(wb.Sheets['Fotos'], { defval: '', raw: false }) : [];
+            } catch (e) { progresso(null); mostrarErros(['O arquivo não pôde ser lido como planilha .xlsx.']); return; }
+            if (!linhas.length) { progresso(null); mostrarErros(['A planilha não tem nenhuma linha de dados.']); return; }
+
+            progresso(45, 'Validando ' + linhas.length + ' linha(s)…'); await pausa();
+            // ===== JSON -> ESTADO DO APP: BaseGlobal.validar converte e confere código, CPF, data, hora, geolocalização e duplicidades =====
+            const r = BaseGlobal.validar(linhas, fotos, ler('historico_pontos'), ler('lixeira_pontos'), validarCPF, ler('pontos_originais'));
+            if (r.erros.length) { progresso(null); mostrarErros(r.erros); return; }          // QUALQUER erro interrompe tudo
+            if (!r.novos.length) { progresso(null); alert('Nada a importar: todos os ' + r.ignorados + ' ponto(s) já estão na base.'); return; }
+
+            progresso(70, 'Aguardando confirmação…');
+            const msg = 'Importar ' + r.novos.length + ' ponto(s) novo(s) para a base ativa' + (r.ignorados ? ' (' + r.ignorados + ' já existentes serão ignorados)' : '') + '? Confirme a senha do administrador.';
+            pedirSenhaAdmin(msg, () => Carga.executar('Gravando pontos…', () => gravar(r.novos)), () => progresso(null));
+        } finally { ocupado = false; }
+    }
+
+    // Gravação atômica: se qualquer escrita falhar, volta ao estado anterior
+    async function gravar(novos) {
+        progresso(85, 'Gravando na base…'); await pausa();
+        const kH = 'historico_pontos', kL = 'log_alteracoes_pontos';
+        const antesH = localStorage.getItem(kH), antesL = localStorage.getItem(kL);
+        try {
+            const agora = new Date().toISOString();
+            const reg = novos.map(p => Object.assign({}, p, { importadoEm: agora }));
+            const log = ler(kL);
+            reg.forEach(p => log.push({ codigo: p.codigo, em: agora, tipo: 'evento', campo: 'Importado via planilha pelo administrador', de: '', para: '', motivo: '', por: 'Administrador' }));
+            localStorage.setItem(kH, JSON.stringify(ler(kH).concat(reg)));
+            localStorage.setItem(kL, JSON.stringify(log));
+        } catch (e) {
+            if (antesH == null) localStorage.removeItem(kH); else localStorage.setItem(kH, antesH);
+            if (antesL == null) localStorage.removeItem(kL); else localStorage.setItem(kL, antesL);
+            progresso(null);
+            mostrarErros(['Armazenamento do aparelho cheio: a base foi mantida como estava.']);
+            return;
+        }
+        progresso(100, 'Concluído'); await pausa();
+        if (typeof renderizarPontosAdmin === 'function') renderizarPontosAdmin();
+        setTimeout(() => progresso(null), 1200);
+        toast('✅ ' + novos.length + ' ponto(s) importado(s) com sucesso');
+    }
+
+    $('btnBaseExportar').addEventListener('click', () => Carga.executar('Gerando planilha…', async () => { await pausa(); exportar(); }));
+    $('btnBaseImportar').addEventListener('click', () => $('inputBaseImportar').click());
+    $('inputBaseImportar').addEventListener('change', (e) => { const f = e.target.files[0]; e.target.value = ''; Carga.executar('Lendo e validando a planilha…', () => importar(f)); });
+})();
+</script>
+<script>
+/* =====================================================================
+   MÓDULO PontoOffline — marcação de ponto SEM internet, antifraude e sincronização em fila (FIFO)
+   Partes: Rede (queda/volta) · Relogio (adulteração de hora) · Fila (FIFO) · Sincronia (envio em 2º plano)
+           · Antifraude (suspeitas) · PontoOffline (registro + modal) · helpers de tela (histórico e admin)
+
+   ARMAZENAMENTO: usa o mesmo localStorage do restante do app (originais selados, painel admin, lixeira), para o ponto
+   offline e o ponto online ficarem na mesma base e sob o mesmo selo. A fila guarda só ponteiros (código + status).
+
+   LIMITES DO NAVEGADOR (um app web não é um app nativo):
+   - Uptime do APARELHO não é exposto a páginas web: gravamos "tempo_app_ms" (desde que o app abriu) e uptime_dispositivo_ms = null.
+   - O GPS físico não é consultável à parte: usamos a permissão (Permissions API) + uma tentativa real de leitura.
+   - Com fetch "no-cors" a resposta é opaca (não dá para ler 200/201): resposta recebida = entregue. Se o endpoint tiver CORS, res.ok é checado.
+   - "Recebido" é o horário do relógio do aparelho; para valor probatório o servidor deve carimbar o recebimento por conta própria.
+   ===================================================================== */
+
+/* ---------- Rede: quando a conexão caiu / voltou ---------- */
+const Rede = (function () {
+    'use strict';
+    const K_ONLINE = 'rede_ultimo_online', K_QUEDA = 'rede_queda_em', K_VOLTOU = 'rede_voltou_em';
+    const agora = () => new Date().toISOString();
+    const ler = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+    const gravar = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+    const offline = () => navigator.onLine === false;
+    const ms = (iso) => iso ? new Date(iso).getTime() : NaN;
+
+    function marcarOnline() { if (!offline()) gravar(K_ONLINE, agora()); }
+    function aoCair() { gravar(K_QUEDA, agora()); }
+    function aoVoltar() { gravar(K_VOLTOU, agora()); gravar(K_ONLINE, agora()); }
+
+    // Início da queda ATUAL: o evento "offline" visto pelo app; se o app abriu já sem rede, vale o último momento online conhecido (aproximado)
+    function quedaAtual() {
+        const q = ler(K_QUEDA), v = ler(K_VOLTOU);
+        if (q && (!v || ms(q) > ms(v))) return { em: q, aproximada: false };
+        const u = ler(K_ONLINE);
+        return u ? { em: u, aproximada: true } : { em: null, aproximada: true };
+    }
+    const voltouEm = () => ler(K_VOLTOU);
+    function iniciar() {
+        marcarOnline();
+        setInterval(marcarOnline, 30000);
+        window.addEventListener('offline', aoCair);
+        window.addEventListener('online', aoVoltar);
+    }
+    return { offline: offline, quedaAtual: quedaAtual, voltouEm: voltouEm, iniciar: iniciar, aoCair: aoCair, aoVoltar: aoVoltar, marcarOnline: marcarOnline };
+})();
+
+/* ---------- Relogio: detecta troca manual da hora do sistema (clock tampering) ----------
+   Compara o relógio de parede (Date.now) com o monotônico (performance.now), que o usuário não consegue alterar:
+   se o relógio de parede anda MENOS que o monotônico, a hora foi atrasada à mão. Também compara com o último instante visto
+   em sessões anteriores e registra mudança de fuso horário. Avanço de hora não é marcado (suspensão do aparelho também avança). */
+const Relogio = (function () {
+    'use strict';
+    const K_ULT = 'relogio_ultimo_visto', K_TZ = 'relogio_fuso', K_EVT = 'relogio_eventos';
+    const LIMITE_MS = 60000, MAX_EVENTOS = 50, JANELA_MS = 7 * 24 * 3600 * 1000;
+    let lastWall = Date.now(), lastMono = performance.now();
+    const lerEventos = () => { try { const v = JSON.parse(localStorage.getItem(K_EVT)); return Array.isArray(v) ? v : []; } catch (e) { return []; } };
+    function registrar(tipo, detalhe) {
+        const ev = lerEventos(); ev.push({ em: new Date().toISOString(), tipo: tipo, detalhe: detalhe });
+        try { localStorage.setItem(K_EVT, JSON.stringify(ev.slice(-MAX_EVENTOS))); } catch (e) {}
+    }
+    const fusoAtual = () => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone + '|' + new Date().getTimezoneOffset(); } catch (e) { return ''; } };
+
+    function verificar() {
+        const w = Date.now(), m = performance.now();
+        const dw = w - lastWall, dm = m - lastMono;
+        lastWall = w; lastMono = m;
+        if (dw < dm - LIMITE_MS) registrar('retrocesso_em_uso', 'hora do sistema atrasada ~' + Math.round((dm - dw) / 1000) + 's com o app aberto');
+        let ult = NaN; try { ult = parseInt(localStorage.getItem(K_ULT), 10); } catch (e) {}
+        if (ult && w < ult - LIMITE_MS) registrar('retrocesso_entre_sessoes', 'hora atual ~' + Math.round((ult - w) / 1000) + 's antes do último instante registrado');
+        try {
+            localStorage.setItem(K_ULT, String(w));
+            const tz = fusoAtual(), prev = localStorage.getItem(K_TZ);
+            if (prev && tz && prev !== tz) registrar('fuso_alterado', prev + ' → ' + tz);
+            if (tz) localStorage.setItem(K_TZ, tz);
+        } catch (e) {}
+    }
+    function resumo() {
+        const lim = Date.now() - JANELA_MS;
+        const graves = lerEventos().filter(e => new Date(e.em).getTime() >= lim);
+        return { alterado: graves.length > 0, eventos: graves.slice(-5) };
+    }
+    function iniciar() {
+        verificar();
+        setInterval(verificar, 5000);
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') verificar(); });
+    }
+    return { iniciar: iniciar, verificar: verificar, resumo: resumo };
+})();
+
+/* ---------- Antifraude: avalia se a queda de internet parece proposital (função pura) ---------- */
+const Antifraude = (function () {
+    'use strict';
+    const FIX_RECENTE_MS = 24 * 3600 * 1000, QUEDA_RECENTE_MS = 120000;
+    // ctx: { offline, permissao ('granted'|'denied'|'prompt'|...), temCoord, fixHaMs (ms desde o último GPS válido ou null), quedaHaMs (ms desde a queda ou null), relogio:{alterado} }
+    function avaliar(ctx) {
+        const motivos = [];
+        const fixRecente = ctx.fixHaMs != null && ctx.fixHaMs <= FIX_RECENTE_MS;
+        const quedaRecente = ctx.quedaHaMs != null && ctx.quedaHaMs <= QUEDA_RECENTE_MS;
+        // GPS autorizado e que já funcionou, mas este ponto saiu sem posição: padrão de quem corta os dados para "não ter localização"
+        const forcada = !!(ctx.offline && ctx.permissao === 'granted' && !ctx.temCoord && (fixRecente || quedaRecente));
+        if (forcada && fixRecente) motivos.push('GPS autorizado e funcionando (última posição há ' + Math.max(1, Math.round(ctx.fixHaMs / 60000)) + ' min), mas o ponto saiu sem posição');
+        if (forcada && quedaRecente) motivos.push('Conexão caiu há ' + Math.round(ctx.quedaHaMs / 1000) + 's, imediatamente antes do ponto');
+        if (ctx.relogio && ctx.relogio.alterado) motivos.push('Alteração de hora/fuso do aparelho detectada nos últimos 7 dias');
+        return { suspeita_desconexao_forcada: forcada, suspeita_relogio: !!(ctx.relogio && ctx.relogio.alterado), motivos: motivos };
+    }
+    return { avaliar: avaliar };
+})();
+
+/* ---------- Fila FIFO de pontos pendentes de envio ---------- */
+const Fila = (function () {
+    'use strict';
+    const K = 'fila_sync_pontos', RETENCAO_MS = 30 * 24 * 3600 * 1000;
+    const ler = () => { try { const v = JSON.parse(localStorage.getItem(K)); return Array.isArray(v) ? v : []; } catch (e) { return []; } };
+    const gravar = (a) => localStorage.setItem(K, JSON.stringify(a));
+    function enfileirar(codigo) {
+        const f = ler();
+        if (f.some(e => e.codigo === codigo)) return;
+        f.push({ codigo: codigo, enfileiradoEm: new Date().toISOString(), status: 'pendente', tentativas: 0 });
+        gravar(f);
+    }
+    // FIFO: do mais antigo para o mais novo (ordem de chegada desempata datas iguais)
+    const pendentes = () => ler().map((e, i) => ({ e: e, i: i })).filter(x => x.e.status === 'pendente')
+        .sort((a, b) => a.e.enfileiradoEm < b.e.enfileiradoEm ? -1 : a.e.enfileiradoEm > b.e.enfileiradoEm ? 1 : a.i - b.i).map(x => x.e);
+    function atualizar(codigo, mudar) { const f = ler(); const e = f.find(x => x.codigo === codigo); if (e) { mudar(e); gravar(f); } }
+    const marcarSincronizado = (codigo, em) => atualizar(codigo, e => { e.status = 'sincronizado'; e.sincronizadoEm = em; });
+    const registrarFalha = (codigo) => atualizar(codigo, e => { e.tentativas = (e.tentativas || 0) + 1; });
+    // Sem entrada na fila = enviado na hora (online). Só "pendente" mostra o relógio cinza.
+    const statusDe = (codigo) => { const e = ler().find(x => x.codigo === codigo); return e ? e.status : 'sincronizado'; };
+    function podar() { const lim = Date.now() - RETENCAO_MS; try { gravar(ler().filter(e => e.status === 'pendente' || new Date(e.sincronizadoEm || e.enfileiradoEm).getTime() > lim)); } catch (e) {} }
+    return { enfileirar: enfileirar, pendentes: pendentes, marcarSincronizado: marcarSincronizado, registrarFalha: registrarFalha, statusDe: statusDe, podar: podar, ler: ler };
+})();
+
+/* ---------- Sincronia: envia a fila em ordem cronológica quando a internet volta ---------- */
+const Sincronia = (function () {
+    'use strict';
+    let rodando = false, timer = null;
+    const lerArr = (k) => { try { const v = JSON.parse(localStorage.getItem(k)); return Array.isArray(v) ? v : []; } catch (e) { return []; } };
+    const temCoord = (p) => p.lat !== '' && p.lat != null && p.lng !== '' && p.lng != null && isFinite(Number(p.lat)) && isFinite(Number(p.lng));
+
+    // Dados do ponto vêm do ORIGINAL selado (hora exata coletada offline); metadados de rede/auditoria vêm da cópia de trabalho
+    function montarPayload(original, registro, voltouEm, recebidoEm) {
+        const o = original || registro, r = registro || {};
+        const coord = temCoord(o);
+        return {
+            codigo: o.codigo, nome: o.nome, cpf: o.cpf, foto: o.foto || r.foto || '',
+            lat: coord ? Number(o.lat) : null, lng: coord ? Number(o.lng) : null,          // sem GPS: coordenadas nulas
+            endereco: o.endereco || '', dataHora: o.dataHora, dataSimples: o.dataSimples,   // carimbo local original, NÃO a hora do envio
+            registro_offline: !!r.registro_offline,
+            conexao_caiu_em: r.conexao_caiu_em || null, conexao_voltou_em: voltouEm || null, sincronizado_em: recebidoEm,
+            suspeita_desconexao_forcada: !!(r.auditoria_offline && r.auditoria_offline.suspeita_desconexao_forcada),
+            auditoria_offline: r.auditoria_offline || null
+        };
+    }
+    async function enviar(payload) {
+        if (typeof URL_GOOGLE_SHEETS === 'undefined' || URL_GOOGLE_SHEETS.includes('SUA_URL_DO_GOOGLE')) return true;   // sem servidor configurado: o app já trata o ponto como entregue
+        const res = await fetch(URL_GOOGLE_SHEETS, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        return res.type === 'opaque' || res.ok || res.status === 200 || res.status === 201;
+    }
+    function atualizarRegistro(codigo, patch) {
+        ['historico_pontos', 'lixeira_pontos'].forEach(k => {
+            const arr = lerArr(k); let mudou = false;
+            arr.forEach(p => { if (p.codigo === codigo) { Object.assign(p, patch); mudou = true; } });
+            if (mudou) { try { localStorage.setItem(k, JSON.stringify(arr)); } catch (e) {} }
+        });
+    }
+    function agendar(ms) { clearTimeout(timer); timer = setTimeout(rodar, ms); }
+
+    async function rodar() {
+        if (rodando || Rede.offline()) return { enviados: 0 };
+        rodando = true; let enviados = 0;
+        try {
+            for (const item of Fila.pendentes()) {                                       // FIFO: para na primeira falha, preservando a ordem
+                const original = lerArr('pontos_originais').find(o => o.codigo === item.codigo);
+                const registro = lerArr('historico_pontos').concat(lerArr('lixeira_pontos')).find(p => p.codigo === item.codigo);
+                if (!original && !registro) { Fila.marcarSincronizado(item.codigo, new Date().toISOString()); continue; }   // ponto removido: nada a enviar
+                const recebidoEm = new Date().toISOString(), voltouEm = Rede.voltouEm() || recebidoEm;
+                let ok = false;
+                try { ok = await enviar(montarPayload(original, registro, voltouEm, recebidoEm)); } catch (e) { ok = false; }
+                if (!ok) { Fila.registrarFalha(item.codigo); agendar(30000); break; }
+                Fila.marcarSincronizado(item.codigo, recebidoEm);
+                atualizarRegistro(item.codigo, { conexao_voltou_em: voltouEm, sincronizado_em: recebidoEm });
+                enviados++;
+            }
+        } finally { rodando = false; }
+        if (enviados) {
+            Fila.podar();
+            atualizarTelas();
+            if (typeof mostrarToast === 'function') mostrarToast('☁️ ' + enviados + ' ponto(s) sincronizado(s)');
+        }
+        if (Fila.pendentes().length && !Rede.offline()) agendar(60000);
+        return { enviados: enviados };
+    }
+    // Atualiza, sem recarregar, o que estiver aberto: o relógio cinza vira check verde
+    function atualizarTelas() {
+        try { const h = document.getElementById('colabPane-hist'); if (h && h.style.display !== 'none' && typeof HistoricoColab !== 'undefined') HistoricoColab.render(); } catch (e) {}
+        try { const a = document.getElementById('adminData'); if (a && a.style.display === 'block' && typeof renderizarPontosAdmin === 'function') renderizarPontosAdmin(); } catch (e) {}
+    }
+    function iniciar() {
+        window.addEventListener('online', () => agendar(2000));                         // espera 2 s para a conexão estabilizar
+        if (!Rede.offline() && Fila.pendentes().length) agendar(1500);
+    }
+    return { rodar: rodar, iniciar: iniciar, montarPayload: montarPayload };
+})();
+
+/* ---------- PontoOffline: registro sem internet ---------- */
+const PontoOffline = (function () {
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    const K_FIX = 'gps_ultimo_fix';
+    const lerArr = (k) => { try { const v = JSON.parse(localStorage.getItem(k)); return Array.isArray(v) ? v : []; } catch (e) { return []; } };
+
+    function fixGps() { try { localStorage.setItem(K_FIX, new Date().toISOString()); } catch (e) {} }   // chamado quando o GPS devolve uma posição válida
+    function permissaoGps() {
+        try { return navigator.permissions && navigator.permissions.query ? navigator.permissions.query({ name: 'geolocation' }).then(r => r.state).catch(() => 'desconhecida') : Promise.resolve('desconhecida'); }
+        catch (e) { return Promise.resolve('desconhecida'); }
+    }
+    // Tentativa real de leitura do GPS (funciona sem internet: o chip de GPS não depende de dados móveis)
+    function tentarGps(timeoutMs) {
+        return new Promise((resolve) => {
+            if (!('geolocation' in navigator)) return resolve({ estado: 'sem_api' });
+            navigator.geolocation.getCurrentPosition(
+                (pos) => resolve({ estado: 'ok', pos: pos }),
+                (err) => resolve({ estado: err && err.code === 1 ? 'negado' : err && err.code === 2 ? 'indisponivel' : 'timeout' }),
+                { enableHighAccuracy: true, timeout: timeoutMs, maximumAge: 120000 });
+        });
+    }
+
+    function montarAuditoria(ctx) {
+        const q = Rede.quedaAtual(), agora = Date.now();
+        const fixIso = (function () { try { return localStorage.getItem(K_FIX); } catch (e) { return null; } })();
+        const quedaHaMs = q.em && !q.aproximada ? agora - new Date(q.em).getTime() : null;
+        const av = Antifraude.avaliar({ offline: true, permissao: ctx.permissao, temCoord: ctx.temCoord,
+            fixHaMs: fixIso ? agora - new Date(fixIso).getTime() : null, quedaHaMs: quedaHaMs, relogio: Relogio.resumo() });
+        return {
+            uptime_dispositivo_ms: null, uptime_indisponivel: true,                      // não exposto a páginas web
+            tempo_app_ms: Math.round(performance.now()),                                // tempo desde que o app abriu
+            relogio_alterado: Relogio.resumo().alterado, relogio_eventos: Relogio.resumo().eventos,
+            gps_permissao: ctx.permissao, gps_tentativa: ctx.tentativa, gps_ultimo_fix_em: fixIso,
+            conexao_caiu_aproximada: q.aproximada,
+            suspeita_desconexao_forcada: av.suspeita_desconexao_forcada, suspeita_relogio: av.suspeita_relogio, motivos_suspeita: av.motivos
+        };
+    }
+
+    async function registrar() {
+        const btn = $('btnEnviar');
+        btn.disabled = true; btn.innerText = 'Salvando no dispositivo...';
+        const ponto = Object.assign({}, dadosPonto);       // congela o carimbo do instante do toque (o relógio da tela continua andando)
+        try {
+            const temGps = ponto.lat !== '' && ponto.lat != null;
+            let tentativa = 'ok';
+            if (!temGps) {                                  // GPS é OPCIONAL offline, mas tentamos mesmo assim (e auditamos a falha)
+                const r = await tentarGps(8000);
+                tentativa = r.estado;
+                if (r.pos) { ponto.lat = r.pos.coords.latitude; ponto.lng = r.pos.coords.longitude; ponto.endereco = 'Localização Georeferenciada (' + ponto.lat.toFixed(5) + ', ' + ponto.lng.toFixed(5) + ')'; fixGps(); }
+            }
+            const temCoord = ponto.lat !== '' && ponto.lat != null;
+            if (!ponto.endereco) ponto.endereco = temCoord ? 'Localização Georeferenciada' : 'Sem localização (registro offline)';
+            const permissao = await permissaoGps();
+            ponto.registro_offline = true;
+            ponto.conexao_caiu_em = Rede.quedaAtual().em;
+            ponto.auditoria_offline = montarAuditoria({ permissao: permissao, tentativa: tentativa, temCoord: temCoord });
+            ponto.codigo = PontoStore.gerarCodigo();
+            try {
+                PontoStore.registrarOriginal(ponto);                                         // espelho original selado (hora local imutável)
+                const h = lerArr('historico_pontos'); h.push(Object.assign({}, ponto));
+                localStorage.setItem('historico_pontos', JSON.stringify(h));                  // cópia de trabalho do admin
+                Fila.enfileirar(ponto.codigo);
+            } catch (erro) {
+                PontoStore.desfazerOriginal(ponto.codigo);
+                alert('Não foi possível gravar o ponto: o armazenamento do aparelho está cheio. Avise o administrador.');
+                btn.disabled = false; btn.innerText = 'Confirmar e Enviar Ponto';
+                return;
+            }
+            sessionStorage.setItem('colab_pane', 'hist');
+            mostrarModal(ponto.codigo);
+        } catch (e) {
+            alert('Não foi possível registrar o ponto offline. Tente novamente.');
+            btn.disabled = false; btn.innerText = 'Confirmar e Enviar Ponto';
+        }
+    }
+    function mostrarModal(codigo) {
+        $('offlineCodigo').textContent = codigo;
+        $('modalPontoOffline').classList.add('open');
+    }
+    // Ponto online cujo envio falhou (rede caiu no meio): vira pendente e entra na fila
+    function marcarPendente(codigo) {
+        const h = lerArr('historico_pontos'); const p = h.find(x => x.codigo === codigo);
+        if (p) { p.falha_envio = true; p.conexao_caiu_em = Rede.quedaAtual().em; try { localStorage.setItem('historico_pontos', JSON.stringify(h)); } catch (e) {} }
+        Fila.enfileirar(codigo);
+    }
+    function iniciar() {
+        $('offlineEntendido').addEventListener('click', () => { $('modalPontoOffline').classList.remove('open'); location.reload(); });
+        const reavaliar = () => { atualizarAvisoGps(); if (typeof validarFormulario === 'function') validarFormulario(); };
+        window.addEventListener('offline', reavaliar); window.addEventListener('online', reavaliar);
+        atualizarAvisoGps();
+    }
+    // Offline sem GPS: mostra que a localização é opcional (o botão de enviar é liberado em validarFormulario)
+    function atualizarAvisoGps() {
+        const txt = $('txtGps'), badge = $('badgeGps');
+        if (!txt || !badge) return;
+        if (Rede.offline() && (dadosPonto.lat === '' || dadosPonto.lat == null)) {
+            badge.className = 'badge badge-warning'; badge.innerText = 'OFFLINE';
+            txt.innerHTML = '📴 <b>Sem internet:</b> a localização é opcional. O ponto será salvo no aparelho.';
+            $('btnRetryGps').style.display = 'none';
+        }
+    }
+    return { registrar: registrar, marcarPendente: marcarPendente, fixGps: fixGps, iniciar: iniciar, montarAuditoria: montarAuditoria };
+})();
+
+/* ---------- Helpers de tela ---------- */
+// Ícone do histórico do colaborador: relógio cinza (pendente) -> check verde (sincronizado)
+function statusSyncHtml(codigo) {
+    return Fila.statusDe(codigo) === 'pendente'
+        ? ' <span class="sync-ic sync-pend" title="Aguardando envio ao servidor">🕒</span>'
+        : ' <span class="sync-ic sync-ok" title="Sincronizado">✔</span>';
+}
+// Alerta do administrador: horários de queda/volta/recebimento e suspeitas
+function htmlAlertaOffline(p) {
+    if (!p.registro_offline && !p.falha_envio) return '';
+    const f = (iso) => iso ? escHtml(new Date(iso).toLocaleString('pt-BR')) : '—';
+    const a = p.auditoria_offline || {};
+    const pend = Fila.statusDe(p.codigo) === 'pendente';
+    let h = '<div class="alerta-offline">' +
+        '<b>' + (p.registro_offline ? '📴 Ponto registrado OFFLINE' : '⚠️ Ponto com falha de envio') + '</b>' + (pend ? ' · <b>⏳ aguardando sincronização</b>' : '') + '<br>' +
+        'Conexão caiu: ' + f(p.conexao_caiu_em) + (a.conexao_caiu_aproximada ? ' <small>(aprox.: último momento online conhecido)</small>' : '') + '<br>' +
+        'Conexão voltou: ' + f(p.conexao_voltou_em) + '<br>' +
+        'Dados recebidos (sincronizados): ' + f(p.sincronizado_em);
+    if (a.suspeita_desconexao_forcada) h += '<div class="alerta-suspeita">🚩 suspeita_desconexao_forcada: true</div>';
+    if (a.suspeita_relogio) h += '<div class="alerta-suspeita">🚩 Alteração de hora/fuso do aparelho detectada</div>';
+    (a.motivos_suspeita || []).forEach(m => { h += '<small class="alerta-motivo">• ' + escHtml(m) + '</small>'; });
+    if (a.gps_permissao) h += '<small class="alerta-motivo">GPS: permissão ' + escHtml(a.gps_permissao) + ' · tentativa ' + escHtml(a.gps_tentativa || '—') + ' · app aberto há ' + Math.round((a.tempo_app_ms || 0) / 60000) + ' min · uptime do aparelho indisponível (web)</small>';
+    return h + '</div>';
+}
+
+Rede.iniciar();
+Relogio.iniciar();
+PontoOffline.iniciar();
+Sincronia.iniciar();
+</script>
+
+<script>
+/* =====================================================================
+   Texto — tratamento de texto dos nomes (capitalização)
+   ===================================================================== */
+const Texto = (function () {
+    'use strict';
+    /* Regex: (^|[\s\-'’.])(\p{L}) = "início do texto ou separador (espaço, hífen, apóstrofo, ponto)" seguido de uma LETRA
+       Unicode (\p{L} cobre acentos: á, ç, ñ). Primeiro tudo vai para minúsculas (pt-BR) e depois só a letra que vem logo após
+       um separador volta a maiúscula: "carlos da silva" -> "Carlos Da Silva"; "ana-maria d'ávila" -> "Ana-Maria D'Ávila".
+       A flag "u" é obrigatória para \p{L}. */
+    function capitalizarNome(txt) {
+        return String(txt == null ? '' : txt)
+            .toLocaleLowerCase('pt-BR')
+            .replace(/(^|[\s\-'’.])(\p{L})/gu, (m, sep, letra) => sep + letra.toLocaleUpperCase('pt-BR'));
+    }
+    // Liga a máscara em tempo real a um <input>: corrige enquanto digita (mantendo o cursor) e normaliza espaços ao sair do campo
+    function ligarMascaraNome(el) {
+        if (!el || el.dataset.mascaraNome) return;
+        el.dataset.mascaraNome = '1';
+        el.addEventListener('input', () => {
+            const antes = el.value, depois = capitalizarNome(antes);
+            if (depois === antes) return;
+            const pos = el.selectionStart;                       // só trocamos maiúsc./minúsc.: o tamanho não muda, o cursor fica no lugar
+            el.value = depois;
+            try { el.setSelectionRange(pos, pos); } catch (e) {}
+        });
+        el.addEventListener('blur', () => { el.value = capitalizarNome(el.value.replace(/\s+/g, ' ').trim()); });
+    }
+    return { capitalizarNome: capitalizarNome, ligarMascaraNome: ligarMascaraNome };
+})();
+['nome', 'colabCadNome', 'perfilNomeExib', 'ajNome'].forEach(id => Texto.ligarMascaraNome(document.getElementById(id)));
+
+// Legenda (marca d'água) da foto: o nome também sai com iniciais maiúsculas
+(function () {
+    const original = coletarInfoMarcaDagua;
+    coletarInfoMarcaDagua = function () { const i = original(); i.nome = Texto.capitalizarNome(i.nome); return i; };
+})();
+
+/* =====================================================================
+   VerSenha — botão "olho" em TODOS os campos de senha (login, cadastro, admin, trocas e confirmações)
+   ===================================================================== */
+const VerSenha = (function () {
+    'use strict';
+    const AUTO_OCULTAR_MS = 20000;
+    function instalar(input) {
+        if (input.closest('.senha-wrap')) return;
+        const wrap = document.createElement('div'); wrap.className = 'senha-wrap';
+        input.parentNode.insertBefore(wrap, input); wrap.appendChild(input);
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'btn-olho';
+        b.setAttribute('aria-label', 'Mostrar senha'); b.setAttribute('aria-pressed', 'false'); b.textContent = '👁️';
+        let timer = null;
+        const ocultar = () => { input.type = 'password'; b.textContent = '👁️'; b.setAttribute('aria-pressed', 'false'); b.setAttribute('aria-label', 'Mostrar senha'); clearTimeout(timer); };
+        b.addEventListener('click', () => {
+            if (input.type === 'password') {                      // mostra temporariamente: volta a ocultar sozinho
+                input.type = 'text'; b.textContent = '🙈'; b.setAttribute('aria-pressed', 'true'); b.setAttribute('aria-label', 'Ocultar senha');
+                clearTimeout(timer); timer = setTimeout(ocultar, AUTO_OCULTAR_MS);
+            } else ocultar();
+            input.focus();
+        });
+        wrap.appendChild(b);
+    }
+    function instalarTodos() { document.querySelectorAll('input[type="password"]').forEach(instalar); }
+    return { instalarTodos: instalarTodos };
+})();
+VerSenha.instalarTodos();
+
+/* =====================================================================
+   GerenciadorSenha — pede ao Chrome/Android (Google Senhas) para salvar o par CPF + senha após o login
+   (O <form> com autocomplete="username"/"current-password" já aciona o aviso nativo; isto reforça no Chrome.)
+   ===================================================================== */
+const GerenciadorSenha = {
+    salvar: function (cpf, senha, nome) {
+        if (!window.PasswordCredential || !navigator.credentials || !navigator.credentials.store) return;
+        navigator.credentials.store(new PasswordCredential({ id: cpf, password: senha, name: nome || cpf })).catch(() => {});
+    }
+};
+
+/* =====================================================================
+   AcessoRapido — atalho "Entrar como ***.123.***-00" com o último CPF que entrou neste aparelho
+   ===================================================================== */
+(function AcessoRapido() {
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    const ultimo = () => (localStorage.getItem('colab_ultimo_cpf') || '').replace(/\D/g, '');
+    const mascarado = (d) => '***.' + d.slice(3, 6) + '.***-' + d.slice(9);
+    const completo = (d) => d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+    function mostrar() {
+        const d = ultimo(), box = $('atalhoCpfBox');
+        if (d.length !== 11) { box.style.display = 'none'; return; }
+        $('atalhoCpfTxt').textContent = mascarado(d);
+        box.style.display = 'flex';
+    }
+    $('colabAtalhoCpf').addEventListener('click', () => { $('colabLoginCpf').value = completo(ultimo()); $('colabLoginSenha').focus(); });
+    $('colabAtalhoEsquecer').addEventListener('click', () => { localStorage.removeItem('colab_ultimo_cpf'); mostrar(); });
+    mostrar();
+})();
+
+/* =====================================================================
+   ModoTema — claro / escuro / sistema (preferência em localStorage 'tema_modo')
+   ===================================================================== */
+const ModoTema = (function () {
+    'use strict';
+    const K = 'tema_modo', mq = matchMedia('(prefers-color-scheme: light)');
+    const modo = () => { const m = localStorage.getItem(K); return m === 'claro' || m === 'escuro' ? m : 'sistema'; };
+    const resolvido = () => modo() === 'sistema' ? (mq.matches ? 'claro' : 'escuro') : modo();
+    function aplicar(animar) {
+        const html = document.documentElement;
+        if (animar) { html.classList.add('tema-anim'); setTimeout(() => html.classList.remove('tema-anim'), 350); }
+        html.setAttribute('data-tema', resolvido());
+        document.querySelectorAll('.seg-tema button').forEach(b => b.classList.toggle('ativo', b.dataset.modo === modo()));
+    }
+    document.querySelectorAll('.seg-tema button').forEach(b => b.addEventListener('click', () => { localStorage.setItem(K, b.dataset.modo); aplicar(true); }));
+    (mq.addEventListener ? mq.addEventListener.bind(mq, 'change') : mq.addListener.bind(mq))(() => { if (modo() === 'sistema') aplicar(true); });   // acompanha o sistema
+    aplicar(false);
+    return { modo: modo, resolvido: resolvido };
+})();
+</script>
+<script>
+/* =====================================================================
+   Carga — overlay de carregamento + trava contra clique duplo em ações críticas/em massa
+   executar(rotulo, fn): só roda UMA ação por vez; enquanto roda, a tela fica bloqueada (overlay), os botões ficam desabilitados
+   e fn recebe progresso(pct, texto) para a barra. Sempre libera no final (mesmo com erro).
+   ===================================================================== */
+const Carga = (function () {
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    let ocupado = false, bloqueados = [];
+    function progresso(pct, txt) {
+        $('cargaBarraWrap').style.display = pct == null ? 'none' : 'block';
+        if (pct != null) $('cargaBarra').style.width = Math.max(0, Math.min(100, pct)) + '%';
+        $('cargaTxt').textContent = txt || '';
+    }
+    function bloquear(rotulo) {
+        $('cargaRotulo').textContent = rotulo || 'Processando…';
+        progresso(null, '');
+        $('overlayCarga').classList.add('ativo');
+        document.body.setAttribute('aria-busy', 'true');
+        bloqueados = [];
+        document.querySelectorAll('button, input[type="file"], select').forEach(el => {
+            if (!el.disabled && !el.closest('#overlayCarga')) { el.disabled = true; bloqueados.push(el); }
+        });
+    }
+    function liberar() {
+        bloqueados.forEach(el => { el.disabled = false; });
+        bloqueados = [];
+        $('overlayCarga').classList.remove('ativo');
+        document.body.removeAttribute('aria-busy');
+        if (typeof validarFormulario === 'function') { try { validarFormulario(); } catch (e) {} }   // devolve ao formulário de ponto o estado correto do botão
+    }
+    async function executar(rotulo, fn) {
+        if (ocupado) return undefined;                           // clique duplo / segunda ação: ignorada
+        ocupado = true; bloquear(rotulo);
+        await new Promise(r => setTimeout(r, 30));              // dá tempo de o navegador desenhar o overlay antes do trabalho pesado
+        try { return await fn(progresso); }
+        catch (e) { console.error(e); alert('Não foi possível concluir a operação.'); }
+        finally { liberar(); ocupado = false; }
+    }
+    return { executar: executar, ocupado: () => ocupado };
+})();
+
+/* =====================================================================
+   Lote — processa listas grandes em blocos (chunks) cedendo o controle ao navegador entre eles (tela não congela)
+   ===================================================================== */
+const Lote = {
+    async processar(itens, tamanho, fn, aoProgresso) {
+        const total = itens.length;
+        for (let i = 0; i < total; i += tamanho) {
+            const fim = Math.min(total, i + tamanho);
+            for (let k = i; k < fim; k++) fn(itens[k], k);
+            if (aoProgresso) aoProgresso(fim / total);
+            await new Promise(r => setTimeout(r, 0));          // devolve o controle ao navegador (redesenha a barra, aceita toques)
+        }
+    }
+};
+
+/* =====================================================================
+   Justificativa — modal que EXIGE o motivo antes de excluir; devolve Promise<string|null> (null = cancelou)
+   O botão Confirmar só habilita com: um motivo da lista, ou (se "Outro") um texto de pelo menos 5 caracteres.
+   ===================================================================== */
+const Justificativa = (function () {
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    let resolver = null;
+    function texto() {
+        const m = $('justMotivo').value, d = $('justTexto').value.trim().replace(/\s+/g, ' ');
+        if (!m) return '';
+        if (m === '__outro') return d.length >= 5 ? d : '';
+        return d ? m + ' — ' + d : m;
+    }
+    function atualizar() {
+        const outro = $('justMotivo').value === '__outro';
+        $('justTextoLabel').textContent = outro ? 'Descreva o motivo (obrigatório, mín. 5 caracteres)' : 'Detalhes (opcional)';
+        $('justConta').textContent = $('justTexto').value.length;
+        $('justConfirmar').disabled = !texto();
+    }
+    function fechar(valor) {
+        $('modalJustificativa').classList.remove('open');
+        const r = resolver; resolver = null;
+        if (r) r(valor);
+    }
+    function pedir(opts) {
+        if (resolver) fechar(null);
+        $('justTitulo').textContent = (opts && opts.titulo) || 'Justificativa de Exclusão';
+        $('justDescricao').textContent = (opts && opts.descricao) || '';
+        $('justMotivo').value = ''; $('justTexto').value = '';
+        atualizar();
+        $('modalJustificativa').classList.add('open');
+        return new Promise(res => { resolver = res; });
+    }
+    $('justMotivo').addEventListener('change', atualizar);
+    $('justTexto').addEventListener('input', atualizar);
+    $('justConfirmar').addEventListener('click', () => { const t = texto(); if (t) fechar(t); });
+    $('justCancelar').addEventListener('click', () => fechar(null));
+    $('modalJustificativa').addEventListener('click', (e) => { if (e.target === $('modalJustificativa')) fechar(null); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && resolver) fechar(null); });
+    return { pedir: pedir, _texto: texto };
+})();
+
+/* =====================================================================
+   PontoLock — consulta (assíncrona) se o CPF está LIBERADO para bater ponto hoje.
+   Regra: a trava de duplicidade olha só a base ATIVA do admin (historico_pontos). Se o admin envia o ponto à lixeira ou o exclui,
+   o registro sai dessa base e o CPF fica liberado na hora. O ORIGINAL do colaborador (pontos_originais) é outro registro e
+   continua intacto e visível no histórico dele. Pontos offline nunca entram na trava.
+   ===================================================================== */
+const PontoLock = {
+    async verificar(cpf, dataSimples) {
+        const dig = (t) => String(t || '').replace(/\D/g, '');
+        const base = PontoStore.ler('historico_pontos');                // leitura fresca a cada consulta (nada em cache)
+        const conflito = base.find(p => !p.registro_offline && dig(p.cpf) === dig(cpf) && p.dataSimples === dataSimples);
+        return { liberado: !conflito, codigo: conflito ? conflito.codigo : null };
+    },
+    hoje() { const d = new Date(), p = (n) => String(n).padStart(2, '0'); return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); },
+    // Reavalia o formulário de ponto (botão "Enviar") e avisa o admin se o CPF foi liberado
+    async aposMudanca(cpf) {
+        if (typeof validarFormulario === 'function') { try { validarFormulario(); } catch (e) {} }
+        if (!cpf) return;
+        const r = await PontoLock.verificar(cpf, PontoLock.hoje());
+        if (r.liberado && typeof mostrarToast === 'function') mostrarToast('🔓 CPF liberado para registrar novo ponto hoje');
+    }
+};
+
+/* =====================================================================
+   ExclusaoAdmin — mover para a lixeira / excluir definitivamente COM justificativa, e ações em massa por filtro (em lotes)
+   Tudo grava de uma vez só e desfaz tudo se o armazenamento falhar. A justificativa vai para o log de auditoria do CÓDIGO.
+   ===================================================================== */
+const ExclusaoAdmin = (function () {
+    'use strict';
+    const K_H = 'historico_pontos', K_L = 'lixeira_pontos', K_LOG = 'log_alteracoes_pontos';
+    const ler = (k) => PontoStore.ler(k);
+    const agoraBR = () => new Date().toLocaleString('pt-BR');
+    const toast = (m) => { if (typeof mostrarToast === 'function') mostrarToast(m); };
+    const evento = (codigo, campo, motivo) => ({ codigo: codigo, em: new Date().toISOString(), tipo: 'evento', campo: campo, de: '', para: '', motivo: motivo || '', por: 'Administrador' });
+
+    // Grava várias chaves como uma unidade: se uma falhar, restaura todas
+    function gravarAtomico(mapa) {
+        const antes = {};
+        Object.keys(mapa).forEach(k => { antes[k] = localStorage.getItem(k); });
+        try { Object.keys(mapa).forEach(k => localStorage.setItem(k, JSON.stringify(mapa[k]))); return true; }
+        catch (e) {
+            Object.keys(antes).forEach(k => { if (antes[k] == null) localStorage.removeItem(k); else localStorage.setItem(k, antes[k]); });
+            alert('Não foi possível concluir: armazenamento do aparelho cheio. Nada foi alterado.');
+            return false;
+        }
+    }
+    const atualizarTelas = () => { if (typeof renderizarPontosAdmin === 'function') renderizarPontosAdmin(); if (typeof renderizarLixeira === 'function') renderizarLixeira(); };
+
+    /* ---- 1 ponto: mover para a lixeira ---- */
+    async function moverParaLixeira(index) {
+        const p = ler(K_H)[index];
+        if (!p) return;
+        const motivo = await Justificativa.pedir({ titulo: 'Mover para a Lixeira', descricao: p.nome + ' · ' + p.dataHora + ' · Código ' + p.codigo });
+        if (!motivo) return;
+        pedirSenhaAdmin('Confirme a senha do administrador para mover este ponto para a lixeira.', () => {
+            const hist = ler(K_H), i = hist.findIndex(x => x.codigo === p.codigo);        // localiza pelo CÓDIGO (o índice pode ter mudado)
+            if (i < 0) return;
+            const lix = ler(K_L), log = ler(K_LOG);
+            const [tirado] = hist.splice(i, 1);
+            lix.push(Object.assign({}, tirado, { excluidoEm: agoraBR(), justificativaExclusao: motivo }));
+            log.push(evento(tirado.codigo, 'Registro enviado para a lixeira', motivo));
+            if (!gravarAtomico({ [K_H]: hist, [K_L]: lix, [K_LOG]: log })) return;
+            atualizarTelas();
+            toast('🗑️ Ponto movido para a lixeira');
+            PontoLock.aposMudanca(tirado.cpf);                                            // libera o CPF (o original do colaborador não é tocado)
+        });
+    }
+
+    /* ---- 1 ponto: excluir definitivamente ---- */
+    async function excluirDefinitivo(index) {
+        const p = ler(K_L)[index];
+        if (!p) return;
+        const motivo = await Justificativa.pedir({ titulo: 'Excluir Definitivamente', descricao: p.nome + ' · ' + p.dataHora + ' · Código ' + p.codigo + ' — esta ação não pode ser desfeita.' });
+        if (!motivo) return;
+        pedirSenhaAdmin('Confirme a senha para excluir DEFINITIVAMENTE o registro de ' + p.nome + '.', () => {
+            const lix = ler(K_L), i = lix.findIndex(x => x.codigo === p.codigo);
+            if (i < 0) return;
+            const log = ler(K_LOG);
+            lix.splice(i, 1);
+            log.push(evento(p.codigo, 'Registro excluído definitivamente da lixeira', motivo));
+            if (!gravarAtomico({ [K_L]: lix, [K_LOG]: log })) return;
+            atualizarTelas();
+            toast('❌ Registro excluído definitivamente');
+        });
+    }
+
+    /* ---- Em massa: mover os resultados do filtro de DATA para a lixeira (em lotes) ---- */
+    async function moverFiltrados() {
+        const data = document.getElementById('filtroData').value;
+        const nome = document.getElementById('filtroNome').value.trim().toLowerCase();
+        if (!data) { alert('Escolha uma data no filtro para mover em massa. (Isso evita enviar toda a base para a lixeira por engano.)'); return; }
+        const casa = (p) => p.dataSimples === data && (!nome || String(p.nome).toLowerCase().includes(nome));
+        const qtd = ler(K_H).filter(casa).length;
+        if (!qtd) { alert('Nenhum registro corresponde ao filtro.'); return; }
+        const motivo = await Justificativa.pedir({ titulo: 'Mover ' + qtd + ' ponto(s) para a Lixeira', descricao: 'Todos os pontos do filtro atual (' + data.split('-').reverse().join('/') + (nome ? ', nome contém "' + nome + '"' : '') + ').' });
+        if (!motivo) return;
+        pedirSenhaAdmin('Confirme a senha para mover ' + qtd + ' ponto(s) para a lixeira.', () => Carga.executar('Movendo pontos para a lixeira…', async (prog) => {
+            const hist = ler(K_H), lix = ler(K_L), log = ler(K_LOG), ficam = [], vao = [], quando = agoraBR();
+            await Lote.processar(hist, 250, p => { (casa(p) ? vao : ficam).push(p); }, f => prog(f * 50, 'Separando registros…'));
+            await Lote.processar(vao, 250, p => {
+                lix.push(Object.assign({}, p, { excluidoEm: quando, justificativaExclusao: motivo }));
+                log.push(evento(p.codigo, 'Registro enviado para a lixeira (em massa)', motivo));
+            }, f => prog(50 + f * 45, 'Movendo ' + Math.round(f * vao.length) + ' de ' + vao.length + '…'));
+            prog(98, 'Gravando…');
+            if (!gravarAtomico({ [K_H]: ficam, [K_L]: lix, [K_LOG]: log })) return;
+            atualizarTelas();
+            toast('🗑️ ' + vao.length + ' ponto(s) movido(s) para a lixeira');
+            PontoLock.aposMudanca(null);
+        }));
+    }
+
+    /* ---- Em massa: restaurar os resultados do filtro da lixeira (em lotes) ---- */
+    async function restaurarFiltrados() {
+        const nome = document.getElementById('filtroLixeira').value.trim().toLowerCase();
+        const data = document.getElementById('filtroLixeiraData').value;
+        const casa = (p) => (!data || p.dataSimples === data) && (!nome || String(p.nome).toLowerCase().includes(nome));
+        const qtd = ler(K_L).filter(casa).length;
+        if (!qtd) { alert('Nenhum registro da lixeira corresponde ao filtro.'); return; }
+        if (!confirm('Restaurar ' + qtd + ' ponto(s) da lixeira para a base ativa?')) return;
+        await Carga.executar('Restaurando pontos…', async (prog) => {
+            const hist = ler(K_H), lix = ler(K_L), log = ler(K_LOG), ficam = [], voltam = [];
+            await Lote.processar(lix, 250, p => { (casa(p) ? voltam : ficam).push(p); }, f => prog(f * 50, 'Separando registros…'));
+            await Lote.processar(voltam, 250, p => {
+                const r = Object.assign({}, p); delete r.excluidoEm; delete r.justificativaExclusao;
+                hist.push(r);
+                log.push(evento(p.codigo, 'Registro restaurado da lixeira (em massa)', ''));
+            }, f => prog(50 + f * 45, 'Restaurando ' + Math.round(f * voltam.length) + ' de ' + voltam.length + '…'));
+            prog(98, 'Gravando…');
+            if (!gravarAtomico({ [K_H]: hist, [K_L]: ficam, [K_LOG]: log })) return;
+            atualizarTelas();
+            toast('♻️ ' + voltam.length + ' ponto(s) restaurado(s)');
+            PontoLock.aposMudanca(null);
+        });
+    }
+
+    document.getElementById('btnMoverFiltrados').addEventListener('click', moverFiltrados);
+    document.getElementById('btnRestaurarFiltrados').addEventListener('click', restaurarFiltrados);
+    return { moverParaLixeira: moverParaLixeira, excluirDefinitivo: excluirDefinitivo, moverFiltrados: moverFiltrados, restaurarFiltrados: restaurarFiltrados };
+})();
+
+
+/* =====================================================================
+   IdentidadeColab — solicitação de troca de Nome jurídico / CPF + aprovação do admin + AUDITORIA
+   Armazenamento (nada é apagado):
+     solicitacoes_identidade: [{ id, idUsuario, cpfAtual, nomeAtual, cpfNovo, nomeNovo, solicitadoEm, status:'pendente'|'aprovada'|'recusada', decididoEm, adminId, motivo }]
+     auditoria_identidade   : [{ id, idUsuario, nomeAntigo, cpfAntigo, nomeNovo, cpfNovo, em, adminId, solicitacaoId }]   (SÓ ACRÉSCIMO)
+   Na aprovação: o cadastro passa a ter o novo Nome/CPF; o antigo fica em cpfsAnteriores/nomesAnteriores; os pontos já
+   gravados (ledger, historico, lixeira) NÃO são reescritos — mantêm Nome/CPF da época (valor jurídico). O espelho do
+   colaborador junta os CPFs anteriores (PontoStore.originaisDoCpf).
+   Limite: sem servidor, a trilha é local ao aparelho (não é imutável de verdade).
+   ===================================================================== */
+const IdentidadeColab = (function () {
+    'use strict';
+    const K_SOL = 'solicitacoes_identidade', K_AUD = 'auditoria_identidade', K_USERS = 'usuarios_app';
+    const ADMIN_ID = 'ADM-001';                       // só existe 1 administrador (senha única) → ID fixo
+    const $ = (id) => document.getElementById(id);
+    const dig = (t) => String(t || '').replace(/\D/g, '');
+    const ler = (k, vazio) => { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? vazio : v; } catch (e) { return vazio; } };
+    const toast = (m) => { if (typeof mostrarToast === 'function') mostrarToast(m); };
+    const masc = (d) => d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+    const meu = () => Colab.usuarioAtual();
+
+    /* ----- colaborador ----- */
+    function solicitacaoPendente(u) { return ler(K_SOL, []).find(s => s.idUsuario === u.id && s.status === 'pendente'); }
+    function pintarStatus() {
+        const u = meu(); if (!u) return;
+        const todas = ler(K_SOL, []).filter(s => s.idUsuario === u.id), ult = todas[todas.length - 1], el = $('idSolStatus');
+        const pend = !!solicitacaoPendente(u);
+        $('idSolAbrir').style.display = pend ? 'none' : '';
+        if (!ult) { el.innerHTML = ''; return; }
+        const rot = { pendente: '⏳ Aguardando autorização do administrador', aprovada: '✅ Aprovada', recusada: '❌ Recusada' }[ult.status];
+        el.innerHTML = '<p class="nota-colab" style="margin:0 0 8px 0;"><b>' + rot + '</b> · ' + escHtml(ult.nomeNovo) + ' · ' + escHtml(masc(ult.cpfNovo)) +
+            (ult.status === 'recusada' && ult.motivo ? '<br>Motivo: ' + escHtml(ult.motivo) : '') + '</p>';
+    }
+    function erro(m) { $('idSolErro').textContent = m ? '⚠️ ' + m : ''; $('idSolErro').style.display = m ? 'block' : 'none'; }
+    async function enviar() {
+        erro('');
+        const u = meu(); if (!u) return;
+        const nome = Texto.capitalizarNome($('idSolNome').value.trim().replace(/\s+/g, ' ')), cpfTxt = $('idSolCpf').value.trim(), d = dig(cpfTxt);
+        if (nome.length < 5 || nome.indexOf(' ') < 0) return erro('Informe o nome completo.');
+        if (!validarCPF(cpfTxt)) return erro('CPF inválido.');
+        if (nome === u.nome && d === dig(u.cpf)) return erro('Nada foi alterado.');
+        const users = ler(K_USERS, {});
+        if (d !== dig(u.cpf) && users[d]) return erro('Este CPF já pertence a outra conta.');
+        if (ler(K_SOL, []).some(s => s.status === 'pendente' && s.cpfNovo === d && s.idUsuario !== u.id)) return erro('Este CPF já está em outra solicitação.');
+        const cur = users[dig(u.cpf)];
+        const ok = cur && (await Colab.derivar($('idSolSenha').value, cur.salt, String(cur.hash).split('$')[0] === 'fnv' ? 'fnv' : undefined)) === cur.hash;
+        if (!ok) return erro('Senha incorreta.');
+        const sols = ler(K_SOL, []);
+        sols.push({ id: 'SOL-' + String(sols.length + 1).padStart(4, '0'), idUsuario: u.id, cpfAtual: dig(u.cpf), nomeAtual: u.nome, cpfNovo: d, nomeNovo: nome,
+                    solicitadoEm: new Date().toISOString(), status: 'pendente', decididoEm: '', adminId: '', motivo: '' });
+        try { localStorage.setItem(K_SOL, JSON.stringify(sols)); } catch (e) { return erro('Armazenamento cheio.'); }
+        $('idSolSenha').value = ''; $('idSolForm').style.display = 'none';
+        pintarStatus(); renderAdmin();
+        toast('📨 Solicitação enviada ao administrador');
+    }
+
+    /* ----- administrador ----- */
+    function aprovar(solId) {
+        pedirSenhaAdmin('Confirme a senha do administrador para AUTORIZAR a alteração de Nome/CPF.', () => {
+            const sols = ler(K_SOL, []), s = sols.find(x => x.id === solId && x.status === 'pendente');
+            if (!s) return;
+            const users = ler(K_USERS, {}), u = users[s.cpfAtual];
+            if (!u) { alert('Cadastro não encontrado.'); return; }
+            if (s.cpfNovo !== s.cpfAtual && users[s.cpfNovo]) { alert('O CPF novo já pertence a outra conta. Recuse a solicitação.'); return; }
+            const aud = ler(K_AUD, []), agora = new Date().toISOString();
+            aud.push({ id: 'AUD-' + String(aud.length + 1).padStart(4, '0'), idUsuario: u.id, nomeAntigo: u.nome, cpfAntigo: u.cpf, nomeNovo: s.nomeNovo, cpfNovo: masc(s.cpfNovo),
+                       em: agora, adminId: ADMIN_ID, solicitacaoId: s.id });
+            const novo = Object.assign({}, u, { nome: s.nomeNovo, cpf: masc(s.cpfNovo) });
+            novo.nomesAnteriores = (u.nomesAnteriores || []).concat(u.nome !== s.nomeNovo ? [u.nome] : []);
+            novo.cpfsAnteriores = (u.cpfsAnteriores || []).concat(s.cpfNovo !== s.cpfAtual ? [s.cpfAtual] : []);
+            if (s.cpfNovo !== s.cpfAtual) delete users[s.cpfAtual];
+            users[s.cpfNovo] = novo;
+            s.status = 'aprovada'; s.decididoEm = agora; s.adminId = ADMIN_ID;
+            const antes = { u: localStorage.getItem(K_USERS), s: localStorage.getItem(K_SOL), a: localStorage.getItem(K_AUD) };
+            try {
+                localStorage.setItem(K_AUD, JSON.stringify(aud));          // auditoria primeiro
+                localStorage.setItem(K_USERS, JSON.stringify(users));
+                localStorage.setItem(K_SOL, JSON.stringify(sols));
+            } catch (e) {
+                [[K_USERS, antes.u], [K_SOL, antes.s], [K_AUD, antes.a]].forEach(([k, v]) => { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); });
+                alert('Armazenamento cheio. Nada foi alterado.'); return;
+            }
+            // sessão e atalho de login seguem o CPF novo
+            try {
+                const t = JSON.parse(localStorage.getItem('colab_sessao'));
+                if (t && t.cpf === s.cpfAtual) { t.cpf = s.cpfNovo; localStorage.setItem('colab_sessao', JSON.stringify(t)); }
+                if (localStorage.getItem('colab_ultimo_cpf') === s.cpfAtual) localStorage.setItem('colab_ultimo_cpf', s.cpfNovo);
+            } catch (e) {}
+            Colab.recarregar(); pintarStatus(); renderAdmin();
+            toast('✅ Alteração autorizada e registrada na auditoria');
+        });
+    }
+    async function recusar(solId) {
+        const motivo = await Justificativa.pedir({ titulo: 'Recusar alteração de Nome/CPF', descricao: 'Informe o motivo (o colaborador verá).' });
+        if (!motivo) return;
+        const sols = ler(K_SOL, []), s = sols.find(x => x.id === solId && x.status === 'pendente');
+        if (!s) return;
+        s.status = 'recusada'; s.decididoEm = new Date().toISOString(); s.adminId = ADMIN_ID; s.motivo = motivo;
+        localStorage.setItem(K_SOL, JSON.stringify(sols));
+        pintarStatus(); renderAdmin();
+    }
+    function renderAdmin() {
+        if (!$('idListaPend')) return;
+        const pend = ler(K_SOL, []).filter(s => s.status === 'pendente');
+        $('idBadge').style.display = pend.length ? 'inline' : 'none'; $('idBadge').textContent = pend.length;
+        $('idListaPend').innerHTML = pend.length ? pend.map(s =>
+            '<div class="log-item"><b>' + escHtml(s.idUsuario) + '</b> · ' + escHtml(new Date(s.solicitadoEm).toLocaleString('pt-BR')) +
+            '<br>Nome: <span class="log-de">' + escHtml(s.nomeAtual) + '</span> → <span class="log-para">' + escHtml(s.nomeNovo) + '</span>' +
+            '<br>CPF: <span class="log-de">' + escHtml(masc(s.cpfAtual)) + '</span> → <span class="log-para">' + escHtml(masc(s.cpfNovo)) + '</span>' +
+            '<div style="display:flex; gap:8px; margin-top:6px;"><button type="button" class="btn btn-primary" data-aprovar="' + escHtml(s.id) + '" style="padding:8px;">Autorizar</button>' +
+            '<button type="button" class="btn btn-secondary" data-recusar="' + escHtml(s.id) + '" style="padding:8px;">Recusar</button></div></div>').join('')
+            : '<p class="nota-colab">Nenhuma solicitação pendente.</p>';
+        const aud = ler(K_AUD, []).slice().reverse();
+        $('idListaAud').innerHTML = aud.length ? aud.map(a =>
+            '<div class="log-item"><b>' + escHtml(new Date(a.em).toLocaleString('pt-BR')) + '</b> · ' + escHtml(a.idUsuario) + ' · autorizado por ' + escHtml(a.adminId) +
+            '<br>Nome antigo: <span class="log-de">' + escHtml(a.nomeAntigo) + '</span> → <span class="log-para">' + escHtml(a.nomeNovo) + '</span>' +
+            '<br>CPF antigo: <span class="log-de">' + escHtml(a.cpfAntigo) + '</span> → <span class="log-para">' + escHtml(a.cpfNovo) + '</span></div>').join('')
+            : '<p class="nota-colab">Nenhuma alteração autorizada ainda.</p>';
+    }
+
+    $('idSolAbrir').addEventListener('click', () => { const u = meu(); if (!u) return; $('idSolNome').value = u.nome; $('idSolCpf').value = u.cpf; $('idSolSenha').value = ''; erro(''); $('idSolForm').style.display = 'block'; });
+    $('idSolCancelar').addEventListener('click', () => { $('idSolForm').style.display = 'none'; });
+    $('idSolEnviar').addEventListener('click', enviar);
+    $('idListaPend').addEventListener('click', (e) => {
+        const a = e.target.closest('[data-aprovar]'), r = e.target.closest('[data-recusar]');
+        if (a) aprovar(a.dataset.aprovar); else if (r) recusar(r.dataset.recusar);
+    });
+    Texto.ligarMascaraNome($('idSolNome'));
+    $('accIdentidade').addEventListener('toggle', renderAdmin);
+    document.querySelector('.colab-nav-btn[data-pane="perfil"]').addEventListener('click', pintarStatus);
+    renderAdmin(); pintarStatus();
+    return { renderAdmin: renderAdmin, pintarStatus: pintarStatus, ADMIN_ID: ADMIN_ID };
+})();
+
+// As chamadas dos botões dos cards passam a usar o fluxo com justificativa
+excluirPontoAdmin = (i) => ExclusaoAdmin.moverParaLixeira(i);
+excluirDefinitivoLixeira = (i) => ExclusaoAdmin.excluirDefinitivo(i);
+(function () {                                  // restaurar 1 ponto também reavalia a trava do CPF
+    const original = restaurarPontoAdmin;
+    restaurarPontoAdmin = function (i) { original(i); PontoLock.aposMudanca(null); };
+})();
+</script>
 </body>
 </html>
