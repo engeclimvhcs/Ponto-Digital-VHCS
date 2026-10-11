@@ -377,6 +377,9 @@
             --line: #d1d5db; --line-strong: #9ca3af; --success: #16a34a; }
         :root[data-tema="escuro"] { color-scheme: dark; }
         html.tema-anim, html.tema-anim * { transition: background-color .3s ease, color .3s ease, border-color .3s ease !important; }
+        .tema-ico { display: flex; justify-content: flex-end; gap: 2px; padding: 4px 8px 0; background: var(--bg); }
+        .tema-ico button { width: 28px; height: 28px; padding: 0; border: none; border-radius: 50%; background: none; font-size: 14px; line-height: 1; cursor: pointer; opacity: .4; filter: grayscale(.6); transition: opacity .2s, background .2s; }
+        .tema-ico button.ativo { opacity: 1; filter: none; background: var(--line); }
         .seg-tema { display: flex; gap: 6px; }
         .seg-tema button { flex: 1; padding: 10px 4px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--card-light); color: var(--text-muted); font-weight: 700; font-size: 12px; cursor: pointer; }
         .seg-tema button.ativo { color: var(--primary); border-color: var(--primary); }
@@ -405,12 +408,145 @@
         .just-conta { text-align: right; font-size: 11px; color: var(--text-muted); margin: 2px 0 10px; }
         .motivo-lixeira { display: block; font-size: 12px; color: var(--text-muted); margin-top: 4px; }
     </style>
+<style id="ui-refino">
+/* =====================================================================
+   REFINO DE INTERFACE (UI/UX) — camada puramente visual
+   Todas as cores vêm das variáveis do tema (claro/escuro e Seletor de Cores continuam valendo).
+   ===================================================================== */
+
+/* ---------- 1) TRANSIÇÕES ENTRE ABAS ----------
+   Como funciona: as abas/painéis alternam com display:none -> block. Toda vez que um elemento volta a ser exibido,
+   o navegador reinicia sua `animation`. Então basta declarar a animação NO ESTADO VISÍVEL do painel:
+   ele entra deslizando 18px da direita e surgindo (fade) em 280ms, sem JavaScript.
+   fill-mode "backwards" aplica o quadro inicial durante o atraso e NÃO deixa `transform` preso no fim
+   (um transform residual criaria um "bloco de contenção" que quebraria elementos position:fixed dentro do painel). */
+@keyframes paneEntra { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: translateX(0); } }
+.content.active,
+#colabApp > [id^="colabPane-"],
+#colabAuth > form { animation: paneEntra .28s cubic-bezier(.22, .8, .3, 1) backwards; }
+
+/* Quem prefere menos movimento (acessibilidade do sistema) recebe as trocas sem animação */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .01ms !important; }
+}
+
+/* ---------- 2) COLABORADOR: CARDS GRANDES ---------- */
+.colab-nav { gap: 8px; }
+.colab-nav-btn { min-height: 56px; padding: 12px 4px; border-width: 2px; border-radius: 14px; font-size: 14px; touch-action: manipulation; transition: transform .12s, border-color .2s, color .2s; }
+.colab-nav-btn:active { transform: scale(.96); }
+
+#turnoBox { margin-bottom: 16px; }
+.turno-titulo { margin: 0 0 8px 0; font-size: 13px; font-weight: 700; color: var(--text); }
+.turno-titulo small { color: var(--text-muted); font-weight: 400; margin-left: 4px; }
+.turno-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.turno-card { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    min-height: 96px; padding: 12px 8px; border: 2px solid var(--line-strong); border-radius: 16px; background: var(--card-light); color: var(--text);
+    cursor: pointer; touch-action: manipulation; font-family: inherit; transition: transform .12s, border-color .2s, background .2s, box-shadow .2s; }
+.turno-card:active { transform: scale(.96); }
+.turno-card .turno-ico { font-size: 26px; line-height: 1.1; }
+.turno-card b { font-size: 16px; }
+.turno-card small { font-size: 11px; color: var(--text-muted); }
+/* "Sugerido": borda na cor do tema + halo suave pulsando (chama o olho sem ser agressivo) */
+@keyframes turnoPulso { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 45%, transparent); } 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--primary) 0%, transparent); } }
+.turno-card.sugerido { border-color: var(--primary); animation: turnoPulso 2s ease-in-out infinite; }
+.turno-card.selecionado { background: var(--primary); border-color: var(--primary); color: var(--on-primary, #fff); animation: none; }
+.turno-card.selecionado small { color: inherit; opacity: .85; }
+.turno-card.feito { opacity: .55; }
+.turno-tag { position: absolute; top: -9px; right: 8px; padding: 1px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; background: var(--primary); color: var(--on-primary, #fff); }
+.turno-card.selecionado .turno-tag { background: #fff; color: var(--primary); }
+.turno-tag.ok { background: var(--success); color: #fff; }
+
+/* ---------- 3) ESQUELETOS DE CARREGAMENTO ----------
+   Blocos cinza pulsantes com a mesma estrutura do card real (menos salto de layout quando o conteúdo chega). */
+@keyframes skPulso { 0%, 100% { opacity: 1; } 50% { opacity: .38; } }
+.sk-card { border: 1px solid var(--line); border-radius: 12px; padding: 18px; margin-bottom: 16px; background: var(--card); }
+.sk-linha { height: 12px; border-radius: 6px; background: var(--line-strong); margin: 12px 0; animation: skPulso 1.3s ease-in-out infinite; }
+.sk-linha.media { width: 80%; } .sk-linha.curta { width: 52%; }
+.sk-btn { height: 38px; border-radius: 10px; background: var(--line-strong); margin-top: 14px; animation: skPulso 1.3s ease-in-out infinite; }
+
+/* ---------- 4) SUCESSO: check que se expande + onda ---------- */
+#sucessoOverlay { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 24px;
+    background: rgba(0, 0, 0, .6); opacity: 0; pointer-events: none; transition: opacity .2s; }
+#sucessoOverlay.on { opacity: 1; pointer-events: auto; }
+.sucesso-caixa { text-align: center; color: #fff; transform: scale(.85); transition: transform .35s cubic-bezier(.2, 1.4, .4, 1); }
+#sucessoOverlay.on .sucesso-caixa { transform: scale(1); }
+.sucesso-icone { position: relative; width: 120px; height: 120px; margin: 0 auto 14px; }
+.sucesso-icone svg { width: 100%; height: 100%; }
+.sucesso-circ { fill: var(--success); transform-origin: 50% 50%; transform: scale(0); }
+.sucesso-check { fill: none; stroke: #fff; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 80; stroke-dashoffset: 80; }
+#sucessoOverlay.on .sucesso-circ { animation: sucCirc .4s cubic-bezier(.2, 1.3, .4, 1) .05s forwards; }
+#sucessoOverlay.on .sucesso-check { animation: sucCheck .35s ease-out .35s forwards; }
+.sucesso-onda { position: absolute; inset: 0; border-radius: 50%; border: 3px solid var(--success); opacity: 0; }
+#sucessoOverlay.on .sucesso-onda { animation: sucOnda .9s ease-out .25s; }
+@keyframes sucCirc { to { transform: scale(1); } }
+@keyframes sucCheck { to { stroke-dashoffset: 0; } }
+@keyframes sucOnda { from { transform: scale(.8); opacity: .8; } to { transform: scale(1.9); opacity: 0; } }
+.sucesso-titulo { font-size: 22px; font-weight: 700; margin: 0 0 4px 0; }
+.sucesso-sub { font-size: 14px; opacity: .85; margin: 0; }
+
+/* ---------- 5) ADMIN: NAVEGAÇÃO INFERIOR (zona do polegar) ---------- */
+#navAdmin { display: none; position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); z-index: 95;
+    width: min(450px, calc(100% - 30px)); box-sizing: border-box; padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
+    background: var(--card); border: 1px solid var(--line); border-bottom: none; border-radius: 18px 18px 0 0; box-shadow: 0 -8px 20px -10px rgba(0, 0, 0, .55); }
+body.nav-admin-on #navAdmin { display: flex; gap: 4px; }
+body.nav-admin-on { padding-bottom: 96px; }
+#navAdmin button { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 52px; padding: 6px 2px;
+    border: none; border-radius: 12px; background: none; color: var(--text-muted); font-size: 11px; font-weight: 700; font-family: inherit; cursor: pointer; touch-action: manipulation; transition: background .2s, color .2s; }
+#navAdmin button span { font-size: 20px; line-height: 1.1; }
+#navAdmin button.ativo { color: var(--primary); background: var(--card-light); }
+#navAdmin button:active { transform: scale(.95); }
+#navFiltroPonto { display: none; position: absolute; top: 6px; right: calc(50% - 20px); width: 9px; height: 9px; border-radius: 50%; background: var(--danger); }
+#navFiltroPonto.on { display: block; }
+
+/* Painel de filtros (bottom sheet) logo acima da barra, ao alcance do polegar */
+#sheetFundo { position: fixed; inset: 0; z-index: 93; background: rgba(0, 0, 0, .45); opacity: 0; pointer-events: none; transition: opacity .25s; }
+#sheetFundo.on { opacity: 1; pointer-events: auto; }
+#filtrosSheet { position: fixed; left: 50%; bottom: calc(70px + env(safe-area-inset-bottom, 0px)); z-index: 94; width: min(450px, calc(100% - 30px)); box-sizing: border-box;
+    max-height: 70vh; overflow-y: auto; padding: 10px 18px 18px; background: var(--card); border: 1px solid var(--line-strong); border-radius: 18px;
+    transform: translate(-50%, 130%); visibility: hidden; transition: transform .3s cubic-bezier(.22, .8, .3, 1), visibility 0s .3s; }
+#filtrosSheet.aberto { transform: translate(-50%, 0); visibility: visible; transition: transform .3s cubic-bezier(.22, .8, .3, 1); }
+.sheet-grip { width: 40px; height: 4px; border-radius: 2px; background: var(--line-strong); margin: 0 auto 12px; }
+.chips-filtros { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; padding: 8px 12px; border: 1px dashed var(--primary); border-radius: 10px; font-size: 13px; color: var(--text); }
+.chips-filtros button { border: none; background: none; color: var(--primary); font-weight: 700; font-size: 13px; cursor: pointer; padding: 6px; }
+
+/* ---------- 6) ADMIN: ESPAÇO NEGATIVO NAS LISTAS (Pontos e Lixeira) ---------- */
+#listaPontos .card-ponto, #listaLixeira .card-ponto { padding: 20px 18px; margin-bottom: 20px; border-radius: 14px; }
+#listaPontos .dados-prestador, #listaLixeira .dados-prestador { font-size: 15px; line-height: 2; margin-bottom: 16px; }
+#listaPontos .card-ponto .btn, #listaLixeira .card-ponto .btn { margin-top: 12px; }
+#listaPontos .resumo-lista, #listaLixeira .resumo-lista { margin: 4px 0 18px; }
+
+/* ---------- 7) BADGES SEMÂNTICOS (inconsistências) ---------- */
+.badge.bd-vermelho { background: #dc2626; color: #fff; margin-left: 6px; }
+.badge.bd-amarelo { background: #f59e0b; color: #1f1300; margin-left: 6px; }
+.badge.bd-tipo { background: var(--card-light); color: var(--text); border: 1px solid var(--line-strong); margin-left: 6px; }
+
+/* ---------- Admin: categorias de ponto ---------- */
+.cat-linha { padding: 12px; margin-bottom: 10px; border: 1px solid var(--line-strong); border-radius: 12px; background: var(--card); }
+.cat-linha.off { opacity: .55; }
+.cat-nome { display: flex; align-items: center; gap: 8px; font-size: 15px; margin: 0 0 8px 0; cursor: pointer; }
+.cat-nome input, .cat-rep input { width: 20px; height: 20px; flex: none; accent-color: var(--primary); }
+.cat-janela { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; font-size: 12px; color: var(--text-muted); }
+.cat-janela input[type=time] { width: 108px; flex: none; padding: 6px; font-size: 13px; }
+.cat-acoes { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
+.cat-rep { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); margin: 0; }
+.cat-acoes button { width: 34px; height: 34px; margin-left: 3px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--card-light); color: var(--text); font-size: 15px; cursor: pointer; }
+.cat-novo { display: flex; gap: 8px; }
+.reset-op { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; margin: 8px 0; cursor: pointer; line-height: 1.35; }
+.reset-op input { width: 20px; height: 20px; flex: none; accent-color: var(--danger); }
+.cat-nota { margin: 0; font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+.turno-card.bloqueado { opacity: .45; cursor: not-allowed; filter: grayscale(.5); animation: none; }
+.turno-tag.trava { background: var(--text-muted); color: var(--card); }
+</style>
 </head>
 <body>
 
 <header id="cabFixo" class="cab-fixo"><div id="cabLogo"></div><span id="cabNome"></span></header>
 
 <div class="app-container">
+    <div class="tema-ico" role="group" aria-label="Tema do aplicativo">
+        <button type="button" data-modo="claro" title="Tema claro" aria-label="Tema claro">☀️</button>
+        <button type="button" data-modo="escuro" title="Tema escuro" aria-label="Tema escuro">🌙</button>
+    </div>
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('ponto')">Bater Ponto</button>
         <button class="tab-btn" onclick="switchTab('admin')">Painel Admin</button>
@@ -464,6 +600,12 @@
 
         <div id="colabPane-ponto">
         <h2>Registro de Ponto</h2>
+        <!-- Cards grandes de tipo de batida (o módulo Turno destaca o sugerido pelo horário) -->
+        <div id="turnoBox">
+            <p class="turno-titulo">Qual batida? <small id="turnoDica"></small></p>
+            <div id="turnoAviso" class="alerta-erro" style="display:none; margin-bottom:10px;"></div>
+            <div class="turno-grid" role="radiogroup" aria-label="Tipo de batida"></div>
+        </div>
         <form id="pontoForm" onsubmit="enviarPonto(event)">
             <div class="form-group">
                 <label for="nome">Nome Completo</label>
@@ -525,14 +667,6 @@
                 <div class="dado-fixo"><span>CPF</span><span id="perfilCpf"></span></div>
                 <div class="dado-fixo"><span>ID do colaborador</span><span id="perfilId"></span></div>
                 <div class="dado-fixo"><span>Conta criada em</span><span id="perfilCriadoEm"></span></div>
-            </div>
-            <div class="card-ponto" style="margin-top:10px; padding:10px 14px;">
-                <p style="margin:0 0 8px 0; font-size:12px; font-weight:700; color:var(--primary);">🌓 Aparência</p>
-                <div class="seg-tema" role="group" aria-label="Tema do aplicativo">
-                <button type="button" data-modo="sistema">🖥️ Sistema</button>
-                <button type="button" data-modo="claro">☀️ Claro</button>
-                <button type="button" data-modo="escuro">🌙 Escuro</button>
-                </div>
             </div>
             <div class="card-ponto" style="margin-top:10px; padding:10px 14px;">
                 <p style="margin:0 0 6px 0; font-size:12px; font-weight:700; color:var(--primary);">🪪 Alterar Nome jurídico / CPF</p>
@@ -608,20 +742,6 @@
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
                 <p style="color:var(--success); font-weight:bold; margin:0;">🔓 Acesso Permitido</p>
                 <button type="button" class="btn" style="background:var(--danger); color:white; font-size:12px; padding:8px 12px; width:auto;" onclick="encerrarSessaoAdmin()">Encerrar Sessão 🚪</button>
-            </div>
-
-            <div class="card-ponto" id="painelBackup" style="margin-bottom:16px;">
-                <p style="margin:0 0 10px 0; font-weight:bold; color:var(--primary); text-align:center;">🗂️ Gestão de Arquivos (Backup)</p>
-                <div class="lix-ferramentas">
-                    <button type="button" class="btn btn-primary" id="btnBaseExportar">📥 Exportar Base de Dados (Excel)</button>
-                    <button type="button" class="btn btn-secondary" id="btnBaseImportar">📤 Importar / Sincronizar Planilha de Pontos</button>
-                    <input type="file" id="inputBaseImportar" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display:none;">
-                </div>
-                <div id="baseProgresso" style="display:none; margin-top:4px;">
-                    <div class="barra-prog"><div id="baseProgressoBarra"></div></div>
-                    <small id="baseProgressoTxt" style="display:block; text-align:center; color:var(--text-muted); margin-top:4px;"></small>
-                </div>
-                <div id="baseErros" class="alerta-erro" role="alert"></div>
             </div>
 
             <div id="painelPrimeiroAcesso" class="card-ponto" style="display:none; margin-bottom:20px; border-color:var(--primary);">
@@ -712,6 +832,54 @@
                         </div>
                     </details>
 
+                    <details class="acc" id="painelBackup">
+                        <summary>🗂️ Gestão de Arquivos (Backup)</summary>
+                        <div class="acc-corpo">
+<div class="lix-ferramentas">
+                    <button type="button" class="btn btn-primary" id="btnBaseExportar">📥 Exportar Base de Dados (Excel)</button>
+                    <button type="button" class="btn btn-secondary" id="btnBaseImportar">📤 Importar / Sincronizar Planilha de Pontos</button>
+                    <input type="file" id="inputBaseImportar" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display:none;">
+                </div>
+                <div id="baseProgresso" style="display:none; margin-top:4px;">
+                    <div class="barra-prog"><div id="baseProgressoBarra"></div></div>
+                    <small id="baseProgressoTxt" style="display:block; text-align:center; color:var(--text-muted); margin-top:4px;"></small>
+                </div>
+                <div id="baseErros" class="alerta-erro" role="alert"></div>
+                        </div>
+                    </details>
+
+                    <details class="acc" id="accReset">
+                        <summary>🧨 Resetar sistema</summary>
+                        <div class="acc-corpo">
+                            <p style="font-size:12px; color:var(--text-muted); margin:0 0 10px 0;">Apaga dados <b>deste aparelho</b>. Não dá para desfazer — baixe antes a base em "Gestão de Arquivos (Backup)".</p>
+                            <label class="reset-op"><input type="checkbox" id="rsUsuarios" checked> Cadastros e senhas dos colaboradores (e pedidos de troca de Nome/CPF)</label>
+                            <label class="reset-op"><input type="checkbox" id="rsPontos" checked> Todos os pontos (histórico, lixeira, originais, auditoria e fila de envio)</label>
+                            <label class="reset-op"><input type="checkbox" id="rsSenhaAdmin" checked> Senha do administrador (volta ao padrão de fábrica)</label>
+                            <label class="reset-op"><input type="checkbox" id="rsCategorias" checked> Categorias de ponto (lista padrão)</label>
+                            <label for="rsConfirma" style="font-size:12px; margin-top:10px;">Digite <b>RESETAR</b> para liberar o botão</label>
+                            <input type="text" id="rsConfirma" autocomplete="off" autocapitalize="characters" placeholder="RESETAR">
+                            <button type="button" class="btn" id="rsBotao" disabled style="background:var(--danger); color:#fff; margin-top:10px;">Resetar agora</button>
+                        </div>
+                    </details>
+
+                    <details class="acc" id="accCategorias">
+                        <summary>🏷️ Categorias de ponto</summary>
+                        <div class="acc-corpo">
+                            <p style="font-size:11px; color:var(--text-muted); margin:0 0 10px 0;">Escolha o que o colaborador vê (ative/desative), o horário em que cada uma é <b>sugerida</b> e se pode repetir no dia. A ordem desempata sugestões.</p>
+                            <div id="catLista"></div>
+                            <p style="margin:14px 0 6px 0; font-size:12px; font-weight:700; color:var(--primary);">➕ Nova categoria</p>
+                            <div class="cat-novo">
+                                <input type="text" id="catIco" maxlength="4" placeholder="😀" aria-label="Ícone" style="width:56px; text-align:center;">
+                                <input type="text" id="catNome" maxlength="24" placeholder="Nome (ex.: Reunião)" aria-label="Nome" autocomplete="off">
+                            </div>
+                            <input type="text" id="catDica" maxlength="40" placeholder="Descrição curta (opcional)" aria-label="Descrição" style="margin-top:8px;">
+                            <div class="cat-janela" style="margin-top:8px;"><span>Sugerir das</span><input type="time" id="catIni" value="08:00"><span>até</span><input type="time" id="catFim" value="18:00"></div>
+                            <label class="cat-rep" style="display:block; margin:8px 0;"><input type="checkbox" id="catRep"> pode ser batida várias vezes no dia</label>
+                            <button type="button" class="btn btn-primary" id="catAdd" style="padding:10px;">Adicionar categoria</button>
+                            <button type="button" class="btn btn-secondary" id="catPadrao" style="padding:10px; margin-top:8px;">Restaurar lista padrão</button>
+                        </div>
+                    </details>
+
                     <details class="acc" id="accIdentidade">
                         <summary>🪪 Alterações de Nome/CPF <span id="idBadge" style="display:none; background:var(--danger); color:#fff; border-radius:10px; padding:1px 7px; font-size:11px; margin-left:4px;"></span></summary>
                         <div class="acc-corpo">
@@ -721,17 +889,6 @@
                         </div>
                     </details>
 
-                    <details class="acc">
-                        <summary>🌓 Aparência (claro / escuro)</summary>
-                        <div class="acc-corpo">
-                            <div class="seg-tema" role="group" aria-label="Tema do aplicativo">
-                                <button type="button" data-modo="sistema">🖥️ Sistema</button>
-                                <button type="button" data-modo="claro">☀️ Claro</button>
-                                <button type="button" data-modo="escuro">🌙 Escuro</button>
-                            </div>
-                            <p style="font-size:11px; color:var(--text-muted); margin:8px 0 0 0;">"Sistema" segue a preferência do seu aparelho automaticamente.</p>
-                        </div>
-                    </details>
 
                     <details class="acc">
                         <summary>🎨 Tema (cores)</summary>
@@ -811,19 +968,8 @@
                 </div>
             </div>
             
-            <div class="form-group">
-                <label>Filtrar por Data</label>
-                <input type="date" id="filtroData" onchange="renderizarPontosAdmin()">
-            </div>
-
-            <div class="form-group">
-                <label>Buscar por Nome do Prestador</label>
-                <input type="text" id="filtroNome" placeholder="Digite o nome para pesquisar..." oninput="renderizarPontosAdmin()">
-            </div>
-
-            <button type="button" class="btn" style="background: var(--primary); color: white; font-size:13px; padding:10px; margin-bottom:15px;" onclick="toggleLixeira()">🗑️ Lixeira</button>
+            <div id="chipsFiltros" class="chips-filtros" style="display:none;"><span id="chipsTxt"></span><button type="button" id="chipsLimpar">Limpar ✕</button></div>
             <button type="button" class="btn btn-secondary" style="font-size:13px; padding:10px; margin-bottom:15px;" onclick="exportarConciliacao()">📊 Relatório de Conciliação (Excel)</button>
-            <button type="button" class="btn" id="btnMoverFiltrados" style="background:var(--danger); color:white; font-size:13px; padding:10px; margin-bottom:15px;">🗑️ Mover resultados do filtro (data) para a Lixeira</button>
 
             <div id="lixeiraPanel" style="display:none; margin-bottom:20px; border:1px solid var(--line-strong); border-radius:10px; padding:14px; background: var(--bg);">
                 <h3 style="margin-top:0; font-size:16px; text-align:center; color:var(--primary);">Lixeira - Registros Excluídos</h3>
@@ -997,9 +1143,31 @@
     </div>
 </div>
 
+<!-- ===== Navegação inferior do admin (zona do polegar) + painel de filtros (bottom sheet) ===== -->
+<div id="sheetFundo"></div>
+<div id="filtrosSheet" role="dialog" aria-label="Filtros dos pontos" aria-hidden="true">
+    <div class="sheet-grip"></div>
+    <div class="form-group">
+        <label for="filtroData">Filtrar por Data</label>
+        <input type="date" id="filtroData" onchange="renderizarPontosAdmin()">
+    </div>
+    <div class="form-group">
+        <label for="filtroNome">Buscar por Nome do Prestador</label>
+        <input type="text" id="filtroNome" placeholder="Digite o nome para pesquisar..." oninput="renderizarPontosAdmin()">
+    </div>
+            <button type="button" class="btn" id="btnMoverFiltrados" style="background:var(--danger); color:white; font-size:13px; padding:10px; margin-bottom:10px;">🗑️ Mover resultados do filtro (data) para a Lixeira</button>
+    <button type="button" class="btn btn-primary" id="filtrosFechar">Concluído</button>
+</div>
+<nav id="navAdmin" aria-label="Navegação do administrador">
+    <button type="button" data-nav="pontos" class="ativo"><span>📋</span>Pontos</button>
+    <button type="button" data-nav="lixeira"><span>🗑️</span>Lixeira</button>
+    <button type="button" data-nav="filtros"><span>🔍</span>Filtros<i id="navFiltroPonto"></i></button>
+    <button type="button" data-nav="config"><span>⚙️</span>Config</button>
+</nav>
+
 <script>
     const URL_GOOGLE_SHEETS = "SUA_URL_DO_GOOGLE_APPS_SCRIPT_AQUI";
-    let dadosPonto = { nome: "", cpf: "", foto: "", lat: "", lng: "", endereco: "", dataHora: "", dataSimples: "" };
+    let dadosPonto = { nome: "", cpf: "", foto: "", lat: "", lng: "", endereco: "", dataHora: "", dataSimples: "", tipo: "" };
     let streamDeVideo = null;
     let modoCameraAoVivo = false;
 
@@ -1137,7 +1305,10 @@
         let limpoCpf = cpf.replace(/[^\d]+/g, '');
         let historico = JSON.parse(localStorage.getItem('historico_pontos')) || [];
         // Pontos feitos offline não contam para a trava: depois que a internet volta, o colaborador pode bater de novo
-        return historico.some(p => !p.registro_offline && p.cpf.replace(/[^\d]+/g, '') === limpoCpf && p.dataSimples === dadosPonto.dataSimples);
+        // Trava por TIPO de batida: cada tipo (Entrada, Almoço, Retorno, Saída) pode ser batido 1x por dia. Registros antigos sem tipo contam como "Entrada".
+        const tipo = dadosPonto.tipo || 'Entrada';
+        if (typeof Categorias !== 'undefined' && Categorias.repetivel(tipo)) return false;     // ex.: Café/Pausa podem repetir no dia
+        return historico.some(p => !p.registro_offline && p.cpf.replace(/[^\d]+/g, '') === limpoCpf && p.dataSimples === dadosPonto.dataSimples && (p.tipo || 'Entrada') === tipo);
     }
 
     async function gerenciarCapturaFoto() {
@@ -1592,8 +1763,7 @@
         const msgCodigo = "\n\nCódigo Único do ponto: " + dadosPonto.codigo;
 
         if(URL_GOOGLE_SHEETS.includes("SUA_URL_DO_GOOGLE")) {
-            alert("Ponto gravado localmente no dispositivo!\n\nAgora o painel admin está corrigido para visualização." + msgCodigo);
-            location.reload();
+            Sucesso.mostrar('Ponto registrado!', 'Código Único: ' + dadosPonto.codigo + (dadosPonto.tipo ? ' · ' + dadosPonto.tipo : '')).then(() => location.reload());
             return;
         }
 
@@ -1603,12 +1773,10 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(dadosPonto)
         }).then(() => {
-            alert("Ponto eletrônico transmitido com sucesso!" + msgCodigo);
-            location.reload();
+            Sucesso.mostrar('Ponto registrado!', 'Código Único: ' + dadosPonto.codigo + (dadosPonto.tipo ? ' · ' + dadosPonto.tipo : '')).then(() => location.reload());
         }).catch(() => {
             if (typeof PontoOffline !== 'undefined') PontoOffline.marcarPendente(dadosPonto.codigo);   // entra na fila e será reenviado
-            alert("Sem resposta do servidor. Ponto salvo no aparelho e será enviado automaticamente." + msgCodigo);
-            location.reload();
+            Sucesso.mostrar('Ponto salvo no aparelho', 'Será enviado automaticamente · Código ' + dadosPonto.codigo).then(() => location.reload());
         });
     }
 
@@ -2383,8 +2551,11 @@ async function processarFotoDeArquivo(file) {
     validarFormulario = function () {
         original();
         const aviso = document.getElementById('avisoFotoDesatualizada');
-        const velha = fotoFinal && (document.getElementById('nome').value.trim() !== fotoFinal.nome ||
-                                     document.getElementById('cpf').value.trim() !== fotoFinal.cpf);
+        // compara de forma normalizada (maiúsc./minúsc., espaços e pontuação do CPF não contam como mudança)
+        const normNome = (t) => String(t || '').trim().replace(/\s+/g, ' ').toLocaleLowerCase('pt-BR');
+        const normCpf = (t) => String(t || '').replace(/\D/g, '');
+        const velha = fotoFinal && (normNome(document.getElementById('nome').value) !== normNome(fotoFinal.nome) ||
+                                     normCpf(document.getElementById('cpf').value) !== normCpf(fotoFinal.cpf));
         aviso.style.display = velha ? 'block' : 'none';
         if (velha) document.getElementById('btnEnviar').disabled = true;
     };
@@ -3185,7 +3356,8 @@ const PontoStore = (function () {
 
     function snapshot(p, origem) {
         return { codigo: p.codigo, cpf: p.cpf, nome: p.nome, foto: p.foto || '', lat: p.lat, lng: p.lng, endereco: p.endereco || '',
-                 dataHora: p.dataHora, dataSimples: p.dataSimples, registradoEm: origem === 'app' ? new Date().toISOString() : null, origem: origem };
+                 dataHora: p.dataHora, dataSimples: p.dataSimples, registradoEm: origem === 'app' ? new Date().toISOString() : null, origem: origem,
+                 tipo: p.tipo || '' };            // tipo de batida: fora do selo (canon), é só rótulo de exibição
     }
     /* ---------- Selo de integridade: SHA-256 encadeado (cada original carrega o hash do anterior) ----------
        Detecta edição ou remoção de originais feitas fora do app (ex.: no console do navegador).
@@ -3259,6 +3431,30 @@ const PontoStore = (function () {
     };
     const originaisDoCpf = (cpf) => { const set = cpfsDoColab(cpf); return ler(K_ORIG).filter(o => set.indexOf(soDig(o.cpf)) >= 0); };
 
+    /* Troca de Nome/CPF autorizada pelo admin: reescreve Nome/CPF em TODOS os pontos do colaborador
+       (original, cópia do admin, lixeira), refaz a cadeia de selos e registra cada ponto no log de auditoria.
+       Atômico: se a gravação falhar, tudo volta ao que estava e devolve null. */
+    function atualizarIdentidade(cpfsAntigos, nomeNovo, cpfNovoMasc, motivo) {
+        const set = cpfsAntigos.map(soDig), novoDig = soDig(cpfNovoMasc), chaves = [K_ORIG, K_HIST, K_LIX, K_LOG, 'fila_sync_pontos'];
+        const antes = {}; chaves.forEach(k => { antes[k] = localStorage.getItem(k); });
+        const desfazer = () => chaves.forEach(k => { if (antes[k] == null) localStorage.removeItem(k); else localStorage.setItem(k, antes[k]); });
+        try {
+            const orig = ler(K_ORIG), hist = ler(K_HIST), lix = ler(K_LIX), log = ler(K_LOG), em = new Date().toISOString(), tocados = {};
+            const doColab = (p) => p && set.indexOf(soDig(p.cpf)) >= 0;
+            [orig, hist, lix].forEach(arr => arr.forEach(p => {
+                if (!doColab(p) || (p.nome === nomeNovo && soDig(p.cpf) === novoDig)) return;
+                if (!tocados[p.codigo]) tocados[p.codigo] = { nome: p.nome, cpf: p.cpf };
+                p.nome = nomeNovo; p.cpf = cpfNovoMasc;
+            }));
+            let prev = '';
+            orig.forEach(o => { if (o.selo) { o.selo = calcSelo(prev, o); } prev = o.selo || ''; });   // nova cadeia sobre os dados atualizados
+            Object.keys(tocados).forEach(cod => log.push({ codigo: cod, em: em, tipo: 'ajuste', campo: 'Nome / CPF', de: tocados[cod].nome + ' · ' + tocados[cod].cpf,
+                para: nomeNovo + ' · ' + cpfNovoMasc, motivo: motivo || 'Alteração de cadastro autorizada pelo administrador', por: 'Administrador' }));
+            gravar(K_ORIG, orig); gravar(K_HIST, hist); gravar(K_LIX, lix); gravar(K_LOG, log);
+            return { total: Object.keys(tocados).length, desfazer: desfazer };
+        } catch (e) { desfazer(); return null; }
+    }
+
     function registrarLog(e) {
         const log = ler(K_LOG);
         log.push({ codigo: e.codigo, em: new Date().toISOString(), tipo: e.tipo || 'ajuste', campo: e.campo || '',
@@ -3287,7 +3483,7 @@ const PontoStore = (function () {
         return true;
     }
 
-    return { gerarCodigo: gerarCodigo, registrarOriginal: registrarOriginal, desfazerOriginal: desfazerOriginal, originaisDoCpf: originaisDoCpf,
+    return { gerarCodigo: gerarCodigo, registrarOriginal: registrarOriginal, desfazerOriginal: desfazerOriginal, originaisDoCpf: originaisDoCpf, atualizarIdentidade: atualizarIdentidade,
              registrarLog: registrarLog, logDoCodigo: logDoCodigo, migrar: migrar, ler: ler, COD_RE: COD_RE,
              sha256: sha256, verificarOriginais: verificarOriginais, selarPendentes: selarPendentes };
 })();
@@ -3769,10 +3965,10 @@ const HistoricoColab = (function () {
             const mapa = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(o.lat + ',' + o.lng);
             return '<div class="card-ponto">' +
                 '<div class="dados-prestador">' +
-                    '<b>🔖 Código Único:</b> <span class="cod-audit">' + escHtml(o.codigo) + '</span>' + statusSyncHtml(o.codigo) +
+                    '<b>🔖 Código Único:</b> <span class="cod-audit">' + escHtml(o.codigo) + '</span>' + (typeof statusSyncHtml === 'function' ? statusSyncHtml(o.codigo) : '') +
                     (n ? ' <span class="badge" style="background:#d97706; margin-left:6px;">Ajustado pelo admin</span>' : '') +
                     (integ[o.codigo] === 'diverge' ? ' <span class="badge" style="background:#dc2626; margin-left:6px;" title="O conteúdo deste registro não confere com o selo gravado no momento do ponto">⚠️ Selo divergente</span>' : '') + '<br>' +
-                    '<b>📅 Registro:</b> ' + escHtml(o.dataHora) + '<br>' +
+                    '<b>📅 Registro:</b> ' + escHtml(o.dataHora) + (o.tipo ? ' · <b>' + escHtml(o.tipo) + '</b>' : '') + '<br>' +
                     '<b>📍 Endereço:</b><br><span style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">' + escHtml(o.endereco) + '</span>' +
                     '<b>🗺️ Rastreamento:</b> <a class="link-mapa" href="' + mapa + '" target="_blank" rel="noopener">Abrir no Google Maps</a>' +
                 '</div>' +
@@ -4512,19 +4708,19 @@ const GerenciadorSenha = {
    ===================================================================== */
 const ModoTema = (function () {
     'use strict';
+    // Só 2 opções: claro e escuro. Sem escolha salva, começa pelo tema do sistema (uma vez) e depois guarda a escolha.
     const K = 'tema_modo', mq = matchMedia('(prefers-color-scheme: light)');
-    const modo = () => { const m = localStorage.getItem(K); return m === 'claro' || m === 'escuro' ? m : 'sistema'; };
-    const resolvido = () => modo() === 'sistema' ? (mq.matches ? 'claro' : 'escuro') : modo();
+    const modo = () => { const m = localStorage.getItem(K); return m === 'claro' || m === 'escuro' ? m : (mq.matches ? 'claro' : 'escuro'); };
     function aplicar(animar) {
         const html = document.documentElement;
         if (animar) { html.classList.add('tema-anim'); setTimeout(() => html.classList.remove('tema-anim'), 350); }
-        html.setAttribute('data-tema', resolvido());
-        document.querySelectorAll('.seg-tema button').forEach(b => b.classList.toggle('ativo', b.dataset.modo === modo()));
+        html.setAttribute('data-tema', modo());
+        document.querySelectorAll('.tema-ico button').forEach(b => b.classList.toggle('ativo', b.dataset.modo === modo()));
     }
-    document.querySelectorAll('.seg-tema button').forEach(b => b.addEventListener('click', () => { localStorage.setItem(K, b.dataset.modo); aplicar(true); }));
-    (mq.addEventListener ? mq.addEventListener.bind(mq, 'change') : mq.addListener.bind(mq))(() => { if (modo() === 'sistema') aplicar(true); });   // acompanha o sistema
+    document.querySelectorAll('.tema-ico button').forEach(b => b.addEventListener('click', () => { try { localStorage.setItem(K, b.dataset.modo); } catch (e) {} aplicar(true); }));
+    (mq.addEventListener ? mq.addEventListener.bind(mq, 'change') : mq.addListener.bind(mq))(() => { if (!localStorage.getItem(K)) aplicar(true); });
     aplicar(false);
-    return { modo: modo, resolvido: resolvido };
+    return { modo: modo, resolvido: modo };
 })();
 </script>
 <script>
@@ -4635,10 +4831,12 @@ const Justificativa = (function () {
    continua intacto e visível no histórico dele. Pontos offline nunca entram na trava.
    ===================================================================== */
 const PontoLock = {
-    async verificar(cpf, dataSimples) {
+    async verificar(cpf, dataSimples, tipo) {
         const dig = (t) => String(t || '').replace(/\D/g, '');
         const base = PontoStore.ler('historico_pontos');                // leitura fresca a cada consulta (nada em cache)
-        const conflito = base.find(p => !p.registro_offline && dig(p.cpf) === dig(cpf) && p.dataSimples === dataSimples);
+        const t = tipo || dadosPonto.tipo || 'Entrada';                  // a trava é por tipo de batida (1 de cada tipo por dia)
+        if (typeof Categorias !== 'undefined' && Categorias.repetivel(t)) return { liberado: true, codigo: null };
+        const conflito = base.find(p => !p.registro_offline && dig(p.cpf) === dig(cpf) && p.dataSimples === dataSimples && (p.tipo || 'Entrada') === t);
         return { liberado: !conflito, codigo: conflito ? conflito.codigo : null };
     },
     hoje() { const d = new Date(), p = (n) => String(n).padStart(2, '0'); return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); },
@@ -4833,6 +5031,8 @@ const IdentidadeColab = (function () {
             const users = ler(K_USERS, {}), u = users[s.cpfAtual];
             if (!u) { alert('Cadastro não encontrado.'); return; }
             if (s.cpfNovo !== s.cpfAtual && users[s.cpfNovo]) { alert('O CPF novo já pertence a outra conta. Recuse a solicitação.'); return; }
+            const atu = PontoStore.atualizarIdentidade([s.cpfAtual].concat(u.cpfsAnteriores || []), s.nomeNovo, masc(s.cpfNovo), 'Alteração de cadastro autorizada (' + s.id + ')');
+            if (!atu) { alert('Não foi possível atualizar os pontos (armazenamento cheio?). Nada foi alterado.'); return; }
             const aud = ler(K_AUD, []), agora = new Date().toISOString();
             aud.push({ id: 'AUD-' + String(aud.length + 1).padStart(4, '0'), idUsuario: u.id, nomeAntigo: u.nome, cpfAntigo: u.cpf, nomeNovo: s.nomeNovo, cpfNovo: masc(s.cpfNovo),
                        em: agora, adminId: ADMIN_ID, solicitacaoId: s.id });
@@ -4849,6 +5049,7 @@ const IdentidadeColab = (function () {
                 localStorage.setItem(K_SOL, JSON.stringify(sols));
             } catch (e) {
                 [[K_USERS, antes.u], [K_SOL, antes.s], [K_AUD, antes.a]].forEach(([k, v]) => { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); });
+                atu.desfazer();
                 alert('Armazenamento cheio. Nada foi alterado.'); return;
             }
             // sessão e atalho de login seguem o CPF novo
@@ -4858,7 +5059,7 @@ const IdentidadeColab = (function () {
                 if (localStorage.getItem('colab_ultimo_cpf') === s.cpfAtual) localStorage.setItem('colab_ultimo_cpf', s.cpfNovo);
             } catch (e) {}
             Colab.recarregar(); pintarStatus(); renderAdmin();
-            toast('✅ Alteração autorizada e registrada na auditoria');
+            toast('✅ Alteração autorizada: ' + atu.total + ' ponto(s) atualizado(s)');
         });
     }
     async function recusar(solId) {
@@ -4910,6 +5111,458 @@ excluirDefinitivoLixeira = (i) => ExclusaoAdmin.excluirDefinitivo(i);
     const original = restaurarPontoAdmin;
     restaurarPontoAdmin = function (i) { original(i); PontoLock.aposMudanca(null); };
 })();
+</script>
+<script>
+/* =====================================================================
+   REFINO DE INTERFACE (UI/UX) — módulos independentes, cada um com UMA responsabilidade (SRP):
+     Haptico         vibração curta (feedback físico)
+     Sucesso         animação de "check" após registrar o ponto
+     Skeleton        esqueletos de carregamento (e a regra de tempo/gatilho deles)
+     Turno           cards de tipo de batida + sugestão pelo horário
+     Inconsistencias regras de badges semânticos do admin (função pura + cache)
+     NavAdmin        barra inferior, painel de filtros e chips
+   Nenhum deles toca em GPS ou câmera: só leem dados e desenham.
+   ===================================================================== */
+
+/* ---------- Haptico ---------- */
+const Haptico = {
+    // Android/Chrome vibram; iOS/Safari não expõe a API (nesse caso a animação continua sendo o feedback)
+    tocar(padrao) { try { if (navigator.vibrate) navigator.vibrate(padrao); } catch (e) {} }
+};
+
+/* ---------- Sucesso ----------
+   Linha do tempo (ms):  0 abre overlay + vibra ─ 50 círculo cresce ─ 350 "check" é desenhado ─ 250 onda se expande ─ 1700 fecha.
+   O texto "Código Único" fica visível para o colaborador anotar; toque na tela fecha antes. */
+const Sucesso = (function () {
+    const DURACAO_MS = 1700;
+    let el = null;
+    function montar() {
+        if (el) return el;
+        el = document.createElement('div');
+        el.id = 'sucessoOverlay'; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
+        el.innerHTML = '<div class="sucesso-caixa"><div class="sucesso-icone"><span class="sucesso-onda"></span>' +
+            '<svg viewBox="0 0 120 120" aria-hidden="true"><circle class="sucesso-circ" cx="60" cy="60" r="52"/><path class="sucesso-check" d="M36 62 L54 80 L86 44"/></svg></div>' +
+            '<p class="sucesso-titulo"></p><p class="sucesso-sub"></p></div>';
+        document.body.appendChild(el);
+        return el;
+    }
+    // Devolve uma Promise que resolve quando a animação termina (quem chamou decide o que fazer depois, ex.: recarregar)
+    function mostrar(titulo, detalhe) {
+        const o = montar();
+        o.querySelector('.sucesso-titulo').textContent = titulo || 'Pronto!';
+        o.querySelector('.sucesso-sub').textContent = detalhe || '';
+        o.classList.remove('on'); void o.offsetWidth;            // força reinício das animações CSS
+        o.classList.add('on');
+        Haptico.tocar([30, 40, 30]);                              // toque curto-pausa-toque: "confirmado"
+        return new Promise((resolve) => {
+            const fechar = () => { clearTimeout(t); o.classList.remove('on'); o.removeEventListener('click', fechar); setTimeout(resolve, 200); };
+            const t = setTimeout(fechar, DURACAO_MS);
+            o.addEventListener('click', fechar);
+        });
+    }
+    return { mostrar: mostrar };
+})();
+
+/* ---------- Skeleton ----------
+   REGRA DE TEMPO / GATILHO
+   • Gatilho: o esqueleto entra NO MESMO INSTANTE em que a tela é aberta (aba Histórico, painel admin, Lixeira) — nunca um spinner.
+   • Duração mínima (minMs = 300): mesmo que os dados estejam prontos na hora (localStorage é síncrono), o esqueleto fica
+     pelo menos 300ms. Abaixo disso o olho vê um "piscar" (esqueleto → conteúdo) em vez de uma transição.
+   • Geração (token): se a mesma área for pedida de novo antes do fim, só a ÚLTIMA chamada pinta (evita resposta velha sobrescrever a nova).
+   • Estrutura: mesmas caixas do card real (3 linhas + botão), para o conteúdo "encaixar" sem pular. */
+const Skeleton = (function () {
+    const geracao = new WeakMap();
+    function html(qtd) {
+        let h = '';
+        for (let i = 0; i < qtd; i++) h += '<div class="sk-card" aria-hidden="true"><div class="sk-linha curta"></div><div class="sk-linha"></div><div class="sk-linha media"></div><div class="sk-btn"></div></div>';
+        return h;
+    }
+    function carregar(el, renderizar, opcoes) {
+        const o = Object.assign({ qtd: 2, minMs: 300 }, opcoes);
+        if (!el) return Promise.resolve(false);
+        const id = (geracao.get(el) || 0) + 1; geracao.set(el, id);
+        el.innerHTML = html(o.qtd); el.setAttribute('aria-busy', 'true');
+        return new Promise((resolve) => setTimeout(() => {
+            if (geracao.get(el) !== id) return resolve(false);          // chamada mais nova assumiu
+            try { renderizar(); } finally { el.removeAttribute('aria-busy'); }
+            resolve(true);
+        }, o.minMs));
+    }
+    return { carregar: carregar };
+})();
+
+// Histórico do colaborador: abre com esqueleto e só depois desenha o extrato
+(function () {
+    const original = HistoricoColab.render;
+    HistoricoColab.render = function () { return Skeleton.carregar(document.getElementById('histLista'), original, { qtd: 3 }); };
+})();
+
+/* ---------- Categorias de ponto (configuráveis pelo admin) ----------
+   Modelo (localStorage 'categorias_ponto' = lista ORDENADA):
+     { nome, ico, dica, inicio:'HH:MM', fim:'HH:MM', ativo:boolean, repetivel:boolean, retornoDe?:string }
+   • nome        é a chave gravada em cada ponto (ponto.tipo). Por isso não se renomeia: apague e crie outra (pontos antigos mantêm o nome).
+   • inicio/fim  janela em que a categoria é SUGERIDA (se inicio > fim, a janela atravessa a meia-noite).
+   • ativo       só as ativas aparecem para o colaborador.
+   • repetivel   permite várias batidas no dia; as demais seguem "1 por dia".
+   • retornoDe   categoria de RETORNO (ex.: "Retorno Almoço" tem retornoDe:'Almoço'). Regra de sequência:
+                 · só pode ser batida quando o ÚLTIMO ponto do dia é a categoria indicada em retornoDe;
+                 · enquanto o último ponto for essa categoria, só ficam liberados o Retorno correspondente e a "Saída".
+   A ordem da lista desempata janelas que se sobrepõem. */
+const Categorias = (function () {
+    const K = 'categorias_ponto', K_VER = 'categorias_ver', VERSAO = '3';
+    const PADRAO = [                                            // ordem de exibição e de desempate das sugestões
+        { nome: 'Entrada', ico: '🟢', dica: 'Início do expediente', inicio: '00:00', fim: '11:29', ativo: true, repetivel: false },
+        { nome: 'Saída', ico: '🔴', dica: 'Fim do expediente', inicio: '14:00', fim: '17:59', ativo: true, repetivel: false },
+        { nome: 'Almoço', ico: '🍽️', dica: 'Saída para o almoço', inicio: '11:30', fim: '13:59', ativo: true, repetivel: false },
+        { nome: 'Retorno Almoço', ico: '↩️', dica: 'Volta do almoço', inicio: '00:00', fim: '23:59', ativo: true, repetivel: false, retornoDe: 'Almoço' },
+        { nome: 'Janta', ico: '🍲', dica: 'Saída para o jantar', inicio: '18:00', fim: '20:59', ativo: true, repetivel: false },
+        { nome: 'Retorno Janta', ico: '↩️', dica: 'Volta do jantar', inicio: '00:00', fim: '23:59', ativo: true, repetivel: false, retornoDe: 'Janta' }
+    ];
+
+    const clonar = (x) => JSON.parse(JSON.stringify(x));
+    const minutos = (hhmm) => { const m = /^(\d{1,2}):(\d{2})$/.exec(hhmm || ''); return m ? (+m[1]) * 60 + (+m[2]) : null; };
+    // Migração (uma vez por versão): v3 reorganiza a lista na ordem Entrada, Saída, Almoço, Retorno Almoço, Janta, Retorno Janta
+    // (descarta a lista salva e volta ao padrão; depois disso o admin pode personalizar à vontade)
+    function migrar() {
+        try {
+            if (localStorage.getItem(K_VER) === VERSAO) return;
+            localStorage.setItem(K_VER, VERSAO);
+            localStorage.removeItem(K);
+        } catch (e) {}
+    }
+    function todas() {
+        migrar();
+        try { const v = JSON.parse(localStorage.getItem(K)); if (Array.isArray(v) && v.length && v.every(c => c && typeof c.nome === 'string')) return v; } catch (e) {}
+        return clonar(PADRAO);
+    }
+    function salvar(lista) { localStorage.setItem(K, JSON.stringify(lista)); }
+    const ativas = () => todas().filter(c => c.ativo);
+    const repetivel = (nome) => { const c = todas().find(x => x.nome === nome); return !!(c && c.repetivel); };
+    // O minuto do dia (0–1439) está dentro da janela da categoria? (suporta janela que cruza a meia-noite)
+    function contem(c, m) {
+        const i = minutos(c.inicio), f = minutos(c.fim);
+        if (i == null || f == null) return false;
+        return i <= f ? (m >= i && m <= f) : (m >= i || m <= f);
+    }
+    return { todas: todas, salvar: salvar, ativas: ativas, repetivel: repetivel, contem: contem, padrao: () => clonar(PADRAO) };
+})();
+
+/* ---------- Turno: cards de categoria, sequência obrigatória e sugestão pelo horário ----------
+   SEQUÊNCIA (retorno obrigatório): olha o ÚLTIMO ponto de hoje (o mais recente por data/hora).
+     • último = Almoço → só "Retorno Almoço" e "Saída" ficam liberados; "Retorno Almoço" vira a sugestão.
+     • último = Janta  → só "Retorno Janta" e "Saída" ficam liberados; "Retorno Janta" vira a sugestão.
+     • caso contrário  → os cards de retorno ficam bloqueados (não existe retorno sem saída) e os demais seguem a regra normal.
+   O envio também é barrado (botão e função), não só o visual.
+   SUGESTÃO pelo horário (fora da sequência obrigatória): 1ª categoria ativa, na ordem da lista, que não seja retorno, cuja janela
+   contenha a hora atual e que ainda possa ser batida hoje. Fora de qualquer janela, sugere a 1ª ainda não batida (na ordem da lista: sem nada batido = Entrada; com Entrada batida = Saída). */
+const Turno = (function () {
+    const dig = (t) => String(t || '').replace(/\D/g, '');
+    let manual = false, sugerido = '', assinatura = '', estado = { ultimo: '', pendente: null };
+
+    // 'dd/mm/aaaa hh:mm:ss' -> número comparável (mais recente = maior)
+    function instante(p) {
+        const m = /(\d{2})\/(\d{2})\/(\d{4})[ ,]+(\d{2}):(\d{2})(?::(\d{2}))?/.exec(p.dataHora || '');
+        return m ? Date.UTC(+m[3], +m[2] - 1, +m[1], +m[4], +m[5], +(m[6] || 0)) : 0;
+    }
+    function pontosDeHoje() {
+        const u = (typeof Colab !== 'undefined') ? Colab.usuarioAtual() : null;
+        if (!u) return [];
+        const hoje = PontoLock.hoje();
+        return PontoStore.ler('historico_pontos').filter(p => dig(p.cpf) === dig(u.cpf) && p.dataSimples === hoje)
+            .map((p, i) => ({ tipo: p.tipo || 'Entrada', t: instante(p), i: i, off: !!p.registro_offline }))
+            .sort((a, b) => (a.t - b.t) || (a.i - b.i));
+    }
+    function lerEstado() {
+        const dia = pontosDeHoje(), ultimo = dia.length ? dia[dia.length - 1].tipo : '';
+        const feitos = new Set(dia.filter(x => !x.off).map(x => x.tipo));      // mesma regra da trava (offline não conta)
+        const pendente = ultimo ? Categorias.ativas().find(c => c.retornoDe === ultimo) || null : null;
+        return { ultimo: ultimo, feitos: feitos, pendente: pendente };
+    }
+    // Esta categoria pode ser batida agora?
+    function liberada(c, est) {
+        if (c.retornoDe) return est.ultimo === c.retornoDe;                    // retorno só depois da saída correspondente
+        if (est.pendente) return c.nome === 'Saída';                           // retorno obrigatório: só Saída ou o retorno
+        return true;
+    }
+    const permitido = (nome) => { const est = lerEstado(), c = Categorias.ativas().find(x => x.nome === nome); return !c || liberada(c, est); };
+
+    function sugerir(data, est) {
+        if (est.pendente) return est.pendente.nome;
+        const m = data.getHours() * 60 + data.getMinutes(), ativas = Categorias.ativas().filter(c => !c.retornoDe);
+        const livre = (c) => c.repetivel || !est.feitos.has(c.nome);
+        const naJanela = ativas.filter(c => Categorias.contem(c, m));
+        const achou = naJanela.find(livre) || naJanela[0] || ativas.find(livre) || ativas[0];
+        return achou ? achou.nome : '';
+    }
+    // Redesenha os cards só se a configuração mudou (evita piscar a cada minuto)
+    function desenhar() {
+        const ativas = Categorias.ativas(), sig = JSON.stringify(ativas.map(c => [c.nome, c.ico, c.dica]));
+        if (sig === assinatura) return;
+        assinatura = sig;
+        const grid = document.querySelector('#turnoBox .turno-grid');
+        grid.innerHTML = ativas.map(c => '<button type="button" class="turno-card" role="radio" aria-checked="false" data-tipo="' + escHtml(c.nome) + '">' +
+            '<span class="turno-tag" hidden></span><span class="turno-ico">' + escHtml(c.ico || '•') + '</span><b>' + escHtml(c.nome) + '</b><small>' + escHtml(c.dica || '') + '</small></button>').join('');
+        if (!grid.dataset.ligado) { grid.dataset.ligado = '1'; grid.addEventListener('click', (e) => { const c = e.target.closest('.turno-card'); if (c && !c.disabled) selecionar(c.dataset.tipo, true); }); }
+    }
+    // Só repinta marcas (sugerido / já batido / bloqueado) e o aviso. Não muda a seleção — seguro dentro de validarFormulario().
+    function marcar() {
+        const est = lerEstado(), cats = Categorias.ativas();
+        document.querySelectorAll('#turnoBox .turno-card').forEach(card => {
+            const t = card.dataset.tipo, c = cats.find(x => x.nome === t) || {}, tag = card.querySelector('.turno-tag');
+            const ok = liberada(c, est), feito = est.feitos.has(t) && !c.repetivel;
+            card.disabled = !ok; card.classList.toggle('bloqueado', !ok);
+            card.classList.toggle('feito', ok && feito); card.classList.toggle('sugerido', ok && t === sugerido && !feito);
+            tag.hidden = ok ? !(feito || t === sugerido) : false;
+            tag.className = 'turno-tag' + (feito && ok ? ' ok' : '') + (!ok ? ' trava' : '');
+            tag.textContent = !ok ? '🔒 Bloqueado' : feito ? '✓ Batido' : 'Sugerido';
+        });
+        const av = document.getElementById('turnoAviso');
+        av.style.display = est.pendente ? 'block' : 'none';
+        if (est.pendente) av.textContent = '⏳ Último ponto: ' + est.ultimo + '. Registre o "' + est.pendente.nome + '" (obrigatório) ou a "Saída".';
+    }
+    function selecionar(tipo, porToque) {
+        if (porToque) manual = true;
+        dadosPonto.tipo = tipo;
+        document.querySelectorAll('#turnoBox .turno-card').forEach(c => { const on = c.dataset.tipo === tipo; c.classList.toggle('selecionado', on); c.setAttribute('aria-checked', on); });
+        if (porToque) Haptico.tocar(15);
+        if (typeof validarFormulario === 'function') validarFormulario();      // reavalia trava de duplicidade e sequência
+    }
+    function atualizar() {
+        desenhar();
+        estado = lerEstado();
+        sugerido = sugerir(new Date(), estado);
+        document.getElementById('turnoDica').textContent = sugerido ? 'sugestão: ' + sugerido : '';
+        const escolhaOk = Categorias.ativas().some(c => c.nome === dadosPonto.tipo) && permitido(dadosPonto.tipo);
+        if (manual && !escolhaOk) manual = false;                               // categoria desativada ou bloqueada pela sequência
+        if (!manual) selecionar(sugerido, false); else marcar();
+    }
+    function iniciar() {
+        atualizar();
+        setInterval(atualizar, 60000);                           // o horário avança: reavalia a cada minuto
+        document.querySelector('.colab-nav-btn[data-pane="ponto"]').addEventListener('click', atualizar);
+        new MutationObserver(atualizar).observe(document.getElementById('colabApp'), { attributes: true, attributeFilter: ['style'] });   // login/sessão restaurada
+        window.addEventListener('storage', (e) => { if (e.key === 'categorias_ponto') atualizar(); });                                   // outra aba do admin mudou a lista
+    }
+    return { iniciar: iniciar, marcar: marcar, atualizar: atualizar, sugerir: sugerir, permitido: permitido, lerEstado: lerEstado };
+})();
+(function () {                                                    // mantém as marcas "Batido" em dia quando o formulário é revalidado
+    const original = validarFormulario;
+    validarFormulario = function () {
+        original(); Turno.marcar();
+        if (!Turno.permitido(dadosPonto.tipo)) document.getElementById('btnEnviar').disabled = true;       // sequência obrigatória (Almoço/Janta -> Retorno)
+    };
+})();
+(function () {                                                    // trava também no envio (não só no botão)
+    const original = enviarPonto;
+    enviarPonto = function (e) {
+        if (!Turno.permitido(dadosPonto.tipo)) { e.preventDefault(); alert('Este tipo de batida não está liberado agora. Siga a sequência indicada na tela.'); return; }
+        return original(e);
+    };
+})();
+Turno.iniciar();
+
+/* ---------- CategoriasAdmin: o administrador define quais categorias o colaborador vê ----------
+   Cada alteração é salva na hora (localStorage 'categorias_ponto') e os cards do colaborador são redesenhados.
+   Regras: nomes únicos (sem diferenciar maiúsculas), pelo menos 1 categoria ativa, ordem editável (↑ ↓) — a ordem desempata sugestões. */
+const CategoriasAdmin = (function () {
+    const $ = (id) => document.getElementById(id);
+    const toast = (m) => { if (typeof mostrarToast === 'function') mostrarToast(m); };
+    function aplicar(lista) { Categorias.salvar(lista); Turno.atualizar(); desenhar(); }
+    function desenhar() {
+        $('catLista').innerHTML = Categorias.todas().map((c, i) =>
+            '<div class="cat-linha' + (c.ativo ? '' : ' off') + '" data-i="' + i + '">' +
+              '<label class="cat-nome"><input type="checkbox" data-f="ativo"' + (c.ativo ? ' checked' : '') + '> <span>' + escHtml(c.ico || '•') + ' <b>' + escHtml(c.nome) + '</b></span></label>' +
+              (c.retornoDe
+                  ? '<p class="cat-nota">🔗 Só liberado depois de <b>' + escHtml(c.retornoDe) + '</b> (obrigatório: enquanto o último ponto for ' + escHtml(c.retornoDe) + ', só este retorno e a Saída ficam liberados).</p>'
+                  : '<div class="cat-janela"><input type="time" data-f="inicio" value="' + escHtml(c.inicio) + '" aria-label="Início"> <span>até</span> <input type="time" data-f="fim" value="' + escHtml(c.fim) + '" aria-label="Fim"></div>') +
+              '<div class="cat-acoes">' + (c.retornoDe ? '<span></span>' : '<label class="cat-rep"><input type="checkbox" data-f="repetivel"' + (c.repetivel ? ' checked' : '') + '> repete no dia</label>') +
+              '<span><button type="button" data-a="sobe" aria-label="Subir">↑</button><button type="button" data-a="desce" aria-label="Descer">↓</button><button type="button" data-a="apaga" aria-label="Remover">🗑️</button></span></div>' +
+            '</div>').join('');
+    }
+    function aoMudar(e) {
+        const el = e.target.closest('[data-f]'); if (!el) return;
+        const lista = Categorias.todas(), i = +el.closest('.cat-linha').dataset.i, f = el.dataset.f;
+        if (f === 'ativo' || f === 'repetivel') {
+            lista[i][f] = el.checked;
+            if (!lista.some(c => c.ativo)) { alert('Mantenha pelo menos uma categoria ativa.'); el.checked = true; return; }
+        } else { if (!el.value) return; lista[i][f] = el.value; }
+        aplicar(lista);
+    }
+    function aoClicar(e) {
+        const b = e.target.closest('[data-a]'); if (!b) return;
+        const lista = Categorias.todas(), i = +b.closest('.cat-linha').dataset.i, a = b.dataset.a;
+        if (a === 'sobe' && i > 0) [lista[i - 1], lista[i]] = [lista[i], lista[i - 1]];
+        else if (a === 'desce' && i < lista.length - 1) [lista[i + 1], lista[i]] = [lista[i], lista[i + 1]];
+        else if (a === 'apaga') {
+            if (lista.length === 1 || lista.filter(c => c.ativo && c !== lista[i]).length === 0) { alert('É preciso manter pelo menos uma categoria ativa.'); return; }
+            if (!confirm('Remover a categoria "' + lista[i].nome + '"? Pontos já registrados com ela continuam como estão.')) return;
+            lista.splice(i, 1);
+        } else return;
+        aplicar(lista);
+    }
+    function adicionar() {
+        const nome = Texto.capitalizarNome($('catNome').value.trim().replace(/\s+/g, ' ')), lista = Categorias.todas();
+        if (nome.length < 2) { alert('Informe o nome da categoria.'); return; }
+        if (lista.some(c => c.nome.toLocaleLowerCase('pt-BR') === nome.toLocaleLowerCase('pt-BR'))) { alert('Já existe uma categoria com esse nome.'); return; }
+        lista.push({ nome: nome, ico: $('catIco').value.trim() || '🏷️', dica: $('catDica').value.trim(), inicio: $('catIni').value || '00:00', fim: $('catFim').value || '23:59',
+                     ativo: true, repetivel: $('catRep').checked });
+        ['catNome', 'catIco', 'catDica'].forEach(id => { $(id).value = ''; }); $('catRep').checked = false;
+        aplicar(lista); toast('✅ Categoria adicionada');
+    }
+    function iniciar() {
+        Texto.ligarMascaraNome($('catNome'));
+        $('catLista').addEventListener('change', aoMudar);
+        $('catLista').addEventListener('click', aoClicar);
+        $('catAdd').addEventListener('click', adicionar);
+        $('catPadrao').addEventListener('click', () => { if (confirm('Restaurar a lista padrão de categorias?')) { aplicar(Categorias.padrao()); toast('↺ Lista padrão restaurada'); } });
+        desenhar();
+    }
+    return { iniciar: iniciar };
+})();
+CategoriasAdmin.iniciar();
+
+/* ---------- ResetSistema (admin) ----------
+   Apaga, por escolha do admin, os dados guardados NESTE aparelho (localStorage). Etapas: marcar o que apagar → digitar RESETAR →
+   senha do administrador → execução → recarrega a página (limpa sessões e telas). Mantém: e-mail de recuperação, tema, logo e cores. */
+const ResetSistema = (function () {
+    const $ = (id) => document.getElementById(id);
+    const GRUPOS = {
+        rsUsuarios: ['usuarios_app', 'colab_sessao', 'colab_ultimo_cpf', 'colab_cpf', 'solicitacoes_identidade', 'auditoria_identidade'],
+        rsPontos: ['historico_pontos', 'lixeira_pontos', 'pontos_originais', 'log_alteracoes_pontos', 'fila_sync_pontos', 'lixeira_ciclo_inicio'],
+        rsSenhaAdmin: ['senha_admin'],                                    // sem a chave, o login volta à senha padrão de fábrica
+        rsCategorias: ['categorias_ponto', 'categorias_ver']
+    };
+    const escolhidos = () => Object.keys(GRUPOS).filter(id => $(id).checked);
+    function liberar() { $('rsBotao').disabled = !(escolhidos().length && $('rsConfirma').value.trim().toUpperCase() === 'RESETAR'); }
+    function executar() {
+        pedirSenhaAdmin('Confirme a senha do administrador para RESETAR os dados selecionados.', () => {
+            try {
+                escolhidos().forEach(id => GRUPOS[id].forEach(k => localStorage.removeItem(k)));
+                sessionStorage.clear();
+            } catch (e) { alert('Não foi possível concluir o reset.'); return; }
+            if (typeof mostrarToast === 'function') mostrarToast('🧨 Reset concluído. Recarregando…');
+            setTimeout(() => location.reload(), 800);
+        });
+    }
+    function iniciar() {
+        $('rsConfirma').addEventListener('input', liberar);
+        Object.keys(GRUPOS).forEach(id => $(id).addEventListener('change', liberar));
+        $('rsBotao').addEventListener('click', executar);
+    }
+    return { iniciar: iniciar };
+})();
+ResetSistema.iniciar();
+
+/* ---------- Inconsistencias (admin, aba Pontos) ----------
+   Modelo: para cada (CPF, dia) reúne os tipos batidos. Regras (só para registros COM tipo — registros antigos não geram alerta):
+     VERMELHO  "Saída esquecida"     dia já passou, o último tipo batido não foi "Saída" (marca só esse último registro)
+     VERMELHO  "Suspeita de fraude"  ponto offline com suspeita_desconexao_forcada ou relógio alterado
+     AMARELO   "Retorno ausente"     tem Almoço e Saída, mas não Retorno (marca o Almoço)
+     AMARELO   "Entrada ausente"     o primeiro tipo do dia não é Entrada (marca esse registro)
+     AMARELO   "Offline sem GPS"     ponto offline sem coordenadas (só se não houver o vermelho)
+   O índice é recalculado só quando o array da base muda (lerBase devolve o mesmo array enquanto o localStorage não muda). */
+const Inconsistencias = (function () {
+    // Posição de cada tipo na jornada (o "Retorno" antigo conta como retorno do almoço). Tipos criados pelo admin ficam fora da sequência.
+    const RANK = { 'Entrada': 0, 'Almoço': 1, 'Retorno': 2, 'Retorno Almoço': 2, 'Janta': 3, 'Retorno Janta': 4, 'Saída': 5 };
+    const dig = (t) => String(t || '').replace(/\D/g, '');
+    let baseEmCache = null, indice = null;
+    function indexar(base) {
+        if (base === baseEmCache) return indice;
+        indice = {};
+        base.forEach(p => { if (p.tipo) { const k = dig(p.cpf) + '|' + p.dataSimples; (indice[k] = indice[k] || new Set()).add(p.tipo); } });
+        baseEmCache = base; return indice;
+    }
+    function avaliar(p, base) {
+        const out = [], hoje = PontoLock.hoje();
+        const temCoord = p.lat !== '' && p.lat != null;
+        const t = p.tipo ? indexar(base)[dig(p.cpf) + '|' + p.dataSimples] : null;
+        const meu = RANK[p.tipo];
+        if (t && meu != null) {
+            const ranks = Array.from(t).map(x => RANK[x]).filter(r => r != null), max = Math.max.apply(null, ranks), min = Math.min.apply(null, ranks);
+            if (p.dataSimples < hoje && meu === max && max !== 5) out.push({ cor: 'vermelho', txt: 'Saída esquecida', dica: 'O dia terminou sem uma batida de Saída.' });
+            if (p.tipo === 'Almoço' && !t.has('Retorno Almoço') && !t.has('Retorno') && max > 1) out.push({ cor: 'amarelo', txt: 'Retorno Almoço ausente', dica: 'Há Almoço e batidas depois dele, mas falta o Retorno do Almoço.' });
+            if (p.tipo === 'Janta' && !t.has('Retorno Janta') && max > 3) out.push({ cor: 'amarelo', txt: 'Retorno Janta ausente', dica: 'Há Janta e batidas depois dela, mas falta o Retorno da Janta.' });
+            if (meu === min && min !== 0) out.push({ cor: 'amarelo', txt: 'Entrada ausente', dica: 'O dia começa sem uma batida de Entrada.' });
+        }
+        const a = p.auditoria_offline || {};
+        if (p.suspeita_desconexao_forcada || a.suspeita_desconexao_forcada || p.suspeita_relogio || a.suspeita_relogio) out.push({ cor: 'vermelho', txt: 'Suspeita de fraude', dica: 'Ponto offline com indício de desconexão forçada ou relógio alterado.' });
+        else if (p.registro_offline && !temCoord) out.push({ cor: 'amarelo', txt: 'Offline sem GPS', dica: 'Registrado sem internet e sem localização.' });
+        return out;
+    }
+    const htmlBadges = (lista) => lista.map(b => ' <span class="badge bd-' + b.cor + '" title="' + escHtml(b.dica) + '">' + (b.cor === 'vermelho' ? '⛔ ' : '⚠️ ') + escHtml(b.txt) + '</span>').join('');
+    return { avaliar: avaliar, htmlBadges: htmlBadges };
+})();
+(function () {                                                    // injeta o tipo e os badges ao lado do nome, sem reescrever o card
+    const original = cardPontoAdmin;
+    cardPontoAdmin = function (p, idx) {
+        const html = original(p, idx), chave = '<b>👤 Prestador:</b> ' + escHtml(p.nome) + '<br>';
+        const extra = (p.tipo ? ' <span class="badge bd-tipo">' + escHtml(p.tipo) + '</span>' : '') + Inconsistencias.htmlBadges(Inconsistencias.avaliar(p, lerBase('historico_pontos')));
+        return html.replace(chave, '<b>👤 Prestador:</b> ' + escHtml(p.nome) + extra + '<br>');
+    };
+})();
+
+/* ---------- NavAdmin ----------
+   Barra inferior (Pontos · Lixeira · Filtros · Config) visível só com o admin logado na aba "Painel Admin".
+   Detecta isso observando o DOM (adminData e tab-admin), sem alterar as funções de login. */
+const NavAdmin = (function () {
+    const $ = (id) => document.getElementById(id);
+    const lixAberta = () => $('lixeiraPanel').style.display === 'block';
+    const cfgAberta = () => $('conteudoConfigSeguranca').style.display === 'block';
+    const sheetAberta = () => $('filtrosSheet').classList.contains('aberto');
+    let estavaVisivel = false;
+
+    const visivel = () => $('adminData').style.display === 'block' && $('tab-admin').classList.contains('active');
+    function sincronizar() {
+        const v = visivel();
+        document.body.classList.toggle('nav-admin-on', v);
+        if (!v && sheetAberta()) fecharSheet();
+        if (v && !estavaVisivel) Skeleton.carregar($('listaPontos'), renderizarPontosAdmin);    // entrou no painel: esqueleto → lista
+        estavaVisivel = v;
+        document.querySelectorAll('#navAdmin button').forEach(b => {
+            const n = b.dataset.nav;
+            b.classList.toggle('ativo', n === 'lixeira' ? lixAberta() : n === 'pontos' ? !lixAberta() : n === 'filtros' ? sheetAberta() : cfgAberta());
+        });
+        chips();
+    }
+    function chips() {
+        const d = $('filtroData').value, n = $('filtroNome').value.trim(), ativo = !!(d || n);
+        $('chipsFiltros').style.display = ativo ? 'flex' : 'none';
+        $('navFiltroPonto').classList.toggle('on', ativo);
+        $('chipsTxt').textContent = '🔍 ' + [d ? d.split('-').reverse().join('/') : '', n ? '"' + n + '"' : ''].filter(Boolean).join(' · ');
+    }
+    function abrirSheet() { $('filtrosSheet').classList.add('aberto'); $('sheetFundo').classList.add('on'); $('filtrosSheet').setAttribute('aria-hidden', 'false'); sincronizar(); }
+    function fecharSheet() { $('filtrosSheet').classList.remove('aberto'); $('sheetFundo').classList.remove('on'); $('filtrosSheet').setAttribute('aria-hidden', 'true'); sincronizar(); }
+    const rolar = (el) => el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    function aoTocar(n) {
+        Haptico.tocar(10);
+        if (n !== 'filtros' && sheetAberta()) fecharSheet();
+        if (n === 'pontos') { if (lixAberta()) toggleLixeira(); rolar($('listaPontos')); }
+        else if (n === 'lixeira') {
+            toggleLixeira();
+            if (lixAberta()) { Skeleton.carregar($('listaLixeira'), renderizarLixeira); rolar($('lixeiraPanel')); }
+        }
+        else if (n === 'filtros') { sheetAberta() ? fecharSheet() : abrirSheet(); }
+        else if (n === 'config') { toggleConfigSeguranca(); if (cfgAberta()) rolar($('conteudoConfigSeguranca')); }
+        sincronizar();
+    }
+    function iniciar() {
+        document.querySelectorAll('#navAdmin button').forEach(b => b.addEventListener('click', () => aoTocar(b.dataset.nav)));
+        $('filtrosFechar').addEventListener('click', fecharSheet);
+        $('sheetFundo').addEventListener('click', fecharSheet);
+        $('chipsLimpar').addEventListener('click', () => { $('filtroData').value = ''; $('filtroNome').value = ''; renderizarPontosAdmin(); sincronizar(); });
+        ['filtroData', 'filtroNome'].forEach(id => $(id).addEventListener('input', chips));
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && sheetAberta()) fecharSheet(); });
+        const obs = new MutationObserver(sincronizar);
+        obs.observe($('adminData'), { attributes: true, attributeFilter: ['style'] });
+        obs.observe($('tab-admin'), { attributes: true, attributeFilter: ['class'] });
+        sincronizar();
+    }
+    return { iniciar: iniciar, sincronizar: sincronizar };
+})();
+NavAdmin.iniciar();
+// Se a página abriu direto no Histórico (ex.: após bater o ponto), refaz o desenho já com esqueleto + ícones de sincronização
+if (document.getElementById('colabPane-hist').style.display === 'block') HistoricoColab.render();
 </script>
 </body>
 </html>
